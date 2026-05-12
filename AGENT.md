@@ -55,10 +55,9 @@ src/
 │   ├── layout/
 │   │   ├── footer/
 │   │   ├── header/
-│   │   └── Main.tsx                # Root layout wrapper
 │   ├── shared/
-│   │   ├── Feedback/               # Error boundaries, empty states, skeletons
-│   │   └── Spinner.tsx
+│   │   ├── feedback/               # Error boundaries, empty states, skeletons
+│   │   └── loading/
 │   └── ui/                         # shadcn/ui generated components (do not hand-edit)
 │
 ├── constants/                      # QUERY_KEYS, API_BASE_URL, COOKIE_KEYS, etc.
@@ -70,6 +69,8 @@ src/
 │   ├── workshop/
 │   ├── boards/
 │   └── mini-workshop/
+|
+├── layouts/
 │
 ├── hooks/                          # Shared React Query base wrappers only
 │   ├── useApiQuery.ts

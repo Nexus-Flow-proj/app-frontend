@@ -1,0 +1,72 @@
+import { ProjectStatus, UserRole, type Project, type User } from "@/types";
+
+// Mock data (until backend is ready)
+export const MOCK_NOW = new Date().toISOString();
+export const MOCK_USER: User = {
+  id: "user-1",
+  name: "Ava Brooks",
+  email: "ava@nexusflow.app",
+  role: UserRole.ADMIN,
+  avatar: "",
+  createdAt: MOCK_NOW,
+  updatedAt: MOCK_NOW,
+};
+
+export const MOCK_PROJECTS: Project[] = [
+  {
+    id: "project-1",
+    name: "Apollo Launch",
+    description: "Go-to-market rollout",
+    status: ProjectStatus.ACTIVE,
+    color: "#6366f1",
+    ownerId: MOCK_USER.id,
+    owner: MOCK_USER,
+    memberCount: 8,
+    taskCount: 34,
+    completedTaskCount: 12,
+    createdAt: MOCK_NOW,
+    updatedAt: MOCK_NOW,
+  },
+  {
+    id: "project-2",
+    name: "Horizon Ops",
+    description: "Operations optimization",
+    status: ProjectStatus.ACTIVE,
+    color: "#10b981",
+    ownerId: MOCK_USER.id,
+    owner: MOCK_USER,
+    memberCount: 5,
+    taskCount: 18,
+    completedTaskCount: 7,
+    createdAt: MOCK_NOW,
+    updatedAt: MOCK_NOW,
+  },
+  {
+    id: "project-3",
+    name: "Atlas Research",
+    description: "Discovery sprint",
+    status: ProjectStatus.ACTIVE,
+    color: "#f59e0b",
+    ownerId: MOCK_USER.id,
+    owner: MOCK_USER,
+    memberCount: 3,
+    taskCount: 11,
+    completedTaskCount: 4,
+    createdAt: MOCK_NOW,
+    updatedAt: MOCK_NOW,
+  },
+  {
+    id: "project-4",
+    name: "Atlas Research",
+    description: "Discovery sprint",
+    status: ProjectStatus.ACTIVE,
+    color: "#f59e0b",
+    ownerId: MOCK_USER.id,
+    owner: MOCK_USER,
+    memberCount: 3,
+    taskCount: 11,
+    completedTaskCount: 4,
+    createdAt: MOCK_NOW,
+    updatedAt: MOCK_NOW,
+  },
+];

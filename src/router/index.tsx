@@ -6,8 +6,8 @@ import { GuestGuard } from "./GuestGuard";
 import { AuthGuard } from "./AuthGuard";
 import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
-import DashboardLayout from "@/layouts/DashboardLayout";
 import ProjectLayout from "@/layouts/ProjectLayout";
+import DashboardLayout from "@/features/dashboard/layout";
 
 // ** ──────────────── Lazy page imports ───────────────────────────
 
@@ -146,7 +146,7 @@ const router = createBrowserRouter([
                     element: <WithSuspense Component={BoardPages.TeamBoard} />,
                   },
                   {
-                    path: "my-workshop",
+                    path: "my-workspace",
                     element: (
                       <WithSuspense Component={WorkshopPages.MiniWorkshop} />
                     ),

@@ -1,8 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store";
 import { setAccessToken } from "@/lib/axios";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import type { User } from "@/types";
 import { authService } from "../services";
 import type {
   LoginDto,
@@ -11,6 +13,8 @@ import type {
   ResetPasswordDto,
 } from "../types";
 import { QUERY_KEYS } from "@/constants/queryKeys";
+
+type AuthResponseData = { user: User; accessToken: string };
 
 export function useMe() {
   const { isAuthenticated } = useAuthStore();
@@ -29,39 +33,38 @@ export function useLogin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (dto: LoginDto) => authService.login(dto),
-    onSuccess: (res) => {
-      const { user, accessToken } = res.data;
-      setAuth(user, accessToken);
-      setAccessToken(accessToken);
-      queryClient.setQueryData(QUERY_KEYS.auth.me, res);
-      toast.success(`Welcome back, ${user.name}!`);
-      navigate("/dashboard", { replace: true });
+  return useApiMutation<AuthResponseData, LoginDto>(
+    (dto: LoginDto) => authService.login(dto),
+    {
+      showSuccessToast: false,
+      onSuccess: (res) => {
+        const { user, accessToken } = res.data;
+        setAuth(user, accessToken);
+        setAccessToken(accessToken);
+        queryClient.setQueryData(QUERY_KEYS.auth.me, res);
+        toast.success(`Welcome back, ${user.name}!`);
+        navigate("/dashboard", { replace: true });
+      },
     },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message ?? "Login failed");
-    },
-  });
+  );
 }
 
 export function useRegister() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
-  return useMutation({
-    mutationFn: (dto: RegisterDto) => authService.register(dto),
-    onSuccess: (res) => {
-      const { user, accessToken } = res.data;
-      setAuth(user, accessToken);
-      setAccessToken(accessToken);
-      toast.success("Account created! Welcome to Nexus-Flow.");
-      navigate("/dashboard", { replace: true });
+  return useApiMutation<AuthResponseData, RegisterDto>(
+    (dto: RegisterDto) => authService.register(dto),
+    {
+      successMessage: "Account created! Welcome to Nexus-Flow.",
+      onSuccess: (res) => {
+        const { user, accessToken } = res.data;
+        setAuth(user, accessToken);
+        setAccessToken(accessToken);
+        navigate("/dashboard", { replace: true });
+      },
     },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message ?? "Registration failed");
-    },
-  });
+  );
 }
 
 export function useLogout() {
@@ -69,8 +72,9 @@ export function useLogout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: () => authService.logout(),
+  return useApiMutation(() => authService.logout(), {
+    showSuccessToast: false,
+    showErrorToast: false,
     onSettled: () => {
       logout();
       queryClient.clear();
@@ -80,30 +84,22 @@ export function useLogout() {
 }
 
 export function useForgotPassword() {
-  return useMutation({
-    mutationFn: (dto: ForgotPasswordDto) => authService.forgotPassword(dto),
-    onSuccess: (res) => {
-      toast.success(res.message ?? "Reset link sent to your email");
-    },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message ?? "Failed to send reset link");
-    },
-  });
+  return useApiMutation((dto: ForgotPasswordDto) =>
+    authService.forgotPassword(dto),
+  );
 }
 
 export function useResetPassword() {
   const navigate = useNavigate();
 
-  return useMutation({
-    mutationFn: (dto: ResetPasswordDto) => authService.resetPassword(dto),
-    onSuccess: (res) => {
-      toast.success(res.message ?? "Password reset successfully");
-      navigate("/login", { replace: true });
+  return useApiMutation(
+    (dto: ResetPasswordDto) => authService.resetPassword(dto),
+    {
+      onSuccess: () => {
+        navigate("/login", { replace: true });
+      },
     },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message ?? "Failed to reset password");
-    },
-  });
+  );
 }
 
 export function useInvitePreview(token: string) {
@@ -120,17 +116,16 @@ export function useInviteAccept() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
-  return useMutation({
-    mutationFn: (token: string) => authService.acceptInvite(token),
-    onSuccess: (res) => {
-      const { user, accessToken } = res.data;
-      setAuth(user, accessToken);
-      setAccessToken(accessToken);
-      toast.success("Invite accepted! Welcome to the project.");
-      navigate("/dashboard", { replace: true });
+  return useApiMutation<AuthResponseData, string>(
+    (token: string) => authService.acceptInvite(token),
+    {
+      successMessage: "Invite accepted! Welcome to the project.",
+      onSuccess: (res) => {
+        const { user, accessToken } = res.data;
+        setAuth(user, accessToken);
+        setAccessToken(accessToken);
+        navigate("/dashboard", { replace: true });
+      },
     },
-    onError: (err: { message?: string }) => {
-      toast.error(err.message ?? "Failed to accept invite");
-    },
-  });
+  );
 }

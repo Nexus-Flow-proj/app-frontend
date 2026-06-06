@@ -1,12 +1,11 @@
 import { api } from "@/lib/axios";
-import type { ApiResponse } from "@/types/models";
-import type { User, InvitePreview } from "@/types/models";
 import type {
   LoginDto,
   RegisterDto,
   ForgotPasswordDto,
   ResetPasswordDto,
 } from "../types";
+import type { ApiResponse, InvitePreview, User } from "@/types";
 
 export const authService = {
   me: () => api.get<ApiResponse<User>>("/auth/me").then((r) => r.data),

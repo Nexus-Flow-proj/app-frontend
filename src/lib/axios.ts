@@ -6,54 +6,55 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
-// ─── In-Memory Token Store ────────────────────────────────────────────────────
-let _accessToken: string | null = null;
-
-export function setAccessToken(token: string | null): void {
-  _accessToken = token;
+// ─── CSRF Token Reader ────────────────────────────────────────────────────────
+// The backend sets a JS-readable cookie named "csrf-token" (not HTTP-only).
+// We read it and send it as a header so the server can verify the request
+// originated from our app, not a cross-site form or link.
+function getCsrfToken(): string | null {
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("csrf-token="));
+  return match ? decodeURIComponent(match.split("=")[1]) : null;
 }
 
-export function getAccessToken(): string | null {
-  return _accessToken;
-}
+const SAFE_METHODS = new Set(["get", "head", "options"]);
 
 // ─── Axios Instance ───────────────────────────────────────────────────────────
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // sends the HTTP-only JWT cookie automatically
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// ─── Request Interceptor - attach token automatically to every request ──────
+// ─── Request Interceptor — attach CSRF token on mutating requests ─────────────
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = getAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const method = config.method?.toLowerCase() ?? "get";
+    if (!SAFE_METHODS.has(method)) {
+      const csrf = getCsrfToken();
+      if (csrf && config.headers) {
+        config.headers["X-CSRF-Token"] = csrf;
+      }
     }
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// ─── Response Interceptor - handle 401 globally ────────────────────────────────
-
+// ─── Response Interceptor — handle 401 globally ───────────────────────────────
 let isRefreshing = false;
 let refreshQueue: Array<{
-  resolve: (value: string) => void;
+  resolve: () => void;
   reject: (reason: unknown) => void;
 }> = [];
 
-function processQueue(error: unknown, token: string | null): void {
+function processQueue(error: unknown): void {
   refreshQueue.forEach(({ resolve, reject }) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(token as string);
-    }
+    if (error) reject(error);
+    else resolve();
   });
   refreshQueue = [];
 }
@@ -68,21 +69,12 @@ api.interceptors.response.use(
     const is401 = error.response?.status === 401;
     const isRefreshEndpoint = originalRequest.url?.includes("/auth/refresh");
 
-    // If 401 on a non-refresh endpoint and we haven't retried yet
     if (is401 && !originalRequest._retry && !isRefreshEndpoint) {
       if (isRefreshing) {
-        // Queue the request until the token refresh completes
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
         })
-          .then((newToken) => {
-            if (originalRequest.headers) {
-              (
-                originalRequest.headers as Record<string, string>
-              ).Authorization = `Bearer ${newToken}`;
-            }
-            return api(originalRequest);
-          })
+          .then(() => api(originalRequest))
           .catch((err) => Promise.reject(err));
       }
 
@@ -90,28 +82,16 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await api.post<{ data: { accessToken: string } }>(
-          "/auth/refresh",
-        );
-        const newToken = data.data.accessToken;
-        setAccessToken(newToken);
-        processQueue(null, newToken);
-
-        if (originalRequest.headers) {
-          (originalRequest.headers as Record<string, string>).Authorization =
-            `Bearer ${newToken}`;
-        }
-
+        // The server rotates both the access + refresh HTTP-only cookies
+        // and issues a fresh CSRF token cookie in this response.
+        await api.post("/auth/refresh");
+        processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        setAccessToken(null);
-
-        // Redirect to login on refresh failure
+        processQueue(refreshError);
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
-
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

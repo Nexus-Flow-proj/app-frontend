@@ -1,3 +1,16 @@
+import type { User } from "@/types";
+
+// ─── Response shapes ──────────────────────────────────────────────────────────
+export interface AuthResponseData {
+  user: User;
+  accessToken: string;
+}
+
+export interface RefreshResponseData {
+  accessToken: string;
+}
+
+// ─── Request DTOs ─────────────────────────────────────────────────────────────
 export interface LoginDto {
   email: string;
   password: string;

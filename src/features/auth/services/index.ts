@@ -1,28 +1,25 @@
 import { api } from "@/lib/axios";
-import type { ApiResponse } from "@/types/models";
-import type { User, InvitePreview } from "@/types/models";
 import type {
   LoginDto,
   RegisterDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  AuthResponseData,
+  RefreshResponseData,
 } from "../types";
+import type { ApiResponse, InvitePreview, User } from "@/types";
 
 export const authService = {
   me: () => api.get<ApiResponse<User>>("/auth/me").then((r) => r.data),
 
   login: (dto: LoginDto) =>
     api
-      .post<
-        ApiResponse<{ user: User; accessToken: string }>
-      >("/auth/login", dto)
+      .post<ApiResponse<AuthResponseData>>("/auth/login", dto)
       .then((r) => r.data),
 
   register: (dto: RegisterDto) =>
     api
-      .post<
-        ApiResponse<{ user: User; accessToken: string }>
-      >("/auth/register", dto)
+      .post<ApiResponse<AuthResponseData>>("/auth/register", dto)
       .then((r) => r.data),
 
   logout: () => api.post<ApiResponse<null>>("/auth/logout").then((r) => r.data),
@@ -37,9 +34,9 @@ export const authService = {
       .post<ApiResponse<null>>("/auth/reset-password", dto)
       .then((r) => r.data),
 
-  refreshToken: () =>
+  refresh: () =>
     api
-      .post<ApiResponse<{ accessToken: string }>>("/auth/refresh")
+      .post<ApiResponse<RefreshResponseData>>("/auth/refresh")
       .then((r) => r.data),
 
   getInvite: (token: string) =>
@@ -49,8 +46,6 @@ export const authService = {
 
   acceptInvite: (token: string) =>
     api
-      .post<
-        ApiResponse<{ user: User; accessToken: string }>
-      >(`/auth/invite/${token}/accept`)
+      .post<ApiResponse<AuthResponseData>>(`/auth/invite/${token}/accept`)
       .then((r) => r.data),
 };

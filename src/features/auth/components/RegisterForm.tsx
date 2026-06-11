@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
 import { User, Mail, Lock, Loader2 } from "lucide-react";
-import { registerSchema, type RegisterDto } from "../validation";
+import { registerSchema, type RegisterFormValues } from "../validation";
 import { useRegister } from "../hooks";
 
 export function RegisterForm() {
@@ -12,12 +12,16 @@ export function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterDto>({ resolver: zodResolver(registerSchema) });
+  } = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
 
   return (
-    <form onSubmit={handleSubmit((data) => register_(data))} className="space-y-5">
+    <form
+      onSubmit={handleSubmit((data) => register_(data))}
+      className="space-y-5"
+    >
+      {/* Name */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700" htmlFor="name">
+        <label htmlFor="name" className="text-sm font-medium text-slate-700">
           Full name
         </label>
         <div className="relative">
@@ -27,8 +31,8 @@ export function RegisterForm() {
             type="text"
             autoComplete="name"
             placeholder="Jane Doe"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             disabled={isPending}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             {...register("name")}
           />
         </div>
@@ -37,8 +41,9 @@ export function RegisterForm() {
         )}
       </div>
 
+      {/* Email */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700" htmlFor="email">
+        <label htmlFor="email" className="text-sm font-medium text-slate-700">
           Email
         </label>
         <div className="relative">
@@ -48,8 +53,8 @@ export function RegisterForm() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             disabled={isPending}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             {...register("email")}
           />
         </div>
@@ -58,8 +63,12 @@ export function RegisterForm() {
         )}
       </div>
 
+      {/* Password */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700" htmlFor="password">
+        <label
+          htmlFor="password"
+          className="text-sm font-medium text-slate-700"
+        >
           Password
         </label>
         <div className="relative">
@@ -69,8 +78,8 @@ export function RegisterForm() {
             type="password"
             autoComplete="new-password"
             placeholder="Min. 8 characters"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             disabled={isPending}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             {...register("password")}
           />
         </div>
@@ -92,7 +101,7 @@ export function RegisterForm() {
         Already have an account?{" "}
         <Link
           to="/login"
-          className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
+          className="font-medium text-indigo-600 hover:underline"
         >
           Sign in
         </Link>

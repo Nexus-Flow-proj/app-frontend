@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { loginSchema, type LoginDto } from "../validation";
+import { loginSchema, type LoginFormValues } from "../validation";
 import { useLogin } from "../hooks";
 
 export function LoginForm() {
@@ -12,12 +12,13 @@ export function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginDto>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
+      {/* Email */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-700" htmlFor="email">
+        <label htmlFor="email" className="text-sm font-medium text-slate-700">
           Email
         </label>
         <div className="relative">
@@ -27,8 +28,8 @@ export function LoginForm() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             disabled={isPending}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             {...register("email")}
           />
         </div>
@@ -37,14 +38,18 @@ export function LoginForm() {
         )}
       </div>
 
+      {/* Password */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-slate-700" htmlFor="password">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-slate-700"
+          >
             Password
           </label>
           <Link
             to="/forgot-password"
-            className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline"
+            className="text-xs text-indigo-600 hover:underline"
           >
             Forgot password?
           </Link>
@@ -56,8 +61,8 @@ export function LoginForm() {
             type="password"
             autoComplete="current-password"
             placeholder="••••••••"
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             disabled={isPending}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
             {...register("password")}
           />
         </div>
@@ -79,7 +84,7 @@ export function LoginForm() {
         Don&apos;t have an account?{" "}
         <Link
           to="/register"
-          className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
+          className="font-medium text-indigo-600 hover:underline"
         >
           Create one
         </Link>

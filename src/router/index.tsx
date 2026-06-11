@@ -6,7 +6,7 @@ import { GuestGuard } from "./GuestGuard";
 import { AuthGuard } from "./AuthGuard";
 import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
-import ProjectLayout from "@/layouts/ProjectLayout";
+// import ProjectLayout from "@/layouts/ProjectLayout";
 import DashboardLayout from "@/features/dashboard/layout";
 
 // ** ──────────────── Lazy page imports ───────────────────────────
@@ -118,7 +118,7 @@ const router = createBrowserRouter([
           // This means AdminGuard / MemberGuard always have role data available.
           {
             path: "/projects/:id",
-            element: <ProjectLayout />,
+            // element: <ProjectLayout />,
             children: [
               {
                 // Admin-only pages

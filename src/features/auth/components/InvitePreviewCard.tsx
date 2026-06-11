@@ -1,7 +1,7 @@
 import { Users, Loader2, AlertCircle } from "lucide-react";
 import { formatDate, formatInitials } from "@/lib/format";
-import type { InvitePreview } from "@/types/models";
 import { useInviteAccept } from "../hooks";
+import type { InvitePreview } from "@/types";
 
 interface InvitePreviewCardProps {
   token: string;

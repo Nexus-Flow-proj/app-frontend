@@ -7,6 +7,8 @@ export interface Meta {
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
+  error: string;
+  statusCode: number;
   meta: Meta;
   data: T;
 }

@@ -1,5 +1,4 @@
 // features/boards/types/index.ts
-// ─── Day-1 locked contract — all 4 devs depend on this ───────────────────────
 
 export type Priority = "low" | "medium" | "high" | "urgent";
 export type ColumnId = string;
@@ -28,7 +27,7 @@ export interface Task {
   title: string;
   description: string;
   priority: Priority;
-  sort_order: number;
+  sort_order?: number;
   assignee: BoardMember | null;
   dueDate: string | null;
   subtaskCount: number;
@@ -82,6 +81,11 @@ export interface MoveTaskDto {
   newSortOrder: number;
 }
 
+export interface MoveColumnDto {
+  columnId: ColumnId;
+  newSortOrder: number;
+}
+
 export interface CreateTaskDto {
   columnId: ColumnId;
   title: string;
@@ -106,6 +110,7 @@ export interface CreateCommentDto {
   content: string;
 }
 
+// Filter state lives in Zustand (UI only) + synced to URL via useSearchParams
 export interface BoardFiltersState {
   search: string;
   priorities: Priority[];

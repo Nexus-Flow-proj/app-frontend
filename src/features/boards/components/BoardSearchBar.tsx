@@ -1,36 +1,47 @@
 // features/boards/components/BoardSearchBar.tsx
-// Dev 4 — search input that filters cards by title. Never touches sort_order arrays.
+// Dev 4 — search input bound to URL param. Uses shadcn Input.
 
+import { useRef } from "react";
 import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface BoardSearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }
 
-export function BoardSearchBar({ value, onChange }: BoardSearchBarProps) {
+export function BoardSearchBar({
+  value,
+  onChange,
+  className,
+}: BoardSearchBarProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <div className="relative flex items-center">
-      <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
-      <input
-        type="text"
-        placeholder="Search tasks..."
+    <div className={cn("relative flex items-center", className)}>
+      <Search className="absolute left-2.5 size-3.5 text-muted-foreground pointer-events-none" />
+      <Input
+        ref={inputRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="
-          h-9 pl-9 pr-8 w-52 rounded-lg bg-white/[0.05] border border-white/[0.09]
-          text-sm text-zinc-200 placeholder:text-zinc-600
-          focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.07]
-          transition-all duration-150
-        "
+        placeholder="Search tasks…"
+        className="h-8 pl-8 pr-7 w-44 text-xs focus-visible:w-52 transition-all duration-200 bg-muted/50"
       />
       {value && (
-        <button
-          onClick={() => onChange("")}
-          className="absolute right-2.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-1 size-5 rounded-sm text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            onChange("");
+            inputRef.current?.focus();
+          }}
         >
-          <X className="w-3.5 h-3.5" />
-        </button>
+          <X className="size-3" />
+        </Button>
       )}
     </div>
   );

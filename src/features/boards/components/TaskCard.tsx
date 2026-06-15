@@ -1,17 +1,19 @@
 // features/boards/components/TaskCard.tsx
-// Dev 2 — pixel-perfect styled card. Receives drag handle props from Dev 1's useSortable.
+// Dev 2 — styled task card using your CSS variable theme + shadcn Badge.
 
 import { forwardRef } from "react";
 import type { CSSProperties } from "react";
 import { format, isPast, isToday } from "date-fns";
-import { MessageSquare, Paperclip, CheckSquare, Calendar } from "lucide-react";
-import type { Task } from "../types/types.index (1)";
-import { PRIORITY_CONFIG } from "../constants/constants.index";
+import { MessageSquare, Paperclip, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type { Task } from "../types";
+import { PRIORITY_CONFIG } from "../constants";
 
 interface TaskCardProps {
   task: Task;
   isDragging?: boolean;
-  isOverlay?: boolean; // true when rendered inside DragOverlay (floating ghost)
+  isOverlay?: boolean;
   style?: CSSProperties;
   dragHandleProps?: Record<string, unknown>;
   onClick?: (task: Task) => void;
@@ -25,27 +27,27 @@ function Avatar({
   name: string;
   avatarUrl: string | null;
 }) {
-  if (avatarUrl) {
-    return (
-      <img
-        src={avatarUrl}
-        alt={name}
-        title={name}
-        className="w-6 h-6 rounded-full object-cover ring-1 ring-white/10"
-      />
-    );
-  }
   const initials = name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        title={name}
+        className="size-6 rounded-full object-cover ring-1 ring-border"
+      />
+    );
+  }
   return (
     <div
       title={name}
-      className="w-6 h-6 rounded-full bg-indigo-500/30 ring-1 ring-indigo-400/40
-                 flex items-center justify-center text-[10px] font-semibold text-indigo-300 shrink-0"
+      className="size-6 rounded-full bg-primary/15 ring-1 ring-primary/30
+                 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0"
     >
       {initials}
     </div>
@@ -57,20 +59,19 @@ function DueDateBadge({ dueDate }: { dueDate: string }) {
   const date = new Date(dueDate);
   const overdue = isPast(date) && !isToday(date);
   const dueSoon = isToday(date);
-
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded
-        ${
-          overdue
-            ? "bg-red-500/20 text-red-400"
-            : dueSoon
-              ? "bg-amber-500/20 text-amber-400"
-              : "bg-white/5 text-zinc-400"
-        }`}
+      className={cn(
+        "inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded",
+        overdue
+          ? "bg-destructive/15 text-destructive"
+          : dueSoon
+            ? "bg-amber-500/15 text-amber-400"
+            : "bg-muted text-muted-foreground",
+      )}
     >
-      <Calendar className="w-3 h-3" />
-      {format(date, "MMM d")}
+      <Calendar className="size-3" />
+      {overdue ? "Overdue" : isToday(date) ? "Today" : format(date, "MMM d")}
     </span>
   );
 }
@@ -84,22 +85,26 @@ function SubtaskProgress({
   total: number;
 }) {
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const done = completed === total && total > 0;
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
         <div
-          className="h-full bg-indigo-400 rounded-full transition-all duration-300"
+          className={cn(
+            "h-full rounded-full transition-all duration-300",
+            done ? "bg-emerald-500" : "bg-primary",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[10px] text-zinc-500 tabular-nums shrink-0">
+      <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
         {completed}/{total}
       </span>
     </div>
   );
 }
 
-// ─── Main card ────────────────────────────────────────────────────────────────
+// ─── Card ─────────────────────────────────────────────────────────────────────
 export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
   (
     {
@@ -112,65 +117,66 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
     },
     ref,
   ) => {
-    const priority = PRIORITY_CONFIG[task.priority];
+    const cfg = PRIORITY_CONFIG[task.priority];
 
     const accentColor =
       task.priority === "urgent"
-        ? "#f87171"
+        ? "hsl(var(--destructive))"
         : task.priority === "high"
-          ? "#fb923c"
+          ? "#f97316"
           : task.priority === "medium"
-            ? "#facc15"
-            : "#38bdf8";
+            ? "#f59e0b"
+            : "hsl(var(--accent-foreground))";
 
     return (
       <div
         ref={ref}
         style={style}
         onClick={() => onClick?.(task)}
-        className={`
-          group relative w-full rounded-xl border bg-[#1c1c28] text-left
-          transition-all duration-150 cursor-pointer select-none
-          ${
-            isDragging
-              ? "opacity-40 border-indigo-500/40 shadow-none"
-              : isOverlay
-                ? "border-indigo-400/50 shadow-2xl shadow-black/60 rotate-1 scale-[1.02]"
-                : "border-white/[0.07] hover:border-white/[0.14] hover:bg-[#1f1f2e] shadow-sm hover:shadow-md"
-          }
-        `}
+        className={cn(
+          "group relative w-full rounded-xl border bg-card text-left transition-all duration-150 cursor-pointer select-none",
+          isDragging
+            ? "opacity-40 border-primary/30"
+            : isOverlay
+              ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
+              : "border-border hover:border-border/80 hover:bg-card/80",
+        )}
         {...dragHandleProps}
       >
-        {/* Left accent bar */}
+        {/* Left accent */}
         <div
-          className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
+          className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full"
           style={{ background: accentColor }}
         />
 
-        <div className="px-4 py-3 pl-5 space-y-2.5">
-          {/* Priority badge + tags */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase
-                          tracking-wide px-2 py-0.5 rounded-full border
-                          ${priority.bg} ${priority.border} ${priority.color}`}
+        <div className="px-3 py-3 pl-4 space-y-2">
+          {/* Priority + tags */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] font-semibold uppercase tracking-wide px-2 py-0 gap-1 h-5",
+                cfg.bgClass,
+                cfg.borderClass,
+                cfg.textClass,
+              )}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${priority.dot}`} />
-              {priority.label}
-            </span>
+              <span className={cn("size-1.5 rounded-full", cfg.dotClass)} />
+              {cfg.label}
+            </Badge>
             {task.tags.slice(0, 2).map((tag) => (
-              <span
+              <Badge
                 key={tag}
-                className="text-[10px] text-zinc-400 bg-white/5 border border-white/10
-                           px-2 py-0.5 rounded-full"
+                variant="secondary"
+                className="text-[10px] font-normal px-2 py-0 h-5"
               >
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
 
           {/* Title */}
-          <p className="text-sm font-medium text-zinc-100 leading-snug line-clamp-2 group-hover:text-white transition-colors">
+          <p className="text-[13px] font-medium text-card-foreground leading-snug line-clamp-2">
             {task.title}
           </p>
 
@@ -184,28 +190,21 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-0.5">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               {task.dueDate && <DueDateBadge dueDate={task.dueDate} />}
               {task.commentCount > 0 && (
-                <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                  <MessageSquare className="w-3 h-3" />
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <MessageSquare className="size-3" />
                   {task.commentCount}
                 </span>
               )}
               {task.attachmentCount > 0 && (
-                <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                  <Paperclip className="w-3 h-3" />
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Paperclip className="size-3" />
                   {task.attachmentCount}
                 </span>
               )}
-              {task.subtaskCount > 0 && (
-                <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                  <CheckSquare className="w-3 h-3" />
-                  {task.completedSubtaskCount}/{task.subtaskCount}
-                </span>
-              )}
             </div>
-
             {task.assignee && (
               <Avatar
                 name={task.assignee.name}
@@ -218,5 +217,4 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
     );
   },
 );
-
 TaskCard.displayName = "TaskCard";

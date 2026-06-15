@@ -1,112 +1,83 @@
 // features/boards/hooks/useBoardFilters.ts
-// Dev 4 — filter state lives in Zustand (UI state), never React Query.
-// RULE: filtering = visual hide only. Never mutates sort_order arrays.
+// Dev 4 — filter state synced between Zustand (UI) and URL (useSearchParams).
+// RULE: filters only HIDE cards visually — never mutate sort_order arrays.
 
-import { create } from "zustand";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router";
 import { isPast, isToday, endOfWeek, isBefore } from "date-fns";
 import type { Task, BoardFiltersState, Priority } from "../types";
 
-const DEFAULT_FILTERS: BoardFiltersState = {
-  search: "",
-  priorities: [],
-  assigneeIds: [],
-  dueDateRange: null,
-  showOnlyMyTasks: false,
-};
+const TODAY = new Date().toISOString().slice(0, 10);
 
-interface BoardFilterStore {
-  filters: BoardFiltersState;
-  setFilter: (patch: Partial<BoardFiltersState>) => void;
-  resetFilters: () => void;
-}
-
-export const useBoardFilterStore = create<BoardFilterStore>((set) => ({
-  filters: DEFAULT_FILTERS,
-  setFilter: (patch) =>
-    set((s) => ({ filters: { ...s.filters, ...patch } })),
-  resetFilters: () => set({ filters: DEFAULT_FILTERS }),
-}));
-
-// ─── Filter predicate — pure function, safe to test in isolation ──────────────
-function taskMatchesFilters(
-  task: Task,
-  filters: BoardFiltersState,
-  currentUserId: string
-): boolean {
-  // Search
-  if (
-    filters.search &&
-    !task.title.toLowerCase().includes(filters.search.toLowerCase())
-  ) {
-    return false;
-  }
-
-  // Priority
-  if (
-    filters.priorities.length > 0 &&
-    !filters.priorities.includes(task.priority)
-  ) {
-    return false;
-  }
-
-  // Assignee
-  if (
-    filters.assigneeIds.length > 0 &&
-    (!task.assignee || !filters.assigneeIds.includes(task.assignee.id))
-  ) {
-    return false;
-  }
-
-  // My tasks
-  if (
-    filters.showOnlyMyTasks &&
-    task.assignee?.id !== currentUserId
-  ) {
-    return false;
-  }
-
-  // Due date range
-  if (filters.dueDateRange && task.dueDate) {
-    const due = new Date(task.dueDate);
-    if (filters.dueDateRange === "overdue" && !(isPast(due) && !isToday(due)))
-      return false;
-    if (filters.dueDateRange === "today" && !isToday(due)) return false;
-    if (
-      filters.dueDateRange === "this_week" &&
-      !isBefore(due, endOfWeek(new Date()))
-    )
-      return false;
-  } else if (filters.dueDateRange && !task.dueDate) {
-    // Has a due date filter but task has no due date — exclude
-    return false;
-  }
-
-  return true;
-}
-
-// ─── Hook to get filtered task IDs for a column ───────────────────────────────
-// Pass the ordered taskIds from Dev 1's BoardState — this never reorders them.
-export function useFilteredTaskIds(
-  taskIds: string[],
-  tasks: Record<string, Task>,
-  currentUserId: string
-): string[] {
-  const { filters } = useBoardFilterStore();
-
+// ─── Read filters from URL ────────────────────────────────────────────────────
+export function useUrlFilters(): BoardFiltersState {
+  const [params] = useSearchParams();
   return useMemo(
-    () =>
-      taskIds.filter((id) => {
-        const task = tasks[id];
-        return task ? taskMatchesFilters(task, filters, currentUserId) : false;
-      }),
-    [taskIds, tasks, filters, currentUserId]
+    () => ({
+      search: params.get("search") ?? "",
+      priorities: (params.get("priority")?.split(",").filter(Boolean) ??
+        []) as Priority[],
+      assigneeIds: params.get("assignee")?.split(",").filter(Boolean) ?? [],
+      dueDateRange:
+        (params.get("due") as BoardFiltersState["dueDateRange"]) ?? null,
+      showOnlyMyTasks: params.get("myTasks") === "true",
+    }),
+    [params],
   );
 }
 
-// ─── Active filter count (for the "Clear (n)" button) ─────────────────────────
+// ─── Write filters to URL ─────────────────────────────────────────────────────
+export function useSetUrlFilters() {
+  const [, setParams] = useSearchParams();
+
+  return useCallback(
+    (patch: Partial<BoardFiltersState>) => {
+      setParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (patch.search !== undefined) {
+            patch.search
+              ? next.set("search", patch.search)
+              : next.delete("search");
+          }
+          if (patch.priorities !== undefined) {
+            patch.priorities.length
+              ? next.set("priority", patch.priorities.join(","))
+              : next.delete("priority");
+          }
+          if (patch.assigneeIds !== undefined) {
+            patch.assigneeIds.length
+              ? next.set("assignee", patch.assigneeIds.join(","))
+              : next.delete("assignee");
+          }
+          if (patch.dueDateRange !== undefined) {
+            patch.dueDateRange
+              ? next.set("due", patch.dueDateRange)
+              : next.delete("due");
+          }
+          if (patch.showOnlyMyTasks !== undefined) {
+            patch.showOnlyMyTasks
+              ? next.set("myTasks", "true")
+              : next.delete("myTasks");
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
+}
+
+// ─── Reset all filters ────────────────────────────────────────────────────────
+export function useResetUrlFilters() {
+  const [, setParams] = useSearchParams();
+  return useCallback(() => setParams({}, { replace: true }), [setParams]);
+}
+
+// ─── Count active filters (for "Clear (n)" badge) ────────────────────────────
 export function useActiveFilterCount(): number {
-  const { filters } = useBoardFilterStore();
+  const filters = useUrlFilters();
   let n = 0;
   if (filters.search) n++;
   if (filters.priorities.length) n++;
@@ -114,4 +85,61 @@ export function useActiveFilterCount(): number {
   if (filters.dueDateRange) n++;
   if (filters.showOnlyMyTasks) n++;
   return n;
+}
+
+// ─── Pure filter predicate — safe to unit-test in isolation ──────────────────
+export function taskMatchesFilters(
+  task: Task,
+  filters: BoardFiltersState,
+  currentUserId: string,
+): boolean {
+  if (
+    filters.search &&
+    !task.title.toLowerCase().includes(filters.search.toLowerCase())
+  )
+    return false;
+
+  if (filters.priorities.length && !filters.priorities.includes(task.priority))
+    return false;
+
+  if (
+    filters.assigneeIds.length &&
+    (!task.assignee || !filters.assigneeIds.includes(task.assignee.id))
+  )
+    return false;
+
+  if (filters.showOnlyMyTasks && task.assignee?.id !== currentUserId)
+    return false;
+
+  if (filters.dueDateRange) {
+    if (!task.dueDate) return false;
+    const due = new Date(task.dueDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (filters.dueDateRange === "overdue" && !(isPast(due) && !isToday(due)))
+      return false;
+    if (filters.dueDateRange === "today" && task.dueDate !== TODAY)
+      return false;
+    if (filters.dueDateRange === "this_week" && !isBefore(due, endOfWeek(now)))
+      return false;
+  }
+
+  return true;
+}
+
+// ─── Filtered task IDs for one column — preserves sort_order order ────────────
+export function useFilteredTaskIds(
+  taskIds: string[],
+  tasks: Record<string, Task>,
+  currentUserId: string,
+): string[] {
+  const filters = useUrlFilters();
+  return useMemo(
+    () =>
+      taskIds.filter((id) => {
+        const task = tasks[id];
+        return task ? taskMatchesFilters(task, filters, currentUserId) : false;
+      }),
+    [taskIds, tasks, filters, currentUserId],
+  );
 }

@@ -1,5 +1,5 @@
 // features/boards/components/AddColumnButton.tsx
-// Dev 2 — the "+" column adder that sits at the end of the board.
+// Dev 2 — standalone add-column button (used separately if needed).
 
 import { Plus } from "lucide-react";
 
@@ -11,16 +11,13 @@ export function AddColumnButton({ onClick }: AddColumnButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="
-        group flex items-center gap-2.5 w-[260px] shrink-0 h-fit
-        px-4 py-3 rounded-2xl border border-dashed border-white/[0.10]
-        text-zinc-500 hover:text-zinc-300 hover:border-white/[0.20]
-        hover:bg-white/[0.03] transition-all duration-200 text-sm font-medium
-      "
+      className="group flex items-center gap-2.5 w-[248px] shrink-0 h-fit px-4 py-2.5
+                 rounded-2xl border border-dashed border-border text-muted-foreground
+                 hover:text-foreground hover:border-border/80 hover:bg-muted/50
+                 transition-all duration-200 text-sm font-medium"
     >
-      <div className="w-6 h-6 rounded-lg bg-white/[0.06] group-hover:bg-white/[0.10]
-                      flex items-center justify-center transition-colors">
-        <Plus className="w-3.5 h-3.5" />
+      <div className="size-5 rounded-md bg-muted group-hover:bg-secondary flex items-center justify-center transition-colors">
+        <Plus className="size-3" />
       </div>
       Add column
     </button>

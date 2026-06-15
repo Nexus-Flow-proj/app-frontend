@@ -1,8 +1,12 @@
 // features/boards/components/SubtaskChecklist.tsx
-// Dev 4 — subtask list inside TaskDetailDrawer.
+// Dev 4 — subtask list inside TaskDetailDrawer. Uses shadcn Checkbox.
 
 import { useState, useRef } from "react";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import type { Subtask, TaskId } from "../types";
 
 interface SubtaskChecklistProps {
@@ -13,80 +17,40 @@ interface SubtaskChecklistProps {
   onDelete: (subtaskId: string) => void;
 }
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
 function Progress({ completed, total }: { completed: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const done = completed === total && total > 0;
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-xs text-zinc-500 tabular-nums shrink-0 w-8 text-right">
+      <span className="text-xs text-muted-foreground tabular-nums w-8 text-right shrink-0">
         {pct}%
       </span>
-      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500
-            ${pct === 100 ? "bg-emerald-400" : "bg-indigo-400"}`}
+          className={cn(
+            "h-full rounded-full transition-all duration-500",
+            done ? "bg-emerald-500" : "bg-primary",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-xs text-zinc-500 tabular-nums shrink-0">
+      <span className="text-xs text-muted-foreground tabular-nums shrink-0">
         {completed}/{total}
       </span>
     </div>
   );
 }
 
-// ─── Single subtask row ───────────────────────────────────────────────────────
-function SubtaskRow({
-  subtask,
+export function SubtaskChecklist({
+  subtasks,
   onToggle,
+  onAdd,
   onDelete,
-}: {
-  subtask: Subtask;
-  onToggle: (id: string, completed: boolean) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <div className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-white/[0.04] transition-colors">
-      <GripVertical className="w-3.5 h-3.5 text-zinc-700 opacity-0 group-hover:opacity-100 shrink-0 transition-opacity cursor-grab" />
-
-      <button
-        onClick={() => onToggle(subtask.id, !subtask.completed)}
-        className={`w-4 h-4 rounded shrink-0 border transition-all duration-150 flex items-center justify-center
-          ${subtask.completed
-            ? "bg-indigo-500 border-indigo-500"
-            : "bg-transparent border-zinc-600 hover:border-zinc-400"
-          }`}
-      >
-        {subtask.completed && (
-          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2 6l3 3 5-5" />
-          </svg>
-        )}
-      </button>
-
-      <span
-        className={`flex-1 text-sm transition-all duration-150 leading-snug
-          ${subtask.completed ? "line-through text-zinc-600" : "text-zinc-300"}`}
-      >
-        {subtask.title}
-      </span>
-
-      <button
-        onClick={() => onDelete(subtask.id)}
-        className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400
-                   transition-all duration-150 shrink-0"
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
-
-// ─── Add subtask input ────────────────────────────────────────────────────────
-function AddSubtaskInput({ onAdd }: { onAdd: (title: string) => void }) {
-  const [open, setOpen] = useState(false);
+}: SubtaskChecklistProps) {
+  const [adding, setAdding] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const completed = subtasks.filter((s) => s.completed).length;
 
   const submit = () => {
     const trimmed = value.trim();
@@ -94,76 +58,17 @@ function AddSubtaskInput({ onAdd }: { onAdd: (title: string) => void }) {
       onAdd(trimmed);
       setValue("");
     }
-    setOpen(false);
+    setAdding(false);
   };
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => {
-          setOpen(true);
-          setTimeout(() => inputRef.current?.focus(), 50);
-        }}
-        className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-300
-                   transition-colors mt-1 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] w-full"
-      >
-        <Plus className="w-3.5 h-3.5" />
-        Add subtask
-      </button>
-    );
-  }
-
-  return (
-    <div className="mt-1 flex items-center gap-2">
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") submit();
-          if (e.key === "Escape") { setOpen(false); setValue(""); }
-        }}
-        placeholder="Subtask title..."
-        className="flex-1 h-8 px-3 rounded-lg bg-white/[0.05] border border-white/[0.10]
-                   text-sm text-zinc-200 placeholder:text-zinc-600
-                   focus:outline-none focus:border-indigo-500/50"
-      />
-      <button
-        onClick={submit}
-        className="h-8 px-3 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-xs
-                   font-medium transition-colors shrink-0"
-      >
-        Add
-      </button>
-      <button
-        onClick={() => { setOpen(false); setValue(""); }}
-        className="h-8 px-2 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-white/5
-                   text-xs transition-colors shrink-0"
-      >
-        Cancel
-      </button>
-    </div>
-  );
-}
-
-// ─── Main component ───────────────────────────────────────────────────────────
-export function SubtaskChecklist({
-  subtasks,
-  onToggle,
-  onAdd,
-  onDelete,
-}: SubtaskChecklistProps) {
-  const completed = subtasks.filter((s) => s.completed).length;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Subtasks
-        </h4>
-        <span className="text-xs text-zinc-600">
-          {completed} of {subtasks.length} done
+        </p>
+        <span className="text-xs text-muted-foreground">
+          {completed} of {subtasks.length}
         </span>
       </div>
 
@@ -173,16 +78,85 @@ export function SubtaskChecklist({
 
       <div className="space-y-0.5">
         {subtasks.map((subtask) => (
-          <SubtaskRow
+          <div
             key={subtask.id}
-            subtask={subtask}
-            onToggle={onToggle}
-            onDelete={onDelete}
-          />
+            className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors"
+          >
+            <GripVertical className="size-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 shrink-0 cursor-grab" />
+            <Checkbox
+              id={subtask.id}
+              checked={subtask.completed}
+              onCheckedChange={(checked) => onToggle(subtask.id, !!checked)}
+              className="shrink-0"
+            />
+            <label
+              htmlFor={subtask.id}
+              className={cn(
+                "flex-1 text-sm cursor-pointer leading-snug",
+                subtask.completed
+                  ? "line-through text-muted-foreground"
+                  : "text-foreground",
+              )}
+            >
+              {subtask.title}
+            </label>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive rounded shrink-0"
+              onClick={() => onDelete(subtask.id)}
+            >
+              <Trash2 className="size-3" />
+            </Button>
+          </div>
         ))}
       </div>
 
-      <AddSubtaskInput onAdd={onAdd} />
+      {adding ? (
+        <div className="flex items-center gap-2 mt-1">
+          <Input
+            ref={inputRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+              if (e.key === "Escape") {
+                setAdding(false);
+                setValue("");
+              }
+            }}
+            placeholder="Subtask title…"
+            className="h-8 text-sm flex-1"
+            autoFocus
+          />
+          <Button size="sm" className="h-8 shrink-0" onClick={submit}>
+            Add
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 shrink-0"
+            onClick={() => {
+              setAdding(false);
+              setValue("");
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground w-full justify-start px-2 -mx-2"
+          onClick={() => {
+            setAdding(true);
+            setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+        >
+          <Plus className="size-3.5" /> Add subtask
+        </Button>
+      )}
     </div>
   );
 }

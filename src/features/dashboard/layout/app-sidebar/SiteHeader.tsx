@@ -9,12 +9,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { SearchForm } from "./SearchForm";
 import { ROUTES } from "@/constants";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
+import DarkModeToggle from "@/components/shared/ModeToggle";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
@@ -91,6 +91,8 @@ export function SiteHeader() {
               </span>
             )}
           </Button>
+
+          <DarkModeToggle />
         </div>
       </div>
     </header>

@@ -8,6 +8,7 @@ import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
 // import ProjectLayout from "@/layouts/ProjectLayout";
 import DashboardLayout from "@/features/dashboard/layout";
+import { CardPlayground } from "@/features/boards/components/CardPlayground";
 
 // ** ──────────────── Lazy page imports ───────────────────────────
 
@@ -112,7 +113,11 @@ const router = createBrowserRouter([
             path: "/projects/new",
             element: <WithSuspense Component={ProjectPages.Create} />,
           },
-
+          //////// THIS IS FOR TESTING THE CARD COMPONENT IN ISOLATION, REMOVE BEFORE PRODUCTION ////////
+          {
+            path: "/sandbox/card",
+            element: <CardPlayground />,
+          },
           // ── Project-scoped pages ────────────────────────────────────────
           // ProjectLayout loads project + members into store before children render.
           // This means AdminGuard / MemberGuard always have role data available.

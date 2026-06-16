@@ -2,7 +2,7 @@ import { useUrlFilters, useFilteredTaskIds } from "../../hooks/useBoardFilters";
 import type { BoardState, Task } from "../../types";
 import { CURRENT_USER } from "../../data/mock-data";
 import { KanbanColumn } from "./KanbanColumn";
-import { TaskCard } from "./TaskCard";
+import { TaskCard } from "./task-card";
 
 function BoardColumn({
   columnId,

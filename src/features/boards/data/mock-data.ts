@@ -4,14 +4,18 @@ import type { BoardMember, BoardState, TaskDetail } from "../types";
 export const CURRENT_USER: BoardMember = {
   id: "u1",
   name: "Ahmed Hassan",
-  avatarUrl: null,
+  avatarUrl: "https://github.com/shadcn.png",
 };
 
 export const MOCK_MEMBERS: BoardMember[] = [
-  { id: "u1", name: "Ahmed Hassan", avatarUrl: null },
-  { id: "u2", name: "Sara Ramadan", avatarUrl: null },
-  { id: "u3", name: "Karim Mostafa", avatarUrl: null },
-  { id: "u4", name: "Lina Nasser", avatarUrl: null },
+  {
+    id: "u1",
+    name: "Ahmed Hassan",
+    avatarUrl: "https://github.com/shadcn.png",
+  },
+  { id: "u2", name: "Sara Ramadan" },
+  { id: "u3", name: "Karim Mostafa" },
+  { id: "u4", name: "Lina Nasser" },
 ];
 
 const TODAY = new Date().toISOString().slice(0, 10);

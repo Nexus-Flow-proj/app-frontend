@@ -7,8 +7,9 @@ import { format, isPast, isToday } from "date-fns";
 import { MessageSquare, Paperclip, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Task } from "../../types";
-import { PRIORITY_CONFIG } from "../../constants";
+import type { Task } from "../../../types";
+import { PRIORITY_CONFIG } from "../../../constants";
+import Avatar from "@/components/shared/MyAvatar";
 
 interface TaskCardProps {
   task: Task;
@@ -17,41 +18,6 @@ interface TaskCardProps {
   style?: CSSProperties;
   dragHandleProps?: Record<string, unknown>;
   onClick?: (task: Task) => void;
-}
-
-// ─── Avatar ───────────────────────────────────────────────────────────────────
-function Avatar({
-  name,
-  avatarUrl,
-}: {
-  name: string;
-  avatarUrl: string | null;
-}) {
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  if (avatarUrl) {
-    return (
-      <img
-        src={avatarUrl}
-        alt={name}
-        title={name}
-        className="size-6 rounded-full object-cover ring-1 ring-border"
-      />
-    );
-  }
-  return (
-    <div
-      title={name}
-      className="size-6 rounded-full bg-primary/15 ring-1 ring-primary/30
-                 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0"
-    >
-      {initials}
-    </div>
-  );
 }
 
 // ─── Due date badge ───────────────────────────────────────────────────────────

@@ -41,7 +41,6 @@ export function KanbanBoard({
         ) : (
           <>
             {children}
-            {/* Add column — ghost button at the end */}
             <Button
               variant="dashed"
               size="lg"

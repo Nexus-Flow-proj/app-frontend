@@ -7,7 +7,7 @@ export type TaskId = string;
 export interface BoardMember {
   id: string;
   name: string;
-  avatarUrl: string | null;
+  avatarUrl?: string;
 }
 
 export interface BoardColumn {

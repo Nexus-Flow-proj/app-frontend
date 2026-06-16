@@ -36,7 +36,7 @@ export const PRIORITY_CONFIG = {
 
 // Uses your CSS variable primary scale
 export const COLUMN_ACCENT_COLORS: Record<string, string> = {
-  Backlog: "hsl(var(--primary))",
+  Backlog: "var(--primary)",
   "In Progress": "#f59e0b",
   "In Review": "#8b5cf6",
   Done: "#10b981",

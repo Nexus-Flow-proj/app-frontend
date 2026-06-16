@@ -7,8 +7,8 @@ import { format, isPast, isToday } from "date-fns";
 import { MessageSquare, Paperclip, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Task } from "../types";
-import { PRIORITY_CONFIG } from "../constants";
+import type { Task } from "../../types";
+import { PRIORITY_CONFIG } from "../../constants";
 
 interface TaskCardProps {
   task: Task;

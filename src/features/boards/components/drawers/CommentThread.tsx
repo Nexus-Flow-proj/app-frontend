@@ -5,8 +5,8 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import { Textarea } from "@/components/ui/textarea";
-import type { Comment, BoardMember } from "../types";
+import { Textarea } from "@/components/ui/textarea";
+import type { Comment, BoardMember } from "../../types";
 
 interface CommentThreadProps {
   comments: Comment[];
@@ -95,7 +95,7 @@ export function CommentThread({
       <div className="flex gap-2.5 pt-1">
         <Avatar member={currentUser} />
         <div className="flex-1 flex items-end gap-2">
-          {/* <Textarea
+          <Textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
@@ -107,7 +107,7 @@ export function CommentThread({
             placeholder="Write a comment… (Enter to send)"
             rows={2}
             className="flex-1 resize-none text-sm"
-          /> */}
+          />
           <Button
             size="icon"
             className="size-8 shrink-0"

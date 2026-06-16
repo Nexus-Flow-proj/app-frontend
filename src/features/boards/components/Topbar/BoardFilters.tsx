@@ -15,8 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import type { BoardFiltersState, Priority, BoardMember } from "../types";
-import { PRIORITY_CONFIG } from "../constants";
+import type { BoardFiltersState, Priority, BoardMember } from "../../types";
+import { PRIORITY_CONFIG } from "../../constants";
 
 interface BoardFiltersProps {
   filters: BoardFiltersState;

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { Subtask, TaskId } from "../types";
+import type { Subtask, TaskId } from "../../types";
 
 interface SubtaskChecklistProps {
   taskId: TaskId;

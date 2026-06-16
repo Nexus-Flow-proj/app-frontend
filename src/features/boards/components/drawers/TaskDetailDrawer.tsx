@@ -21,8 +21,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { SubtaskChecklist } from "./SubtaskChecklist";
 import { CommentThread } from "./CommentThread";
-import { PRIORITY_CONFIG } from "../constants";
-import type { TaskDetail, Priority, BoardMember, BoardColumn } from "../types";
+import { PRIORITY_CONFIG } from "../../constants";
+import type {
+  TaskDetail,
+  Priority,
+  BoardMember,
+  BoardColumn,
+} from "../../types";
 
 interface TaskDetailDrawerProps {
   task: TaskDetail | null;

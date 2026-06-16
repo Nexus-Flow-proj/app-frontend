@@ -65,8 +65,10 @@ export function KanbanColumn({
               {column.title}
             </CardTitle>
             <Badge
-              variant={"outline"}
-              className="text-[10px] font-semibold tabular-nums "
+              variant="outline"
+              size="sm"
+              shape="circle"
+              className="font-semibold tabular-nums"
             >
               {isFiltered ? `${taskCount}/${totalTaskCount}` : taskCount}
             </Badge>
@@ -131,7 +133,8 @@ export function KanbanColumn({
       <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 h-8 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:border-border"
+          className="w-full justify-start"
+          size="sm"
           onClick={() => onAddTask?.(column.id)}
         >
           <Plus />

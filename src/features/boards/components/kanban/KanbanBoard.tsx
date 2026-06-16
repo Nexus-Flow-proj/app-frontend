@@ -6,6 +6,8 @@ import { Plus } from "lucide-react";
 import type { BoardState } from "../../types";
 import ColumnSkeleton from "../skeletons/ColumnSkeleton";
 import EmptyBoard from "../empty-states/EmptyBoard";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface KanbanBoardProps {
   boardState: BoardState;
@@ -40,17 +42,17 @@ export function KanbanBoard({
           <>
             {children}
             {/* Add column — ghost button at the end */}
-            <button
+            <Button
+              variant="dashed"
+              size="lg"
               onClick={onAddColumn}
-              className="flex items-center gap-2 w-62 shrink-0 h-fit px-4 py-2.5 rounded-2xl
-                          border border-dashed border-border text-muted-foreground hover:text-foreground
-                          hover:border-border/80 hover:bg-muted/50 transition-all duration-200 text-sm"
+              className="w-62 shrink-0"
             >
-              <div className="size-5 rounded-md bg-muted flex items-center justify-center">
-                <Plus className="size-3" />
-              </div>
+              <Badge variant="secondary" size="sm" shape="rounded">
+                <Plus />
+              </Badge>
               Add column
-            </button>
+            </Button>
           </>
         )}
       </div>

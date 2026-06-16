@@ -84,7 +84,7 @@ export function BoardFilters({
             <Filter className="size-3" />
             Priority
             {filters.priorities.length > 0 && (
-              <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground border-0 rounded-full">
+              <Badge size="xs" shape="circle">
                 {filters.priorities.length}
               </Badge>
             )}
@@ -133,7 +133,7 @@ export function BoardFilters({
             <User className="size-3" />
             Assignee
             {filters.assigneeIds.length > 0 && (
-              <Badge className="h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground border-0 rounded-full">
+              <Badge size="xs" shape="circle">
                 {filters.assigneeIds.length}
               </Badge>
             )}

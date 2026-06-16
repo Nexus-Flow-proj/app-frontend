@@ -8,6 +8,7 @@ export interface BoardMember {
   id: string;
   name: string;
   avatarUrl?: string;
+  isActive?: boolean;
 }
 
 export interface BoardColumn {
@@ -29,7 +30,7 @@ export interface Task {
   priority: Priority;
   sort_order?: number;
   assignee: BoardMember | null;
-  dueDate: string | null;
+  dueDate?: string;
   subtaskCount: number;
   completedSubtaskCount: number;
   commentCount: number;

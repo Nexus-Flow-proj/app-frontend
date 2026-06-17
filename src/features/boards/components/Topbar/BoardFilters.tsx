@@ -2,21 +2,13 @@
 // Dev 4 — filter bar. All changes push to URL via useSetUrlFilters.
 // RULE: never mutates sort_order arrays. Filtering = visual hide only.
 
-import { X, ChevronDown, User, Calendar, Filter } from "lucide-react";
+import { X, User, Calendar, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { BoardFiltersState, Priority, BoardMember } from "../../types";
 import { PRIORITY_CONFIG } from "../../constants";
+import { FilterDropdown } from "./FilterDropdown";
 
 interface BoardFiltersProps {
   filters: BoardFiltersState;
@@ -69,129 +61,39 @@ export function BoardFilters({
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {/* Priority */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-8 gap-1.5 text-xs",
-              filters.priorities.length &&
-                "border-primary/40 bg-primary/8 text-primary",
-            )}
-          >
-            <Filter className="size-3" />
-            Priority
-            {filters.priorities.length > 0 && (
-              <Badge size="xs" shape="circle">
-                {filters.priorities.length}
-              </Badge>
-            )}
-            <ChevronDown className="size-3 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-44">
-          <DropdownMenuLabel className="text-xs">
-            Filter by priority
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {PRIORITY_OPTIONS.map((p) => {
-            const cfg = PRIORITY_CONFIG[p];
-            return (
-              <DropdownMenuCheckboxItem
-                key={p}
-                checked={filters.priorities.includes(p)}
-                onCheckedChange={() => togglePriority(p)}
-                className="text-sm gap-2"
-              >
-                <span
-                  className={cn(
-                    "size-2 rounded-full inline-block",
-                    cfg.dotClass,
-                  )}
-                />
-                {cfg.label}
-              </DropdownMenuCheckboxItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FilterDropdown
+        label="Priority"
+        icon={Filter}
+        options={PRIORITY_OPTIONS.map((priority) => ({
+          value: priority,
+          label: PRIORITY_CONFIG[priority].label,
+          dotClassName: PRIORITY_CONFIG[priority].dotClass,
+        }))}
+        selected={filters.priorities}
+        onToggle={togglePriority}
+      />
 
-      {/* Assignee */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-8 gap-1.5 text-xs",
-              filters.assigneeIds.length &&
-                "border-primary/40 bg-primary/8 text-primary",
-            )}
-          >
-            <User className="size-3" />
-            Assignee
-            {filters.assigneeIds.length > 0 && (
-              <Badge size="xs" shape="circle">
-                {filters.assigneeIds.length}
-              </Badge>
-            )}
-            <ChevronDown className="size-3 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuLabel className="text-xs">
-            Filter by member
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {members.map((m) => (
-            <DropdownMenuCheckboxItem
-              key={m.id}
-              checked={filters.assigneeIds.includes(m.id)}
-              onCheckedChange={() => toggleAssignee(m.id)}
-              className="text-sm"
-            >
-              {m.name}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FilterDropdown
+        label="Assignee"
+        icon={User}
+        options={members.map((member) => ({
+          value: member.id,
+          label: member.name,
+        }))}
+        selected={filters.assigneeIds}
+        onToggle={toggleAssignee}
+        contentClassName="w-48"
+        description="Filter by member"
+      />
 
-      {/* Due date */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-8 gap-1.5 text-xs",
-              filters.dueDateRange &&
-                "border-primary/40 bg-primary/8 text-primary",
-            )}
-          >
-            <Calendar className="size-3" />
-            Due date
-            <ChevronDown className="size-3 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-44">
-          <DropdownMenuLabel className="text-xs">
-            Filter by due date
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {DUE_OPTIONS.map((opt) => (
-            <DropdownMenuCheckboxItem
-              key={opt.value}
-              checked={filters.dueDateRange === opt.value}
-              onCheckedChange={() => toggleDue(opt.value)}
-              className="text-sm"
-            >
-              {opt.label}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FilterDropdown
+        label="Due date"
+        icon={Calendar}
+        options={DUE_OPTIONS}
+        selected={filters.dueDateRange ? [filters.dueDateRange] : []}
+        onToggle={toggleDue}
+        multiple={false}
+      />
 
       {/* My tasks */}
       <Button

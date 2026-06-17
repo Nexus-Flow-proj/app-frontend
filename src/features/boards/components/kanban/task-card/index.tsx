@@ -35,17 +35,17 @@ function TaskCard({
       style={style}
       onClick={() => onClick?.(task)}
       className={cn(
-        "group relative w-full rounded-lg border bg-card hover:bg-card/20 text-left transition-all duration-150 cursor-pointer select-none",
+        "group relative w-full rounded-lg border bg-background/30 text-left transition-all duration-150 cursor-pointer select-none",
         isDragging
           ? "opacity-40 border-primary/30"
           : isOverlay
             ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
-            : "border-border hover:border-border/80 hover:bg-card/80",
+            : "border-border hover:border-dashed hover:bg-background/70",
       )}
     >
       {/* Left accent */}
       <div
-        className="absolute left-0 top-3 bottom-3 w-0.75 rounded-r-full"
+        className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full"
         style={{ background: accentColor }}
       />
 

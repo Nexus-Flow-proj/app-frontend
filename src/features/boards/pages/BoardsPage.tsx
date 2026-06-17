@@ -24,7 +24,7 @@ import {
   MOCK_MEMBERS,
   MOCK_TASK_DETAIL,
 } from "../data/mock-data";
-import BoardColumn from "../components/kanban/BoardColumn";
+import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 
 // ─── Filtered column ──────────────────────────────────────────────────────────
 
@@ -108,7 +108,7 @@ export default function BoardsPage() {
         onAddColumn={() => console.log("add column")}
       >
         {boardState.columnOrder.map((columnId) => (
-          <BoardColumn
+          <KanbanBoardColumn
             key={columnId}
             columnId={columnId}
             boardState={boardState}

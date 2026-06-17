@@ -5,7 +5,6 @@ import {
   DEFAULT_GC_TIME,
   DEFAULT_RETRY,
 } from "@/constants";
-// Load ReactQueryDevtools dynamically in development to avoid bundling in production
 
 interface ReactQueryProviderProps {
   children: ReactNode;
@@ -31,11 +30,15 @@ export default function ReactQueryProvider({
       }),
   );
 
-  const [Devtools, setDevtools] = useState<null | React.ComponentType<any>>(null);
+  const [Devtools, setDevtools] = useState<null | React.ComponentType<{
+    initialIsOpen?: boolean;
+  }>>(null);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    void import("@tanstack/react-query-devtools").then((m) => setDevtools(() => m.ReactQueryDevtools));
+    void import("@tanstack/react-query-devtools").then((m) =>
+      setDevtools(() => m.ReactQueryDevtools),
+    );
   }, []);
 
   return (

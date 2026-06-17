@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import type { BoardFiltersState, Priority, BoardMember } from "../../types";
 import { PRIORITY_CONFIG } from "../../constants";
 import { FilterDropdown } from "./FilterDropdown";
+import { TaskPriority } from "../../types/enums";
 
 interface BoardFiltersProps {
   filters: BoardFiltersState;
@@ -21,7 +22,12 @@ interface BoardFiltersProps {
   activeCount: number;
 }
 
-const PRIORITY_OPTIONS: Priority[] = ["urgent", "high", "medium", "low"];
+const PRIORITY_OPTIONS: Priority[] = [
+  TaskPriority.URGENT,
+  TaskPriority.HIGH,
+  TaskPriority.MEDIUM,
+  TaskPriority.LOW,
+];
 
 const DUE_OPTIONS: {
   value: NonNullable<BoardFiltersState["dueDateRange"]>;

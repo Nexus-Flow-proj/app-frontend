@@ -8,7 +8,7 @@ interface TaskDetailHeaderProps {
 
 export function TaskDetailHeader({ task, columns }: TaskDetailHeaderProps) {
   const columnTitle =
-    columns.find((column) => column.id === task.columnId)?.title ?? "Board";
+    columns.find((column) => column.id === task.boardColumnId)?.name ?? "Board";
 
   return (
     <SheetHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">

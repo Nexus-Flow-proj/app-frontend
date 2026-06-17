@@ -24,6 +24,7 @@ import type {
 import { MetaRow } from "./MetaRow";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { TaskPriority } from "../../types/enums";
 
 interface TaskMetaSectionProps {
   className?: string;
@@ -36,7 +37,12 @@ interface TaskMetaSectionProps {
   onMoveToColumn: (taskId: string, columnId: string) => void;
 }
 
-const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
+const PRIORITIES: Priority[] = [
+  TaskPriority.URGENT,
+  TaskPriority.HIGH,
+  TaskPriority.MEDIUM,
+  TaskPriority.LOW,
+];
 
 export function TaskMetaSection({
   task,
@@ -124,7 +130,7 @@ export function TaskMetaSection({
 
       <MetaRow icon={ArrowRight} label="Move to">
         <Select
-          value={task.columnId}
+          value={task.boardColumnId}
           onValueChange={(value) => onMoveToColumn(task.id, value)}
         >
           <SelectTrigger className="h-8 text-xs">
@@ -133,14 +139,14 @@ export function TaskMetaSection({
           <SelectContent>
             {columns.map((column) => (
               <SelectItem key={column.id} value={column.id} className="text-sm">
-                {column.title}
+                {column.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </MetaRow>
 
-      {task.tags.length > 0 && (
+      {!!task.tags?.length && (
         <MetaRow icon={Tag} label="Tags">
           <div className="flex flex-wrap gap-1.5">
             {task.tags.map((tag) => (

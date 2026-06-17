@@ -4,6 +4,8 @@ import type { Task } from "../../../types";
 import SubtaskProgress from "./SubtaskProgress";
 import TaskCardFooter from "./TaskCardFooter";
 import TaskCardTags from "./TaskCardTags";
+import { TaskPriority } from "../../../types/enums";
+import { useSortableTask } from "../../../hooks/useSortableTask";
 
 interface TaskCardProps {
   task: Task;
@@ -21,27 +23,37 @@ function TaskCard({
   style,
   onClick,
 }: TaskCardProps) {
+  const {
+    attributes,
+    isDragging: isSortableDragging,
+    listeners,
+    setNodeRef,
+    style: sortableStyle,
+  } = useSortableTask(task);
   const accentColor =
-    task.priority === "urgent"
+    task.priority === TaskPriority.URGENT
       ? "var(--destructive)"
-      : task.priority === "high"
-        ? "#f97316"
-        : task.priority === "medium"
-          ? "#f59e0b"
+      : task.priority === TaskPriority.HIGH
+        ? "var(--chart-5)"
+        : task.priority === TaskPriority.MEDIUM
+          ? "var(--chart-4)"
           : "var(--accent-foreground)";
 
   return (
     <div
-      style={style}
+      ref={setNodeRef}
+      style={{ ...sortableStyle, ...style }}
       onClick={() => onClick?.(task)}
       className={cn(
         "group relative w-full rounded-lg border bg-background/30 text-left transition-all duration-150 cursor-pointer select-none",
-        isDragging
+        isDragging || isSortableDragging
           ? "opacity-40 border-primary/30"
           : isOverlay
             ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
             : "border-border hover:border-dashed hover:bg-background/70",
       )}
+      {...attributes}
+      {...listeners}
     >
       {/* Left accent */}
       <div
@@ -50,24 +62,24 @@ function TaskCard({
       />
 
       <div className="px-3 py-3 pl-4 space-y-2">
-        <TaskCardTags priority={task.priority} tags={task.tags} />
+        <TaskCardTags priority={task.priority} tags={task.tags ?? []} />
 
         <p className="text-[13px] font-medium text-card-foreground leading-snug line-clamp-2">
           {task.title}
         </p>
 
-        {task.subtaskCount > 0 && (
+        {!!task.subtaskCount && task.subtaskCount > 0 && (
           <SubtaskProgress
-            completed={task.completedSubtaskCount}
+            completed={task.completedSubtaskCount ?? 0}
             total={task.subtaskCount}
           />
         )}
 
         <TaskCardFooter
           dueDate={task.dueDate}
-          commentCount={task.commentCount}
-          attachmentCount={task.attachmentCount}
-          assignee={task.assignee}
+          commentCount={task.commentCount ?? 0}
+          attachmentCount={task.attachmentCount ?? 0}
+          assignee={task.assignee ?? null}
         />
       </div>
     </div>

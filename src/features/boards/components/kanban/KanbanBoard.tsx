@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 import { Plus } from "lucide-react";
+import {
+  horizontalListSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable";
 import type { BoardState } from "../../types";
 import EmptyBoard from "../empty-states/EmptyBoard";
 import { Button } from "@/components/ui/button";
@@ -32,7 +36,12 @@ export function KanbanBoard({
           <EmptyBoard onAddColumn={onAddColumn} />
         ) : (
           <>
-            {children}
+            <SortableContext
+              items={boardState.columnOrder}
+              strategy={horizontalListSortingStrategy}
+            >
+              {children}
+            </SortableContext>
             <Button
               variant="dashed"
               size="lg"

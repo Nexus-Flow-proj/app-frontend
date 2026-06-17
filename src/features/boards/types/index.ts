@@ -1,12 +1,14 @@
-// features/boards/types/index.ts
+import type { User } from "@/types/models/user";
+import type { TaskPriority, TaskSource, TaskStatus } from "./enums";
 
-export type Priority = "low" | "medium" | "high" | "urgent";
+export type Priority = TaskPriority;
 export type ColumnId = string;
 export type TaskId = string;
 
 export interface BoardMember {
   id: string;
   name: string;
+  avatar?: string;
   avatarUrl?: string;
   isActive?: boolean;
 }
@@ -14,30 +16,45 @@ export interface BoardMember {
 export interface BoardColumn {
   id: ColumnId;
   projectId: string;
-  title: string;
-  sort_order: number;
-  taskIds: TaskId[];
+  name: string;
+  sortOrder: number;
+  isProtected: boolean;
+  createdAt: string;
   color?: string;
-  isProtected?: boolean;
 }
 
 export interface Task {
   id: TaskId;
-  columnId: ColumnId;
   projectId: string;
+  createdBy: string;
   title: string;
-  description: string;
+  description?: string;
+  status: TaskStatus;
   priority: Priority;
-  sort_order?: number;
-  assignee: BoardMember | null;
   dueDate?: string;
-  subtaskCount: number;
-  completedSubtaskCount: number;
-  commentCount: number;
-  attachmentCount: number;
-  tags: string[];
+  durationMin?: number;
+  boardColumnId?: ColumnId;
+  columnOrder: number;
+  source: TaskSource;
   createdAt: string;
-  updatedAt: string;
+  assignee?: BoardMember | null;
+  subtaskCount?: number;
+  completedSubtaskCount?: number;
+  commentCount?: number;
+  attachmentCount?: number;
+  tags?: string[];
+  updatedAt?: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  taskId: TaskId;
+  name: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  uploadedBy: Pick<User, "id" | "name" | "avatar">;
+  createdAt: string;
 }
 
 export interface Subtask {
@@ -45,21 +62,28 @@ export interface Subtask {
   taskId: TaskId;
   title: string;
   completed: boolean;
-  sort_order: number;
+  assigneeId?: string;
+  assignee?: Pick<User, "id" | "name" | "avatar">;
+  dueDate?: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Comment {
   id: string;
   taskId: TaskId;
-  author: BoardMember;
+  authorId?: string;
+  author: BoardMember | Pick<User, "id" | "name" | "avatar">;
   content: string;
+  editedAt?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface ActivityEvent {
   id: string;
-  actor: BoardMember;
+  actor: BoardMember | Pick<User, "id" | "name" | "avatar">;
   action: string;
   createdAt: string;
 }
@@ -68,23 +92,26 @@ export interface TaskDetail extends Task {
   subtasks: Subtask[];
   comments: Comment[];
   activityLog: ActivityEvent[];
+  attachments?: TaskAttachment[];
 }
 
 export interface BoardState {
   columns: Record<ColumnId, BoardColumn>;
-  tasks: Record<TaskId, Task>;
+  tasks: Record<ColumnId, Task[]>;
+  taskIdsByColumn?: Record<ColumnId, TaskId[]>;
   columnOrder: ColumnId[];
 }
 
 export interface MoveTaskDto {
   taskId: TaskId;
+  sourceColumnId: ColumnId;
   targetColumnId: ColumnId;
-  newSortOrder: number;
+  newPositionFloat: number;
 }
 
 export interface MoveColumnDto {
   columnId: ColumnId;
-  newSortOrder: number;
+  newPositionFloat: number;
 }
 
 export interface CreateTaskDto {
@@ -111,7 +138,18 @@ export interface CreateCommentDto {
   content: string;
 }
 
-// Filter state lives in Zustand (UI only) + synced to URL via useSearchParams
+export type MoveTaskFn = (
+  taskId: TaskId,
+  sourceColId: ColumnId,
+  targetColId: ColumnId,
+  newPositionFloat: number,
+) => void;
+
+export type MoveColumnFn = (
+  columnId: ColumnId,
+  newPositionFloat: number,
+) => void;
+
 export interface BoardFiltersState {
   search: string;
   priorities: Priority[];

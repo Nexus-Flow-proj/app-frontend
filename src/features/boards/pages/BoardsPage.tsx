@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from "react";
 import { useParams } from "react-router";
+import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 
 import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
@@ -25,6 +26,8 @@ import {
   MOCK_TASK_DETAIL,
 } from "../data/mock-data";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
+import TaskCard from "../components/kanban/task-card";
+import { useBoardDnd } from "../hooks/useBoardDnd";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 function BoardsPage() {
@@ -38,9 +41,21 @@ function BoardsPage() {
   const [activeTask, setActiveTask] = useState<TaskDetail | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
 
-  // TODO merge day: replace with Dev 3's hooks
-  const boardState = MOCK_BOARD;
+  const [boardState, setBoardState] = useState(MOCK_BOARD);
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+  const boardDnd = useBoardDnd({
+    boardState,
+    setBoardState,
+    onMoveTask: (taskId, sourceColId, targetColId, newPositionFloat) =>
+      console.log("move task", {
+        taskId,
+        sourceColId,
+        targetColId,
+        newPositionFloat,
+      }),
+    onMoveColumn: (columnId, newPositionFloat) =>
+      console.log("move column", { columnId, newPositionFloat }),
+  });
 
   const handleCardClick = useCallback((task: Task) => {
     setDrawerOpen(true);
@@ -101,20 +116,33 @@ function BoardsPage() {
 
       {/* ── Board ── */}
       {/* TODO merge day (Dev 1): wrap the children below with DndContext + DragOverlay */}
-      <KanbanBoard
-        boardState={boardState}
-        onAddColumn={() => console.log("add column")}
+      <DndContext
+        sensors={boardDnd.sensors}
+        collisionDetection={closestCorners}
+        onDragStart={boardDnd.handleDragStart}
+        onDragEnd={boardDnd.handleDragEnd}
       >
-        {boardState.columnOrder.map((columnId) => (
-          <KanbanBoardColumn
-            key={columnId}
-            columnId={columnId}
-            boardState={boardState}
-            onCardClick={handleCardClick}
-            onAddTask={(colId) => console.log("add task to", colId)}
-          />
-        ))}
-      </KanbanBoard>
+        <KanbanBoard
+          boardState={boardState}
+          onAddColumn={() => console.log("add column")}
+        >
+          {boardState.columnOrder.map((columnId) => (
+            <KanbanBoardColumn
+              key={columnId}
+              columnId={columnId}
+              boardState={boardState}
+              onCardClick={handleCardClick}
+              onAddTask={(colId) => console.log("add task to", colId)}
+            />
+          ))}
+        </KanbanBoard>
+
+        <DragOverlay>
+          {boardDnd.activeTask ? (
+            <TaskCard task={boardDnd.activeTask} isOverlay />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* ── Drawer ── */}
       <TaskDetailDrawer

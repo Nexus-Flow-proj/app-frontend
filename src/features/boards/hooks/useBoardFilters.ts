@@ -1,11 +1,12 @@
 // features/boards/hooks/useBoardFilters.ts
 // Dev 4 — filter state synced between Zustand (UI) and URL (useSearchParams).
-// RULE: filters only HIDE cards visually — never mutate sort_order arrays.
+// RULE: filters only HIDE cards visually — never mutate columnOrder arrays.
 
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { isPast, isToday, endOfWeek, isBefore } from "date-fns";
-import type { Task, BoardFiltersState, Priority } from "../types";
+import type { Task, BoardFiltersState } from "../types";
+import type { TaskPriority } from "../types/enums";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -16,7 +17,7 @@ export function useUrlFilters(): BoardFiltersState {
     () => ({
       search: params.get("search") ?? "",
       priorities: (params.get("priority")?.split(",").filter(Boolean) ??
-        []) as Priority[],
+        []) as TaskPriority[],
       assigneeIds: params.get("assignee")?.split(",").filter(Boolean) ?? [],
       dueDateRange:
         (params.get("due") as BoardFiltersState["dueDateRange"]) ?? null,
@@ -36,29 +37,30 @@ export function useSetUrlFilters() {
         (prev) => {
           const next = new URLSearchParams(prev);
           if (patch.search !== undefined) {
-            patch.search
-              ? next.set("search", patch.search)
-              : next.delete("search");
+            if (patch.search) next.set("search", patch.search);
+            else next.delete("search");
           }
           if (patch.priorities !== undefined) {
-            patch.priorities.length
-              ? next.set("priority", patch.priorities.join(","))
-              : next.delete("priority");
+            if (patch.priorities.length) {
+              next.set("priority", patch.priorities.join(","));
+            } else {
+              next.delete("priority");
+            }
           }
           if (patch.assigneeIds !== undefined) {
-            patch.assigneeIds.length
-              ? next.set("assignee", patch.assigneeIds.join(","))
-              : next.delete("assignee");
+            if (patch.assigneeIds.length) {
+              next.set("assignee", patch.assigneeIds.join(","));
+            } else {
+              next.delete("assignee");
+            }
           }
           if (patch.dueDateRange !== undefined) {
-            patch.dueDateRange
-              ? next.set("due", patch.dueDateRange)
-              : next.delete("due");
+            if (patch.dueDateRange) next.set("due", patch.dueDateRange);
+            else next.delete("due");
           }
           if (patch.showOnlyMyTasks !== undefined) {
-            patch.showOnlyMyTasks
-              ? next.set("myTasks", "true")
-              : next.delete("myTasks");
+            if (patch.showOnlyMyTasks) next.set("myTasks", "true");
+            else next.delete("myTasks");
           }
           return next;
         },
@@ -127,19 +129,17 @@ export function taskMatchesFilters(
   return true;
 }
 
-// ─── Filtered task IDs for one column — preserves sort_order order ────────────
-export function useFilteredTaskIds(
-  taskIds: string[],
-  tasks: Record<string, Task>,
+// ─── Filtered tasks for one column — preserves columnOrder order ─────────────
+export function useFilteredTasks(
+  tasks: Task[],
   currentUserId: string,
-): string[] {
+): Task[] {
   const filters = useUrlFilters();
   return useMemo(
     () =>
-      taskIds.filter((id) => {
-        const task = tasks[id];
-        return task ? taskMatchesFilters(task, filters, currentUserId) : false;
-      }),
-    [taskIds, tasks, filters, currentUserId],
+      tasks.filter((task) =>
+        taskMatchesFilters(task, filters, currentUserId),
+      ),
+    [tasks, filters, currentUserId],
   );
 }

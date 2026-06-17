@@ -1,4 +1,8 @@
 import { FolderX, Plus } from "lucide-react";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +17,9 @@ import { cn } from "@/lib/utils";
 import { COLUMN_ACCENT_COLORS, PROTECTED_COLUMNS } from "../../../constants";
 import {
   useUrlFilters,
-  useFilteredTaskIds,
+  useFilteredTasks,
 } from "../../../hooks/useBoardFilters";
+import { useSortableColumn } from "../../../hooks/useSortableColumn";
 import type { BoardState, Task } from "../../../types";
 import { CURRENT_USER } from "../../../data/mock-data";
 import KanbanColumnActionsMenu from "./ColumnActionsMenu";
@@ -41,24 +46,28 @@ function KanbanBoardColumn({
   isOver = false,
 }: KanbanBoardColumnProps) {
   const column = boardState.columns[columnId];
+  const tasks = boardState.tasks[columnId] ?? [];
   const filters = useUrlFilters();
-  const filteredIds = useFilteredTaskIds(
-    column.taskIds,
-    boardState.tasks,
-    CURRENT_USER.id,
-  );
+  const filteredTasks = useFilteredTasks(tasks, CURRENT_USER.id);
+  const { attributes, listeners, setNodeRef, style } =
+    useSortableColumn(column);
 
   const accentColor =
-    column.color ?? COLUMN_ACCENT_COLORS[column.title] ?? "var(--primary)";
-  const isProtected = PROTECTED_COLUMNS.includes(column.title);
-  const isFiltered = column.taskIds.length !== filteredIds.length;
+    column.color ?? COLUMN_ACCENT_COLORS[column.name] ?? "var(--primary)";
+  const isProtected =
+    column.isProtected || PROTECTED_COLUMNS.includes(column.name);
+  const isFiltered = tasks.length !== filteredTasks.length;
   const hasActiveFilters = Object.values(filters).some((value) =>
     Array.isArray(value) ? value.length : value,
   );
 
   return (
-    <Card className="h-full w-68">
-      <CardHeader className="gap-0 pt-3 pb-2 px-3">
+    <Card ref={setNodeRef} style={style} className=" w-68">
+      <CardHeader
+        className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
         <div className="min-w-0">
           <div
             className="h-0.5 w-7 rounded-full mb-3 opacity-90"
@@ -67,7 +76,7 @@ function KanbanBoardColumn({
 
           <div className="flex items-center gap-2 min-w-0">
             <CardTitle className="text-[14px] font-semibold truncate">
-              {column.title}
+              {column.name}
             </CardTitle>
             <Badge
               variant="outline"
@@ -76,8 +85,8 @@ function KanbanBoardColumn({
               className="font-semibold tabular-nums"
             >
               {isFiltered
-                ? `${filteredIds.length}/${column.taskIds.length}`
-                : filteredIds.length}
+                ? `${filteredTasks.length}/${tasks.length}`
+                : filteredTasks.length}
             </Badge>
           </div>
         </div>
@@ -99,7 +108,7 @@ function KanbanBoardColumn({
           isOver && "bg-primary/3",
         )}
       >
-        {filteredIds.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           hasActiveFilters ? (
             <MyEmpty
               title="No tasks match filters"
@@ -114,14 +123,17 @@ function KanbanBoardColumn({
             />
           )
         ) : (
-          filteredIds.map((taskId) => {
-            const task = boardState.tasks[taskId];
-            if (!task) return null;
-            return <TaskCard key={task.id} task={task} onClick={onCardClick} />;
-          })
+          <SortableContext
+            items={filteredTasks.map((task) => task.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {filteredTasks.map((task) => (
+              <TaskCard key={task.id} task={task} onClick={onCardClick} />
+            ))}
+          </SortableContext>
         )}
 
-        {isOver && filteredIds.length === 0 && (
+        {isOver && filteredTasks.length === 0 && (
           <div className="flex-1 rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center min-h-15">
             <p className="text-xs text-primary/40">Drop here</p>
           </div>

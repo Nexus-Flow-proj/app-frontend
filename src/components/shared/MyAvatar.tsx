@@ -7,7 +7,7 @@ interface MyAvatarProps {
 }
 
 function MyAvatar({ name, avatarUrl, isActive }: MyAvatarProps) {
-  const initials = name
+  const charactersName = name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -17,7 +17,7 @@ function MyAvatar({ name, avatarUrl, isActive }: MyAvatarProps) {
   return (
     <Avatar size="sm">
       <AvatarImage src={avatarUrl} alt={name} />
-      <AvatarFallback>{initials}</AvatarFallback>
+      <AvatarFallback>{charactersName}</AvatarFallback>
       {isActive && <AvatarBadge className="bg-green-600 dark:bg-green-800" />}
     </Avatar>
   );

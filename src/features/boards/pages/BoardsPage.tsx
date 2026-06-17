@@ -26,10 +26,8 @@ import {
 } from "../data/mock-data";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 
-// ─── Filtered column ──────────────────────────────────────────────────────────
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function BoardsPage() {
+function BoardsPage() {
   const { id: projectId } = useParams<{ id: string }>();
   const filters = useUrlFilters();
   const setFilters = useSetUrlFilters();
@@ -145,3 +143,5 @@ export default function BoardsPage() {
     </div>
   );
 }
+
+export default BoardsPage;

@@ -1,5 +1,4 @@
-import { Navigate, Outlet } from "react-router";
-import { useAuthStore } from "@/store";
+import { Outlet } from "react-router";
 
 export function GuestGuard() {
   // const isAuthenticated = useAuthStore((s) => s.isAuthenticated);

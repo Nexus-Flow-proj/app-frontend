@@ -1,5 +1,4 @@
-import { Navigate, Outlet } from "react-router";
-import { useProjectStore } from "@/store";
+import { Outlet } from "react-router";
 
 export function AdminGuard() {
   // const isAdmin = useProjectStore((s) => s.isAdmin);

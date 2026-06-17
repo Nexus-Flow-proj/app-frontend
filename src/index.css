@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@plugin "tailwind-scrollbar";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -185,5 +186,16 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar {
+    /* scrollbar-gutter: stable; */
+    @apply scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border;
+  }
+
+  .custom-scrollbar:hover {
+    @apply scrollbar-thumb-muted-foreground/30;
   }
 }

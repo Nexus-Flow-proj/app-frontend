@@ -112,46 +112,45 @@ const router = createBrowserRouter([
             path: "/projects/new",
             element: <WithSuspense Component={ProjectPages.Create} />,
           },
+        ],
+      },
 
-          // ── Project-scoped pages ────────────────────────────────────────
-          // ProjectLayout loads project + members into store before children render.
-          // This means AdminGuard / MemberGuard always have role data available.
+      // ── Project-scoped pages ────────────────────────────────────────
+      // ProjectLayout loads project + members into store before children render.
+      // This means AdminGuard / MemberGuard always have role data available.
+      {
+        path: "/projects/:id",
+        children: [
           {
-            path: "/projects/:id",
-            // element: <ProjectLayout />,
+            // Admin-only pages
+            element: <AdminGuard />,
             children: [
               {
-                // Admin-only pages
-                element: <AdminGuard />,
-                children: [
-                  {
-                    path: "workshop",
-                    element: (
-                      <WithSuspense Component={WorkshopPages.MainWorkshop} />
-                    ),
-                  },
-                  {
-                    path: "settings",
-                    element: <WithSuspense Component={ProjectPages.Settings} />,
-                  },
-                ],
+                path: "workshop",
+                element: (
+                  <WithSuspense Component={WorkshopPages.MainWorkshop} />
+                ),
               },
-
-              // Member routes
               {
-                element: <MemberGuard />,
-                children: [
-                  {
-                    path: "boards",
-                    element: <WithSuspense Component={BoardPages.TeamBoard} />,
-                  },
-                  {
-                    path: "my-workspace",
-                    element: (
-                      <WithSuspense Component={WorkshopPages.MiniWorkshop} />
-                    ),
-                  },
-                ],
+                path: "settings",
+                element: <WithSuspense Component={ProjectPages.Settings} />,
+              },
+            ],
+          },
+
+          // Member routes
+          {
+            element: <MemberGuard />,
+            children: [
+              {
+                path: "boards",
+                element: <WithSuspense Component={BoardPages.TeamBoard} />,
+              },
+              {
+                path: "my-workspace",
+                element: (
+                  <WithSuspense Component={WorkshopPages.MiniWorkshop} />
+                ),
               },
             ],
           },

@@ -1,50 +1,58 @@
 import { BASE_URL } from "@/constants/BackendApisConfig";
+import { useAuthStore } from "@/store";
+import type { ApiError } from "@/types";
 import axios, {
+  type AxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios";
 
-// ─── CSRF Token Reader ────────────────────────────────────────────────────────
-// The backend sets a JS-readable cookie named "csrf-token" (not HTTP-only).
-// We read it and send it as a header so the server can verify the request
-// originated from our app, not a cross-site form or link.
 function getCsrfToken(): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
   const match = document.cookie
     .split("; ")
-    .find((row) => row.startsWith("csrf-token="));
+    .find((row) => row.startsWith("csrf_token="));
+
   return match ? decodeURIComponent(match.split("=")[1]) : null;
 }
 
 const SAFE_METHODS = new Set(["get", "head", "options"]);
 
-// ─── Axios Instance ───────────────────────────────────────────────────────────
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // sends the HTTP-only JWT cookie automatically
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// ─── Request Interceptor — attach CSRF token on mutating requests ─────────────
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const method = config.method?.toLowerCase() ?? "get";
+
     if (!SAFE_METHODS.has(method)) {
       const csrf = getCsrfToken();
       if (csrf && config.headers) {
-        config.headers["X-CSRF-Token"] = csrf;
+        config.headers["x-csrf-token"] = csrf;
       }
     }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// ─── Response Interceptor — handle 401 globally ───────────────────────────────
+type RetryableRequestConfig = AxiosRequestConfig & {
+  _retry?: boolean;
+  _csrfRetry?: boolean;
+};
+
 let isRefreshing = false;
 let refreshQueue: Array<{
   resolve: () => void;
@@ -59,17 +67,55 @@ function processQueue(error: unknown): void {
   refreshQueue = [];
 }
 
+function normalizeApiError(error: AxiosError<ApiError>): ApiError {
+  const statusCode = error.response?.status ?? error.response?.data?.statusCode ?? 500;
+  const responseMessage = error.response?.data?.message;
+
+  const message =
+    responseMessage ??
+    (statusCode === 409
+      ? "This email is already in use."
+      : statusCode === 429
+        ? "Too many attempts. Please wait a few minutes before trying again."
+        : statusCode === 403
+          ? "Your session token expired. Please retry the action."
+          : error.message ?? "Something went wrong");
+
+  return {
+    message,
+    statusCode,
+    errors: error.response?.data?.errors,
+  };
+}
+
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
-  async (error) => {
-    const originalRequest = error.config as AxiosRequestConfig & {
-      _retry?: boolean;
-    };
+  async (error: AxiosError<ApiError>) => {
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
 
-    const is401 = error.response?.status === 401;
+    if (!originalRequest) {
+      return Promise.reject(normalizeApiError(error));
+    }
+
+    const status = error.response?.status;
+    const method = originalRequest.method?.toLowerCase() ?? "get";
+    const isMutatingRequest = !SAFE_METHODS.has(method);
     const isRefreshEndpoint = originalRequest.url?.includes("/auth/refresh");
 
-    if (is401 && !originalRequest._retry && !isRefreshEndpoint) {
+    if (status === 403 && isMutatingRequest && !originalRequest._csrfRetry) {
+      originalRequest._csrfRetry = true;
+      const csrf = getCsrfToken();
+
+      if (csrf) {
+        originalRequest.headers = {
+          ...originalRequest.headers,
+          "x-csrf-token": csrf,
+        };
+        return api(originalRequest);
+      }
+    }
+
+    if (status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
       if (isRefreshing) {
         return new Promise<void>((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
@@ -82,22 +128,23 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // The server rotates both the access + refresh HTTP-only cookies
-        // and issues a fresh CSRF token cookie in this response.
         await api.post("/auth/refresh");
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
+        useAuthStore.getState().logout();
+
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(normalizeApiError(error));
   },
 );

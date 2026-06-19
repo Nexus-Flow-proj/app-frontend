@@ -1,7 +1,11 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
-import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormValues,
@@ -9,33 +13,44 @@ import {
 import { useForgotPassword } from "../hooks";
 
 export function ForgotPasswordForm() {
-  const { mutate: forgotPassword, isPending, isSuccess } = useForgotPassword();
+  const { mutate: forgotPassword, isPending, isSuccess, error } = useForgotPassword();
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
+  useEffect(() => {
+    const emailErrors = error?.errors?.email;
+    if (emailErrors?.[0]) {
+      setError("email", {
+        message: emailErrors[0],
+        type: "server",
+      });
+    }
+  }, [error, setError]);
+
   if (isSuccess) {
     return (
-      <div className="text-center space-y-4">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100">
-          <CheckCircle2 className="size-6 text-emerald-600" />
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-400/15">
+          <CheckCircle2 className="size-6 text-emerald-300" />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold text-foreground">
             Check your email
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            We sent a reset link to your inbox. It expires in 15 minutes.
+          <p className="mt-1 text-sm text-muted-foreground">
+            We sent a reset link to your inbox. It expires soon.
           </p>
         </div>
         <Link
           to="/login"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <ArrowLeft className="size-3.5" />
           Back to sign in
@@ -50,39 +65,45 @@ export function ForgotPasswordForm() {
       className="space-y-5"
     >
       <div className="space-y-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-slate-700">
+        <Label htmlFor="email" className="text-sm font-medium text-foreground">
           Email address
-        </label>
+        </Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-          <input
+          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
             id="email"
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
             disabled={isPending}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+            aria-invalid={!!errors.email}
+            className="h-9 bg-background pl-10"
             {...register("email")}
           />
         </div>
         {errors.email && (
-          <p className="text-xs text-red-600">{errors.email.message}</p>
+          <p className="text-xs text-destructive">{errors.email.message}</p>
         )}
       </div>
 
-      <button
+      {error?.statusCode === 429 && (
+        <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
+          Too many reset requests. Please wait before trying again.
+        </p>
+      )}
+
+      <Button
         type="submit"
-        disabled={isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        isLoading={isPending}
+        className="h-9 w-full font-bold shadow-sm shadow-primary/20"
       >
-        {isPending && <Loader2 className="size-4 animate-spin" />}
-        {isPending ? "Sending…" : "Send reset link"}
-      </button>
+        Send reset link
+      </Button>
 
       <div className="text-center">
         <Link
           to="/login"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" />
           Back to sign in

@@ -3,12 +3,9 @@ import type { User } from "@/types";
 // ─── Response shapes ──────────────────────────────────────────────────────────
 export interface AuthResponseData {
   user: User;
-  accessToken: string;
 }
 
-export interface RefreshResponseData {
-  accessToken: string;
-}
+export type RefreshResponseData = null;
 
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
 export interface LoginDto {
@@ -17,9 +14,13 @@ export interface LoginDto {
 }
 
 export interface RegisterDto {
-  name: string;
+  username?: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
+  confirmPassword: string;
+  preference?: string;
 }
 
 export interface ForgotPasswordDto {
@@ -28,6 +29,6 @@ export interface ForgotPasswordDto {
 
 export interface ResetPasswordDto {
   token: string;
-  password: string;
+  newPassword: string;
   confirmPassword: string;
 }

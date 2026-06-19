@@ -16,9 +16,10 @@ export function useLogin() {
     showSuccessToast: false,
     onSuccess: (res) => {
       const { user } = res.data;
+      const displayName = user.name ?? user.firstName ?? "there";
       setAuth(user);
       queryClient.setQueryData(QUERY_KEYS.auth.me, res);
-      toast.success(`Welcome back, ${user.name}!`);
+      toast.success(`Welcome back, ${displayName}!`);
       navigate("/dashboard", { replace: true });
     },
   });

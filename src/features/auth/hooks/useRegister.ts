@@ -16,6 +16,7 @@ export function useRegister() {
       onSuccess: (res) => {
         const { user } = res.data;
         setAuth(user);
+        // Cookies carry auth credentials; the store only hydrates display/user state.
         toast.success("Account created! Welcome to Nexus-Flow.");
         navigate("/dashboard", { replace: true });
       },

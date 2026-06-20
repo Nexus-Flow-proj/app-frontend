@@ -4,11 +4,11 @@
 // TODO merge day: replace MOCK_* with Dev 3's hooks (useBoardColumns, useTasksByColumn, useMoveTask).
 // TODO merge day: wrap KanbanBoard children with DndContext + DragOverlay from Dev 1.
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
 import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
-import { KanbanBoard } from "../components/kanban/KanbanBoard";
 
+import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
 import { BoardFilters } from "../components/Topbar/BoardFilters";
 import { BoardSearchBar } from "../components/Topbar/BoardSearchBar";
@@ -18,7 +18,9 @@ import {
   useResetUrlFilters,
   useActiveFilterCount,
 } from "../hooks/useBoardFilters";
-import type { Task, TaskDetail } from "../types";
+import { useBoardDnd } from "../hooks/useBoardDnd";
+import { useTaskDatail } from "../hooks/useTaskDatail";
+import type { Task } from "../types";
 import {
   CURRENT_USER,
   MOCK_BOARD,
@@ -27,22 +29,22 @@ import {
 } from "../data/mock-data";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
-import { useBoardDnd } from "../hooks/useBoardDnd";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 function BoardsPage() {
   const { id: projectId } = useParams<{ id: string }>();
+
+  // ── filters (URL-driven) ──────────────────────────────────────────────────
   const filters = useUrlFilters();
   const setFilters = useSetUrlFilters();
   const resetFilters = useResetUrlFilters();
   const activeCount = useActiveFilterCount();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTask, setActiveTask] = useState<TaskDetail | null>(null);
-  const [drawerLoading, setDrawerLoading] = useState(false);
-
+  // ── board state ───────────────────────────────────────────────────────────
   const [boardState, setBoardState] = useState(MOCK_BOARD);
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+
+  // ── drag-and-drop ─────────────────────────────────────────────────────────
   const boardDnd = useBoardDnd({
     boardState,
     setBoardState,
@@ -51,27 +53,37 @@ function BoardsPage() {
         taskId,
         sourceColId,
         targetColId,
-        newPositionFloat,
+        newPositionFloat
       }),
     onMoveColumn: (columnId, newPositionFloat) =>
       console.log("move column", { columnId, newPositionFloat }),
   });
 
-  const handleCardClick = useCallback((task: Task) => {
-    setDrawerOpen(true);
-    setDrawerLoading(true);
-    setTimeout(() => {
-      setActiveTask(
-        MOCK_TASK_DETAIL[task.id] ?? {
-          ...task,
+  // ── drawer (all detail logic lives here) ──────────────────────────────────
+  const drawer = useTaskDatail({
+    boardState,
+    setBoardState,
+    currentUser: CURRENT_USER,
+    // TODO merge day: replace with real fetch, e.g.:
+    //   fetchTaskDetail: (id) => api.tasks.getDetail(id),
+    fetchTaskDetail: async (taskId) => {
+      // simulate network latency
+      await new Promise((r) => setTimeout(r, 250));
+      const card = Object.values(boardState.tasks)
+        .flat()
+        .find((t) => t.id === taskId);
+      return (
+        MOCK_TASK_DETAIL[taskId] ?? {
+          ...card!,
           subtasks: [],
           comments: [],
           activityLog: [],
-        },
+        }
       );
-      setDrawerLoading(false);
-    }, 250);
-  }, []);
+    },
+  });
+
+  const handleCardClick = (task: Task) => drawer.openDrawer(task);
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
@@ -79,9 +91,7 @@ function BoardsPage() {
       <header className="border-b border-border shrink-0">
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
           <div className="flex items-center gap-1.5">
-            <h1 className="text-sm font-semibold text-foreground">
-              Team Board
-            </h1>
+            <h1 className="text-sm font-semibold text-foreground">Team Board</h1>
             <span className="text-xs text-muted-foreground">— {projectId}</span>
           </div>
 
@@ -105,7 +115,7 @@ function BoardsPage() {
             <div className="w-px h-5 bg-border" />
             <button
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary text-primary-foreground
-                         text-xs font-medium hover:bg-primary/90 transition-colors"
+                        text-xs font-medium hover:bg-primary/90 transition-colors"
               onClick={() => console.log("add column")}
             >
               + Add column
@@ -115,7 +125,6 @@ function BoardsPage() {
       </header>
 
       {/* ── Board ── */}
-      {/* TODO merge day (Dev 1): wrap the children below with DndContext + DragOverlay */}
       <DndContext
         sensors={boardDnd.sensors}
         collisionDetection={closestCorners}
@@ -146,30 +155,15 @@ function BoardsPage() {
 
       {/* ── Drawer ── */}
       <TaskDetailDrawer
-        task={activeTask}
+        {...drawer.drawerProps}
         columns={columns}
         members={MOCK_MEMBERS}
         currentUser={CURRENT_USER}
-        isOpen={drawerOpen}
-        isLoading={drawerLoading}
-        onClose={() => setDrawerOpen(false)}
-        onUpdatePriority={(taskId, priority) =>
-          console.log("priority", taskId, priority)
-        }
-        onUpdateAssignee={(taskId, id) => console.log("assignee", taskId, id)}
-        onUpdateDueDate={(taskId, date) => console.log("due", taskId, date)}
-        onMoveToColumn={(taskId, colId) =>
-          console.log("move", taskId, "→", colId)
-        }
-        onToggleSubtask={(subtaskId, done) =>
-          console.log("subtask", subtaskId, done)
-        }
-        onAddSubtask={(title) => console.log("add subtask", title)}
-        onDeleteSubtask={(subtaskId) => console.log("del subtask", subtaskId)}
-        onAddComment={(content) => console.log("comment", content)}
       />
     </div>
   );
 }
 
 export default BoardsPage;
+
+

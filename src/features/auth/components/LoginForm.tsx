@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
 import { Mail, Lock } from "lucide-react";
-import { BASE_URL } from "@/constants/BackendApisConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,8 @@ import { loginSchema, type LoginFormValues } from "../validation";
 import { useLogin } from "../hooks";
 import { Badge } from "@/components/ui/badge";
 import MySeparator from "@/components/shared/MySeparator";
+import { handleGoogleLogin } from "../utils/googleLogin";
+import AuthErrorMessage from "./AuthErrorMessage";
 
 export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
@@ -19,16 +20,6 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
-
-  const serverMessages = Array.isArray(error?.message)
-    ? error.message
-    : error?.message
-      ? [error.message]
-      : [];
-
-  function handleGoogleLogin() {
-    window.location.href = `${BASE_URL}/auth/google`;
-  }
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
@@ -107,19 +98,7 @@ export function LoginForm() {
         )}
       </div>
 
-      {error?.statusCode === 429 && (
-        <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
-          Too many attempts. Please wait a few minutes before trying again.
-        </p>
-      )}
-
-      {error && error.statusCode !== 429 && serverMessages.length > 0 && (
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-          {serverMessages.map((message) => (
-            <p key={message}>{message}</p>
-          ))}
-        </div>
-      )}
+      <AuthErrorMessage error={error} />
 
       <Button
         type="submit"

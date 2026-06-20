@@ -10,9 +10,15 @@ import {
   type ForgotPasswordFormValues,
 } from "../validation";
 import { useForgotPassword } from "../hooks";
+import AuthErrorMessage from "./AuthErrorMessage";
 
 export function ForgotPasswordForm() {
-  const { mutate: forgotPassword, isPending, isSuccess, error } = useForgotPassword();
+  const {
+    mutate: forgotPassword,
+    isPending,
+    isSuccess,
+    error,
+  } = useForgotPassword();
 
   const {
     register,
@@ -21,12 +27,6 @@ export function ForgotPasswordForm() {
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
   });
-
-  const serverMessages = Array.isArray(error?.message)
-    ? error.message
-    : error?.message
-      ? [error.message]
-      : [];
 
   if (isSuccess) {
     return (
@@ -80,19 +80,7 @@ export function ForgotPasswordForm() {
         )}
       </div>
 
-      {error?.statusCode === 429 && (
-        <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
-          Too many reset requests. Please wait before trying again.
-        </p>
-      )}
-
-      {error && error.statusCode !== 429 && serverMessages.length > 0 && (
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-          {serverMessages.map((message) => (
-            <p key={message}>{message}</p>
-          ))}
-        </div>
-      )}
+      <AuthErrorMessage error={error} />
 
       <Button
         type="submit"

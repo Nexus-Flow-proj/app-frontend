@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { registerSchema, type RegisterFormValues } from "../validation";
 import { useRegister } from "../hooks";
+import AuthErrorMessage from "./AuthErrorMessage";
 
 export function RegisterForm() {
   const { mutate: register_, isPending, error } = useRegister();
@@ -31,12 +32,6 @@ export function RegisterForm() {
     },
   });
 
-  const serverMessages = Array.isArray(error?.message)
-    ? error.message
-    : error?.message
-      ? [error.message]
-      : [];
-
   function handleGoogleSignup() {
     window.location.href = `${BASE_URL}/auth/google`;
   }
@@ -55,7 +50,10 @@ export function RegisterForm() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="username" className="text-xs font-bold text-foreground">
+          <Label
+            htmlFor="username"
+            className="text-xs font-bold text-foreground"
+          >
             Username <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
@@ -73,7 +71,10 @@ export function RegisterForm() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="firstName" className="text-xs font-bold text-foreground">
+            <Label
+              htmlFor="firstName"
+              className="text-xs font-bold text-foreground"
+            >
               First Name <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
@@ -89,12 +90,17 @@ export function RegisterForm() {
               />
             </div>
             {errors.firstName && (
-              <p className="text-xs text-destructive">{errors.firstName.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="lastName" className="text-xs font-bold text-foreground">
+            <Label
+              htmlFor="lastName"
+              className="text-xs font-bold text-foreground"
+            >
               Last Name <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
@@ -110,7 +116,9 @@ export function RegisterForm() {
               />
             </div>
             {errors.lastName && (
-              <p className="text-xs text-destructive">{errors.lastName.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
         </div>
@@ -144,14 +152,14 @@ export function RegisterForm() {
           {errors.email && (
             <p className="text-xs text-destructive">{errors.email.message}</p>
           )}
-          {error?.statusCode === 409 && (
-            <p className="text-xs text-destructive">This email is already in use.</p>
-          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-xs font-bold text-foreground">
+            <Label
+              htmlFor="password"
+              className="text-xs font-bold text-foreground"
+            >
               Password <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
@@ -169,12 +177,17 @@ export function RegisterForm() {
               <Eye className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             </div>
             {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-xs font-bold text-foreground">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-xs font-bold text-foreground"
+            >
               Confirm Password <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
@@ -192,7 +205,9 @@ export function RegisterForm() {
               <Eye className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             </div>
             {errors.confirmPassword && (
-              <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
         </div>
@@ -210,7 +225,10 @@ export function RegisterForm() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="preference" className="text-xs font-bold text-foreground">
+          <Label
+            htmlFor="preference"
+            className="text-xs font-bold text-foreground"
+          >
             User Preference
           </Label>
           <div className="relative">
@@ -226,19 +244,7 @@ export function RegisterForm() {
         </div>
       </fieldset>
 
-      {error?.statusCode === 429 && (
-        <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
-          Too many signup attempts. Please wait a few minutes before trying again.
-        </p>
-      )}
-
-      {error && error.statusCode !== 409 && error.statusCode !== 429 && serverMessages.length > 0 && (
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-          {serverMessages.map((message) => (
-            <p key={message}>{message}</p>
-          ))}
-        </div>
-      )}
+      <AuthErrorMessage error={error} />
 
       <Button
         type="submit"

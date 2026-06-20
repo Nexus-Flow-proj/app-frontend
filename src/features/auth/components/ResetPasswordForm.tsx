@@ -10,6 +10,7 @@ import {
   type ResetPasswordFormValues,
 } from "../validation";
 import { useResetPassword } from "../hooks";
+import AuthErrorMessage from "./AuthErrorMessage";
 
 export function ResetPasswordForm() {
   const [searchParams] = useSearchParams();
@@ -24,12 +25,6 @@ export function ResetPasswordForm() {
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { token, newPassword: "", confirmPassword: "" },
   });
-
-  const serverMessages = Array.isArray(error?.message)
-    ? error.message
-    : error?.message
-      ? [error.message]
-      : [];
 
   if (!token) {
     return (
@@ -63,7 +58,10 @@ export function ResetPasswordForm() {
       <input type="hidden" {...register("token")} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="newPassword" className="text-sm font-medium text-foreground">
+        <Label
+          htmlFor="newPassword"
+          className="text-sm font-medium text-foreground"
+        >
           New password
         </Label>
         <div className="relative">
@@ -80,7 +78,9 @@ export function ResetPasswordForm() {
           />
         </div>
         {errors.newPassword && (
-          <p className="text-xs text-destructive">{errors.newPassword.message}</p>
+          <p className="text-xs text-destructive">
+            {errors.newPassword.message}
+          </p>
         )}
       </div>
 
@@ -104,20 +104,14 @@ export function ResetPasswordForm() {
             {...register("confirmPassword")}
           />
         </div>
-      {errors.confirmPassword && (
-        <p className="text-xs text-destructive">
-          {errors.confirmPassword.message}
-        </p>
-      )}
+        {errors.confirmPassword && (
+          <p className="text-xs text-destructive">
+            {errors.confirmPassword.message}
+          </p>
+        )}
       </div>
 
-      {serverMessages.length > 0 && (
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-          {serverMessages.map((message) => (
-            <p key={message}>{message}</p>
-          ))}
-        </div>
-      )}
+      <AuthErrorMessage error={error} />
 
       <Button
         type="submit"

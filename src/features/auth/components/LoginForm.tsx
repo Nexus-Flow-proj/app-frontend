@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
@@ -7,9 +6,10 @@ import { BASE_URL } from "@/constants/BackendApisConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { loginSchema, type LoginFormValues } from "../validation";
 import { useLogin } from "../hooks";
+import { Badge } from "@/components/ui/badge";
+import MySeparator from "@/components/shared/MySeparator";
 
 export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
@@ -17,51 +17,41 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
-  useEffect(() => {
-    if (!error?.errors) {
-      return;
-    }
-
-    Object.entries(error.errors).forEach(([field, messages]) => {
-      if (field === "email" || field === "password") {
-        setError(field, {
-          message: messages[0],
-          type: "server",
-        });
-      }
-    });
-  }, [error, setError]);
+  const serverMessages = Array.isArray(error?.message)
+    ? error.message
+    : error?.message
+      ? [error.message]
+      : [];
 
   function handleGoogleLogin() {
     window.location.href = `${BASE_URL}/auth/google`;
   }
 
   return (
-    <form onSubmit={handleSubmit((data) => login(data))} className="space-y-4">
-      <div className="space-y-2">
-        <Button
-          type="button"
+    <form onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
+      <Button
+        type="button"
+        variant="secondary"
+        size="lg"
+        onClick={handleGoogleLogin}
+        disabled={isPending}
+        className="w-full font-bold"
+      >
+        <Badge
           variant="outline"
-          onClick={handleGoogleLogin}
-          disabled={isPending}
-          className="h-9 w-full border-border bg-background text-xs font-bold text-foreground shadow-sm hover:bg-muted hover:text-foreground"
+          shape={"circle"}
+          size="xs"
+          className="text-primary font-extrabold border-primary/50"
         >
-          <span className="flex size-5 items-center justify-center rounded-full bg-primary/10 text-sm font-black text-primary">
-            G
-          </span>
-          Login with Google
-        </Button>
-      </div>
+          G
+        </Badge>
+        Login with Google
+      </Button>
 
-      <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
-        <Separator className="flex-1" />
-        <span>Or continue with</span>
-        <Separator className="flex-1" />
-      </div>
+      <MySeparator text="Or continue with" />
 
       <div className="space-y-1.5">
         <Label htmlFor="email" className="text-xs font-bold text-foreground">
@@ -71,7 +61,7 @@ export function LoginForm() {
           <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="email"
-            type="email"
+            type="text"
             autoComplete="email"
             placeholder="m@example.com"
             disabled={isPending}
@@ -87,7 +77,10 @@ export function LoginForm() {
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password" className="text-xs font-bold text-foreground">
+          <Label
+            htmlFor="password"
+            className="text-xs font-bold text-foreground"
+          >
             Password
           </Label>
           <Link
@@ -120,20 +113,22 @@ export function LoginForm() {
         </p>
       )}
 
+      {error && error.statusCode !== 429 && serverMessages.length > 0 && (
+        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+          {serverMessages.map((message) => (
+            <p key={message}>{message}</p>
+          ))}
+        </div>
+      )}
+
       <Button
         type="submit"
         isLoading={isPending}
-        className="h-9 w-full text-xs font-bold shadow-sm shadow-primary/20"
+        size="lg"
+        className="w-full text-xs font-bold"
       >
         Login
       </Button>
-
-      <p className="text-center text-xs font-semibold text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link to="/register" className="text-primary underline underline-offset-2">
-          Sign up
-        </Link>
-      </p>
     </form>
   );
 }

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useSearchParams } from "react-router";
@@ -20,27 +19,17 @@ export function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { token, newPassword: "", confirmPassword: "" },
   });
 
-  useEffect(() => {
-    if (!error?.errors) {
-      return;
-    }
-
-    Object.entries(error.errors).forEach(([field, messages]) => {
-      if (field === "newPassword" || field === "confirmPassword") {
-        setError(field, {
-          message: messages[0],
-          type: "server",
-        });
-      }
-    });
-  }, [error, setError]);
+  const serverMessages = Array.isArray(error?.message)
+    ? error.message
+    : error?.message
+      ? [error.message]
+      : [];
 
   if (!token) {
     return (
@@ -115,12 +104,20 @@ export function ResetPasswordForm() {
             {...register("confirmPassword")}
           />
         </div>
-        {errors.confirmPassword && (
-          <p className="text-xs text-destructive">
-            {errors.confirmPassword.message}
-          </p>
-        )}
+      {errors.confirmPassword && (
+        <p className="text-xs text-destructive">
+          {errors.confirmPassword.message}
+        </p>
+      )}
       </div>
+
+      {serverMessages.length > 0 && (
+        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+          {serverMessages.map((message) => (
+            <p key={message}>{message}</p>
+          ))}
+        </div>
+      )}
 
       <Button
         type="submit"

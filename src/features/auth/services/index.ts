@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import { api } from "@/lib/api/axios";
 import type {
   LoginDto,
   RegisterDto,
@@ -10,7 +10,9 @@ import type {
 import type { ApiResponse, InvitePreview, User } from "@/types";
 
 function normalizeUser(user: User): User {
-  const fallbackName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+  const fallbackName = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .join(" ");
 
   return {
     ...user,

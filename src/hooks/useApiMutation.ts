@@ -5,8 +5,8 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiErrorMessages, getApiMessage } from "../lib/api/Messages";
 
-// ─── Options ──────────────────────────────────────────────────────────────────
 interface ApiMutationOptions<TData, TVariables> extends Omit<
   UseMutationOptions<ApiResponse<TData>, ApiError, TVariables>,
   "mutationFn"
@@ -16,7 +16,6 @@ interface ApiMutationOptions<TData, TVariables> extends Omit<
   showErrorToast?: boolean;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 export function useApiMutation<TData, TVariables>(
   mutationFn: (variables: TVariables) => Promise<ApiResponse<TData>>,
   options?: ApiMutationOptions<TData, TVariables>,
@@ -35,14 +34,16 @@ export function useApiMutation<TData, TVariables>(
 
     onSuccess: (data, variables, context, mutationContext) => {
       if (showSuccessToast) {
-        toast.success(successMessage ?? data.message ?? "Success");
+        toast.success(successMessage ?? getApiMessage(data.message));
       }
       onSuccess?.(data, variables, context, mutationContext);
     },
 
     onError: (error, variables, context, mutationContext) => {
       if (showErrorToast) {
-        toast.error(error.message ?? "Something went wrong");
+        getApiErrorMessages(error).forEach((message) => {
+          toast.error(message);
+        });
       }
       onError?.(error, variables, context, mutationContext);
     },

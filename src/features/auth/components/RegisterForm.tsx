@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
@@ -18,7 +17,6 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -33,26 +31,11 @@ export function RegisterForm() {
     },
   });
 
-  useEffect(() => {
-    if (!error?.errors) {
-      return;
-    }
-
-    Object.entries(error.errors).forEach(([field, messages]) => {
-      if (
-        field === "firstName" ||
-        field === "lastName" ||
-        field === "email" ||
-        field === "password" ||
-        field === "confirmPassword"
-      ) {
-        setError(field, {
-          message: messages[0],
-          type: "server",
-        });
-      }
-    });
-  }, [error, setError]);
+  const serverMessages = Array.isArray(error?.message)
+    ? error.message
+    : error?.message
+      ? [error.message]
+      : [];
 
   function handleGoogleSignup() {
     window.location.href = `${BASE_URL}/auth/google`;
@@ -247,6 +230,14 @@ export function RegisterForm() {
         <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
           Too many signup attempts. Please wait a few minutes before trying again.
         </p>
+      )}
+
+      {error && error.statusCode !== 409 && error.statusCode !== 429 && serverMessages.length > 0 && (
+        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+          {serverMessages.map((message) => (
+            <p key={message}>{message}</p>
+          ))}
+        </div>
       )}
 
       <Button

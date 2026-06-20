@@ -22,7 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { User } from "@/types/models/user";
-import { formatInitials } from "@/lib/format";
+import { formatInitials } from "@/lib/format/text";
 
 interface NavUserProps {
   user: User;

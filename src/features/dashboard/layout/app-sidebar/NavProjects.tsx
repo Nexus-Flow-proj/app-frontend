@@ -36,7 +36,7 @@ import { useAuthStore, useProjectStore } from "@/store";
 import { UserRole } from "@/types/enums";
 import type { Project } from "@/types/models/project";
 import { ROUTES } from "@/constants";
-import { formatInitials } from "@/lib/format";
+import { formatInitials } from "@/lib/format/text";
 
 interface NavProjectsProps {
   projects: Project[];

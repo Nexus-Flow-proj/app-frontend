@@ -1,7 +1,8 @@
 import { Users, Loader2, AlertCircle } from "lucide-react";
-import { formatDate, formatInitials } from "@/lib/format";
+import { formatInitials } from "@/lib/format/text";
 import { useInviteAccept } from "../hooks";
 import type { InvitePreview } from "@/types";
+import { dateformat } from "@/lib/format/date";
 
 interface InvitePreviewCardProps {
   token: string;
@@ -56,7 +57,7 @@ export function InvitePreviewCard({ token, preview }: InvitePreviewCardProps) {
       {/* Expiry */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <Users className="size-3.5" />
-        Invite expires {formatDate(preview.expiresAt)}
+        Invite expires {dateformat(preview.expiresAt)}
       </div>
 
       {isExpired ? (

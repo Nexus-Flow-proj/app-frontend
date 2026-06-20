@@ -1,45 +1,9 @@
-import { Outlet, useLocation } from "react-router";
-import { Layers, Sparkles, GitBranch } from "lucide-react";
+import { Outlet } from "react-router";
+import { Sparkles, GitBranch } from "lucide-react";
 import { flowSteps } from "../constants/flowSteps";
 import { registerBenefits } from "../constants/registerBenefits";
 
 export default function AuthLayout() {
-  const { pathname } = useLocation();
-  const isRegister = pathname.includes("register");
-
-  if (!isRegister) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,--theme(--color-primary-500/0.18),transparent_34%),linear-gradient(180deg,--theme(--color-primary-950/0.22),transparent_42%)]" />
-
-        <div className="relative w-full max-w-89">
-          <div className="mb-5 flex items-center justify-center gap-2 text-sm font-bold">
-            <div className="flex size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/30">
-              <Layers className="size-3.5" />
-            </div>
-            <span>
-              Nexus<span className="text-primary">-Flow</span>
-            </span>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/95 px-5 py-6 shadow-2xl shadow-black/25 ring-1 ring-white/5 backdrop-blur">
-            <Outlet />
-          </div>
-
-          <p className="mx-auto mt-6 max-w-70 text-center text-xs font-medium leading-5 text-muted-foreground">
-            By clicking continue, you agree to our{" "}
-            <span className="underline underline-offset-2">
-              Terms of Service
-            </span>{" "}
-            and{" "}
-            <span className="underline underline-offset-2">Privacy Policy</span>
-            .
-          </p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className=" min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_18%,--theme(--color-primary-500/0.22),transparent_30%),radial-gradient(circle_at_78%_12%,--theme(--color-primary-300/0.12),transparent_26%)]" />

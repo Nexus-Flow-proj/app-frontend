@@ -61,21 +61,16 @@ const router = createBrowserRouter([
     element: <GuestGuard />,
     children: [
       {
-        element: <AuthLayout />,
-        children: [
-          {
-            path: "login",
-            element: <WithSuspense Component={AuthPages.Login} />,
-          },
-          {
-            path: "register",
-            element: <WithSuspense Component={AuthPages.Register} />,
-          },
-          {
-            path: "forgot-password",
-            element: <WithSuspense Component={AuthPages.ForgotPassword} />,
-          },
-        ],
+        path: "login",
+        element: <WithSuspense Component={AuthPages.Login} />,
+      },
+      {
+        path: "register",
+        element: <WithSuspense Component={AuthPages.Register} />,
+      },
+      {
+        path: "forgot-password",
+        element: <WithSuspense Component={AuthPages.ForgotPassword} />,
       },
     ],
   },

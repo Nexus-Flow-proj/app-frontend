@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
@@ -18,21 +17,16 @@ export function ForgotPasswordForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  useEffect(() => {
-    const emailErrors = error?.errors?.email;
-    if (emailErrors?.[0]) {
-      setError("email", {
-        message: emailErrors[0],
-        type: "server",
-      });
-    }
-  }, [error, setError]);
+  const serverMessages = Array.isArray(error?.message)
+    ? error.message
+    : error?.message
+      ? [error.message]
+      : [];
 
   if (isSuccess) {
     return (
@@ -90,6 +84,14 @@ export function ForgotPasswordForm() {
         <p className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-200">
           Too many reset requests. Please wait before trying again.
         </p>
+      )}
+
+      {error && error.statusCode !== 429 && serverMessages.length > 0 && (
+        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+          {serverMessages.map((message) => (
+            <p key={message}>{message}</p>
+          ))}
+        </div>
       )}
 
       <Button

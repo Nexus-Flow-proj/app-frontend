@@ -6,7 +6,13 @@
 
 import { useState, useCallback } from "react";
 import { useParams } from "react-router";
-import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  type CollisionDetection,
+  pointerWithin,
+} from "@dnd-kit/core";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 
 import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
@@ -28,6 +34,37 @@ import {
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useBoardDnd } from "../hooks/useBoardDnd";
+
+// ─── Custom Collision Detection Strategy ──────────────────────────────────────
+const boardCollisionStrategy: CollisionDetection = (args) => {
+  const { active, droppableContainers } = args;
+
+  // Identify what the user is currently dragging
+  const activeType = active.data.current?.type;
+
+  // RULE 1: If we are dragging a COLUMN, only look at other COLUMN droppable zones
+  if (activeType === "Column") {
+    const columnContainers = droppableContainers.filter(
+      (container) => container.data.current?.type === "Column",
+    );
+
+    // Run standard collision detection exclusively on the filtered columns
+    return closestCorners({
+      ...args,
+      droppableContainers: columnContainers,
+    });
+  }
+
+  // RULE 2: For standard Task dragging, use a robust combination strategy
+  // pointerWithin works beautifully for empty columns, closestCorners handles cards
+  const pointerCollisions = pointerWithin(args);
+
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+
+  return closestCorners(args);
+};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 function BoardsPage() {
@@ -118,7 +155,7 @@ function BoardsPage() {
       {/* TODO merge day (Dev 1): wrap the children below with DndContext + DragOverlay */}
       <DndContext
         sensors={boardDnd.sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={boardCollisionStrategy}
         onDragStart={boardDnd.handleDragStart}
         onDragEnd={boardDnd.handleDragEnd}
       >

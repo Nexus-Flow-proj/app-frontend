@@ -1,49 +1,27 @@
 import { api } from "@/lib/api/axios";
 import type {
-  LoginDto,
-  RegisterDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
   AuthResponseData,
   RefreshResponseData,
-} from "../types";
+} from "../types/auth-response";
 import type { ApiResponse, InvitePreview, User } from "@/types";
-
-function normalizeUser(user: User): User {
-  const fallbackName = [user.firstName, user.lastName]
-    .filter(Boolean)
-    .join(" ");
-
-  return {
-    ...user,
-    name: (user.name ?? fallbackName) || user.email,
-    avatar: user.avatar ?? user.avatarUrl,
-  };
-}
-
-function normalizeAuthResponse(
-  response: ApiResponse<AuthResponseData>,
-): ApiResponse<AuthResponseData> {
-  return {
-    ...response,
-    data: {
-      ...response.data,
-      user: normalizeUser(response.data.user),
-    },
-  };
-}
+import type {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from "../types/auth-dto";
 
 export const authService = {
   me: () =>
     api.get<ApiResponse<User>>("/auth/me").then((r) => ({
       ...r.data,
-      data: normalizeUser(r.data.data),
+      data: r.data.data,
     })),
 
   login: (dto: LoginDto) =>
     api
       .post<ApiResponse<AuthResponseData>>("/auth/login", dto)
-      .then((r) => normalizeAuthResponse(r.data)),
+      .then((r) => r.data),
 
   register: (dto: RegisterDto) =>
     api
@@ -54,7 +32,7 @@ export const authService = {
         password: dto.password,
         confirmPassword: dto.confirmPassword,
       })
-      .then((r) => normalizeAuthResponse(r.data)),
+      .then((r) => r.data),
 
   logout: () => api.post<ApiResponse<null>>("/auth/logout").then((r) => r.data),
 
@@ -81,5 +59,5 @@ export const authService = {
   acceptInvite: (token: string) =>
     api
       .post<ApiResponse<AuthResponseData>>(`/auth/invite/${token}/accept`)
-      .then((r) => normalizeAuthResponse(r.data)),
+      .then((r) => r.data),
 };

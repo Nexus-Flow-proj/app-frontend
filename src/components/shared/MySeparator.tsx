@@ -4,9 +4,10 @@ import { Separator } from "../ui/separator";
 interface MySeparatorProps {
   className?: string;
   text?: string;
+  isAlignStart?: boolean;
 }
 
-function MySeparator({ className, text }: MySeparatorProps) {
+function MySeparator({ className, text, isAlignStart }: MySeparatorProps) {
   if (!text) {
     return <Separator className={className} />;
   }
@@ -14,11 +15,11 @@ function MySeparator({ className, text }: MySeparatorProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 py-1 text-xs text-muted-foreground",
+        "flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground",
         className,
       )}
     >
-      <Separator className="flex-1" />
+      {!isAlignStart && <Separator className="flex-1" />}
       <span>{text}</span>
       <Separator className="flex-1" />
     </div>

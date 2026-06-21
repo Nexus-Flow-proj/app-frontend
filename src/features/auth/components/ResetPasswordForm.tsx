@@ -3,8 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useSearchParams } from "react-router";
 import { AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormInput } from "@/components/shared/FormInput";
 import {
   resetPasswordSchema,
   type ResetPasswordFormValues,
@@ -53,70 +52,45 @@ export function ResetPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit((data) => resetPassword(data))}
-      className="space-y-5"
+      className="space-y-6"
     >
       <input type="hidden" {...register("token")} />
 
-      <div className="space-y-1.5">
-        <Label
-          htmlFor="newPassword"
-          className="text-sm font-medium text-foreground"
-        >
-          New password
-        </Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="newPassword"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Min. 8 characters"
-            disabled={isPending}
-            aria-invalid={!!errors.newPassword}
-            className="h-9 bg-background pl-10"
-            {...register("newPassword")}
-          />
-        </div>
-        {errors.newPassword && (
-          <p className="text-xs text-destructive">
-            {errors.newPassword.message}
-          </p>
-        )}
-      </div>
+      <FormInput
+        id="newPassword"
+        label="New password"
+        type="password"
+        autoComplete="new-password"
+        placeholder="Min. 8 characters"
+        disabled={isPending}
+        leftIcon={<Lock className="size-4" />}
+        labelClassName="text-sm font-medium"
+        error={errors.newPassword?.message}
+        showPasswordToggle
+        {...register("newPassword")}
+      />
 
-      <div className="space-y-1.5">
-        <Label
-          htmlFor="confirmPassword"
-          className="text-sm font-medium text-foreground"
-        >
-          Confirm password
-        </Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Repeat your password"
-            disabled={isPending}
-            aria-invalid={!!errors.confirmPassword}
-            className="h-9 bg-background pl-10"
-            {...register("confirmPassword")}
-          />
-        </div>
-        {errors.confirmPassword && (
-          <p className="text-xs text-destructive">
-            {errors.confirmPassword.message}
-          </p>
-        )}
-      </div>
+      <FormInput
+        id="confirmPassword"
+        label="Confirm password"
+        type="password"
+        autoComplete="new-password"
+        placeholder="Repeat your password"
+        disabled={isPending}
+        leftIcon={<Lock className="size-4" />}
+        labelClassName="text-sm font-medium"
+        error={errors.confirmPassword?.message}
+        showPasswordToggle
+        {...register("confirmPassword")}
+      />
 
       <AuthErrorMessage error={error} />
 
       <Button
         type="submit"
         isLoading={isPending}
-        className="h-9 w-full font-bold shadow-sm shadow-primary/20"
+        size="lg"
+        className="w-full text-xs font-bold"
       >
         Reset password
       </Button>

@@ -1,10 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router";
-import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormInput } from "@/components/shared/FormInput";
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormValues,
@@ -42,13 +40,6 @@ export function ForgotPasswordForm() {
             We sent a reset link to your inbox. It expires soon.
           </p>
         </div>
-        <Link
-          to="/login"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <ArrowLeft className="size-3.5" />
-          Back to sign in
-        </Link>
       </div>
     );
   }
@@ -56,49 +47,31 @@ export function ForgotPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit((data) => forgotPassword(data))}
-      className="space-y-5"
+      className="space-y-6"
     >
-      <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-sm font-medium text-foreground">
-          Email address
-        </Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            disabled={isPending}
-            aria-invalid={!!errors.email}
-            className="h-9 bg-background pl-10"
-            {...register("email")}
-          />
-        </div>
-        {errors.email && (
-          <p className="text-xs text-destructive">{errors.email.message}</p>
-        )}
-      </div>
+      <FormInput
+        id="email"
+        label="Email address"
+        type="email"
+        autoComplete="email"
+        placeholder="you@example.com"
+        disabled={isPending}
+        leftIcon={<Mail className="size-4" />}
+        labelClassName="text-sm font-medium"
+        error={errors.email?.message}
+        {...register("email")}
+      />
 
       <AuthErrorMessage error={error} />
 
       <Button
         type="submit"
         isLoading={isPending}
-        className="h-9 w-full font-bold shadow-sm shadow-primary/20"
+        size="lg"
+        className="w-full text-xs font-bold"
       >
         Send reset link
       </Button>
-
-      <div className="text-center">
-        <Link
-          to="/login"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" />
-          Back to sign in
-        </Link>
-      </div>
     </form>
   );
 }

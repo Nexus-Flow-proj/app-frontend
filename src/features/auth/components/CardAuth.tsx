@@ -6,29 +6,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import AuthNavigator from "./AuthNavigator";
 
 interface CardAuthProps {
   title: string;
   subtitle: string;
   children: React.ReactNode;
+  Navigator?: React.ReactNode;
+  className?: string;
 }
 
-function CardAuth({ title, subtitle, children }: CardAuthProps) {
+function CardAuth({
+  title,
+  subtitle,
+  children,
+  Navigator,
+  className,
+}: CardAuthProps) {
   return (
-    <Card className="py-8 gap-6">
+    <Card className={`${className} py-8 gap-6`}>
       <CardHeader className="text-center">
         <CardTitle className="font-bold">{title}</CardTitle>
         <CardDescription>{subtitle}</CardDescription>
       </CardHeader>
       <CardContent className="px-5">{children}</CardContent>
-      <CardFooter className="justify-center">
-        <AuthNavigator
-          linkTo="/register"
-          linkText="Sign up"
-          text="Don't have an account?"
-        />
-      </CardFooter>
+      {Navigator && (
+        <CardFooter className="justify-center">{Navigator}</CardFooter>
+      )}
     </Card>
   );
 }

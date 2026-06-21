@@ -1,6 +1,6 @@
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { authService } from "../services";
-import type { ForgotPasswordDto } from "../types";
+import type { ForgotPasswordDto } from "../types/auth-dto";
 
 export function useForgotPassword() {
   return useApiMutation<null, ForgotPasswordDto>(

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { authService } from "../services";
-import type { ResetPasswordDto } from "../types";
+import type { ResetPasswordDto } from "../types/auth-dto";
 
 export function useResetPassword() {
   const navigate = useNavigate();

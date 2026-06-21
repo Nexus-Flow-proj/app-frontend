@@ -33,6 +33,8 @@ export function useApiMutation<TData, TVariables>(
     mutationFn,
 
     onSuccess: (data, variables, context, mutationContext) => {
+      console.log(data);
+
       if (showSuccessToast) {
         toast.success(successMessage ?? getApiMessage(data.message));
       }
@@ -40,6 +42,8 @@ export function useApiMutation<TData, TVariables>(
     },
 
     onError: (error, variables, context, mutationContext) => {
+      console.log(error);
+
       if (showErrorToast) {
         getApiErrorMessages(error).forEach((message) => {
           toast.error(message);

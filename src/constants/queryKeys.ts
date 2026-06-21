@@ -1,6 +1,7 @@
 export const QUERY_KEYS = {
   auth: {
     me: ["auth", "me"] as const,
+    invitePreview: (token: string) => ["auth", "invite", token] as const,
   },
   projects: {
     all: ["projects"] as const,

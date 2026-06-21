@@ -45,8 +45,13 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    console.log("success response", response);
+    return response;
+  },
   async (error: AxiosError<ApiError>) => {
+    console.log(error);
+
     const originalRequest = error.config as RetryableRequestConfig | undefined;
 
     if (!originalRequest) {

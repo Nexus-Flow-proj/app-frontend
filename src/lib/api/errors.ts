@@ -35,6 +35,7 @@ export function getErrorMessage(
 }
 
 export function normalizeApiError(error: AxiosError<ApiError>): ApiError {
+  console.log("normalizeApiError", error);
   return {
     message: getErrorMessage(error),
     error: error.response?.data?.error,

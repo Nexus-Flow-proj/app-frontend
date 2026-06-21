@@ -5,7 +5,7 @@ import { useApiMutation } from "@/hooks/useApiMutation";
 import { QUERY_KEYS } from "@/constants";
 import { useAuthStore } from "@/store";
 import { authService } from "../services";
-import type { LoginDto } from "../types";
+import type { LoginDto } from "../types/auth-dto";
 
 export function useLogin() {
   const { setAuth } = useAuthStore();
@@ -16,6 +16,9 @@ export function useLogin() {
     showSuccessToast: false,
     onSuccess: (res) => {
       const { user } = res.data;
+      console.log(res);
+      console.log(res.data);
+
       const displayName = user.name ?? user.firstName ?? "there";
       setAuth(user);
       queryClient.setQueryData(QUERY_KEYS.auth.me, res);

@@ -1,7 +1,5 @@
 // features/boards/components/kanban/AddTaskDialog.tsx
-//
-// Dialog بيظهر لما المستخدم يضغط "Add task" في أي column.
-// بيجمع كل الـ fields الأساسية للتاسك الجديدة.
+
 
 import { useState } from "react";
 import { CalendarIcon, Tag, X } from "lucide-react";
@@ -29,7 +27,6 @@ import { PRIORITY_CONFIG } from "../../constants";
 import { TaskPriority } from "../../types/enums";
 import type { BoardMember, BoardColumn, Priority } from "../../types";
 
-// ─── Types ─────────────────────────────────────────────────────────────────
 
 export interface NewTaskFormData {
   title: string;
@@ -43,14 +40,13 @@ export interface NewTaskFormData {
 
 interface AddTaskDialogProps {
   isOpen: boolean;
-  columnId: string | null;          // الـ column اللي هيتضاف فيها التاسك
+  columnId: string | null;          
   columns: BoardColumn[];
   members: BoardMember[];
   onClose: () => void;
   onSubmit: (data: NewTaskFormData) => void;
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────
 
 const PRIORITIES: Priority[] = [
   TaskPriority.URGENT,
@@ -68,7 +64,6 @@ const DEFAULT_FORM: Omit<NewTaskFormData, "columnId"> = {
   tags: [],
 };
 
-// ─── Component ──────────────────────────────────────────────────────────────
 
 export function AddTaskDialog({
   isOpen,
@@ -105,7 +100,6 @@ export function AddTaskDialog({
     onClose();
   };
 
-  // ── tags ──────────────────────────────────────────────────────────────────
 
   const addTag = () => {
     const tag = tagInput.trim().toLowerCase();
@@ -173,7 +167,6 @@ export function AddTaskDialog({
             />
           </div>
 
-          {/* Priority + Assignee side by side */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
@@ -236,7 +229,6 @@ export function AddTaskDialog({
             </div>
           </div>
 
-          {/* Due Date */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <CalendarIcon className="size-3" />
@@ -255,14 +247,12 @@ export function AddTaskDialog({
             />
           </div>
 
-          {/* Tags */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Tag className="size-3" />
               Tags
             </label>
 
-            {/* existing tags */}
             {form.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-1.5">
                 {form.tags.map((tag) => (
@@ -286,7 +276,6 @@ export function AddTaskDialog({
               </div>
             )}
 
-            {/* tag input */}
             <div className="flex gap-2">
               <Input
                 placeholder="Add a tag…"

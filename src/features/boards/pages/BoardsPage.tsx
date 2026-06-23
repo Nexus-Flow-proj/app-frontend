@@ -109,7 +109,6 @@
          </div>
        </header>
  
-       {/* ── Board ── */}
        <DndContext
          sensors={boardDnd.sensors}
          collisionDetection={closestCorners}
@@ -135,14 +134,12 @@
          </DragOverlay>
        </DndContext>
  
-       {/* ── Add Column Dialog ── */}
        <AddColumnDialog
          isOpen={isAddColumnOpen}
          onClose={() => setIsAddColumnOpen(false)}
          onSubmit={handleAddColumn}
        />
  
-       {/* ── Add Task Dialog ── */}
        <AddTaskDialog
          isOpen={isAddTaskOpen}
          columnId={addTaskColumnId}
@@ -152,7 +149,6 @@
          onSubmit={handleAddTask}
        />
  
-       {/* ── Task Detail Drawer ── */}
        <TaskDetailDrawer
          {...drawer.drawerProps}
          columns={columns}

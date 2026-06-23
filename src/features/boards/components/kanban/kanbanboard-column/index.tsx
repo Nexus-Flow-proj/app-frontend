@@ -30,7 +30,7 @@ interface KanbanBoardColumnProps {
   columnId: string;
   boardState: BoardState;
   onCardClick: (task: Task) => void;
-  /** لما يضغط "Add task" — بيبعت الـ columnId للـ BoardsPage يفتح الـ Dialog */
+
   onAddTask: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
   onDeleteColumn?: (columnId: string) => void;
@@ -63,7 +63,6 @@ function KanbanBoardColumn({
 
   return (
     <Card ref={setNodeRef} style={style} className="w-68">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
       <CardHeader
         className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
         {...attributes}
@@ -102,7 +101,6 @@ function KanbanBoardColumn({
         </CardAction>
       </CardHeader>
 
-      {/* ── Tasks ──────────────────────────────────────────────────────── */}
       <CardContent
         className={cn(
           "flex-1 min-h-0 flex flex-col gap-2 px-3 overflow-y-auto transition-colors duration-150",
@@ -142,7 +140,6 @@ function KanbanBoardColumn({
         )}
       </CardContent>
 
-      {/* ── Footer ─────────────────────────────────────────────────────── */}
       <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
         <Button
           variant="outline"

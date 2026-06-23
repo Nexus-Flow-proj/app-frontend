@@ -95,7 +95,6 @@ export function AddColumnDialog({ isOpen, onClose, onSubmit }: AddColumnDialogPr
                   )}
                   style={{
                     background: c.value,
-                    // ring color matches the selected color
                     ...(color === c.value ? { ringColor: c.value } : {}),
                   }}
                 />

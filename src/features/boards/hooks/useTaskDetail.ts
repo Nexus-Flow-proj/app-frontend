@@ -1,5 +1,4 @@
 // features/boards/hooks/useTaskDetail.ts
-//
 // ─── HOW THIS WORKS ───────────────────────────────────────────────────────────
 // دلوقتي: كل حاجة بتشتغل بـ mock data محلي.
 // لما الـ API يجهز: دوّر على كل سطر فيه "TODO: REPLACE WITH API"
@@ -15,7 +14,6 @@ interface UseTaskDetailParams {
   setBoardState: Dispatch<SetStateAction<BoardState>>;
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
 
 function patchTask(prev: BoardState, taskId: string, patch: Partial<Task>): BoardState {
   return {
@@ -29,37 +27,39 @@ function patchTask(prev: BoardState, taskId: string, patch: Partial<Task>): Boar
   };
 }
 
-/** بيجيب الـ task من الـ boardState */
 function findTask(state: BoardState, taskId: string): Task | undefined {
   return Object.values(state.tasks).flat().find((t) => t.id === taskId);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskDetailParams) {
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [taskDetail, setTaskDetail] = useState<TaskDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [taskCache, setTaskCache] = useState<Record<string, TaskDetail>>({});
 
   const isOpen = openTaskId !== null;
 
 
-  const openDrawer = useCallback((task: Task) => {
-    setOpenTaskId(task.id);
+  const openDrawer = useCallback(
+    (task: Task) => {
+      setOpenTaskId(task.id);
 
-    // TODO: REPLACE WITH API → useTaskDetailQuery(task.id)
-    // دلوقتي بنجيب من الـ mock أو نبني من الـ task اللي عندنا
-    const existing = MOCK_TASK_DETAIL[task.id];
-    setTaskDetail(
-      existing ?? {
-        ...task,
-        subtasks: [],
-        comments: [],
-        activityLog: [],
-      },
-    );
-  }, []);
+      // TODO: REPLACE WITH API → useTaskDetailQuery(task.id)
+      const cached = taskCache[task.id];
+      const existing = MOCK_TASK_DETAIL[task.id];
+      setTaskDetail(
+        cached ?? existing ?? {
+          ...task,
+          subtasks: [],
+          comments: [],
+          activityLog: [],
+        },
+      );
+    },
+    [taskCache],
+  );
 
   const closeDrawer = useCallback(() => {
     setOpenTaskId(null);
@@ -67,14 +67,21 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
   }, []);
 
 
-  const patchDetail = useCallback((patch: Partial<TaskDetail>) => {
-    setTaskDetail((prev) => (prev ? { ...prev, ...patch } : prev));
-  }, []);
+  const patchDetail = useCallback(
+    (patch: Partial<TaskDetail> | ((prev: TaskDetail) => TaskDetail)) => {
+      setTaskDetail((prev) => {
+        if (!prev) return prev;
+        const updated = typeof patch === "function" ? patch(prev) : { ...prev, ...patch };
+        setTaskCache((cache) => ({ ...cache, [prev.id]: updated }));
+        return updated;
+      });
+    },
+    [],
+  );
 
 
   const handleUpdatePriority = useCallback(
     (taskId: string, priority: Priority) => {
-
       setBoardState((prev) => patchTask(prev, taskId, { priority }));
       patchDetail({ priority });
 
@@ -84,7 +91,6 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
     [setBoardState, patchDetail],
   );
 
-  // ── assignee ──────────────────────────────────────────────────────────────
 
   const handleUpdateAssignee = useCallback(
     (taskId: string, assigneeId: string | null) => {
@@ -101,7 +107,6 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
     [setBoardState, patchDetail],
   );
 
-  // ── due date ──────────────────────────────────────────────────────────────
 
   const handleUpdateDueDate = useCallback(
     (taskId: string, dueDate: string | null) => {
@@ -145,24 +150,18 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
     [setBoardState, patchDetail],
   );
 
-  // ── toggle subtask ────────────────────────────────────────────────────────
 
   const handleToggleSubtask = useCallback(
     (subtaskId: string, completed: boolean) => {
       if (!openTaskId) return;
 
-      // 1. حدّث الـ drawer
-      setTaskDetail((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          subtasks: prev.subtasks.map((s) =>
-            s.id === subtaskId ? { ...s, completed } : s,
-          ),
-        };
-      });
+      patchDetail((prev) => ({
+        ...prev,
+        subtasks: prev.subtasks.map((s) =>
+          s.id === subtaskId ? { ...s, completed } : s,
+        ),
+      }));
 
-      // 2. حدّث الـ completedSubtaskCount على الـ card
       setBoardState((prev) => {
         const task = findTask(prev, openTaskId);
         return patchTask(prev, openTaskId, {
@@ -175,10 +174,9 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
       // TODO: REPLACE WITH API → toggleSubtask.mutate({ subtaskId, completed })
       console.log("[mock] toggleSubtask", { subtaskId, completed });
     },
-    [openTaskId, setBoardState],
+    [openTaskId, setBoardState, patchDetail],
   );
 
-  // ── add subtask ───────────────────────────────────────────────────────────
 
   const handleAddSubtask = useCallback(
     (title: string) => {
@@ -189,21 +187,16 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
         taskId: openTaskId,
         title,
         completed: false,
-        position: 0, // سيتحدد من الـ backend لما يجي
+        position: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      // 1. حدّث الـ drawer
-      setTaskDetail((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          subtasks: [...prev.subtasks, newSubtask],
-        };
-      });
+      patchDetail((prev) => ({
+        ...prev,
+        subtasks: [...prev.subtasks, newSubtask],
+      }));
 
-      // 2. حدّث الـ subtaskCount على الـ card
       setBoardState((prev) => {
         const task = findTask(prev, openTaskId);
         return patchTask(prev, openTaskId, {
@@ -214,25 +207,19 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
       // TODO: REPLACE WITH API → createSubtask.mutate({ taskId: openTaskId, title })
       console.log("[mock] addSubtask", { taskId: openTaskId, title });
     },
-    [openTaskId, setBoardState],
+    [openTaskId, setBoardState, patchDetail],
   );
 
-  // ── delete subtask ────────────────────────────────────────────────────────
 
   const handleDeleteSubtask = useCallback(
     (subtaskId: string) => {
       if (!openTaskId) return;
 
-      // 1. حدّث الـ drawer
-      setTaskDetail((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          subtasks: prev.subtasks.filter((s) => s.id !== subtaskId),
-        };
-      });
+      patchDetail((prev) => ({
+        ...prev,
+        subtasks: prev.subtasks.filter((s) => s.id !== subtaskId),
+      }));
 
-      // 2. حدّث الـ subtaskCount على الـ card
       setBoardState((prev) => {
         const task = findTask(prev, openTaskId);
         return patchTask(prev, openTaskId, {
@@ -243,10 +230,9 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
       // TODO: REPLACE WITH API → deleteSubtask.mutate(subtaskId)
       console.log("[mock] deleteSubtask", { subtaskId });
     },
-    [openTaskId, setBoardState],
+    [openTaskId, setBoardState, patchDetail],
   );
 
-  // ── add comment ───────────────────────────────────────────────────────────
 
   const handleAddComment = useCallback(
     (content: string) => {
@@ -262,14 +248,10 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
         createdAt: new Date().toISOString(),
       };
 
-  
-      setTaskDetail((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          comments: [...prev.comments, newComment],
-        };
-      });
+      patchDetail((prev) => ({
+        ...prev,
+        comments: [...prev.comments, newComment],
+      }));
 
       setBoardState((prev) => {
         const task = findTask(prev, openTaskId);
@@ -285,10 +267,9 @@ export function useTaskDetail({ projectId: _projectId, setBoardState }: UseTaskD
       // simulate async (اشيل السطرين دول لما الـ API يجي)
       setTimeout(() => setIsSubmittingComment(false), 300);
     },
-    [openTaskId, setBoardState],
+    [openTaskId, setBoardState, patchDetail],
   );
 
-  // ── return ────────────────────────────────────────────────────────────────
 
   return {
     openDrawer,

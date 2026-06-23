@@ -4,7 +4,7 @@
 // TODO merge day: replace MOCK_* with Dev 3's hooks (useBoardColumns, useTasksByColumn, useMoveTask).
 // TODO merge day: wrap KanbanBoard children with DndContext + DragOverlay from Dev 1.
 
-import { useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useParams } from "react-router";
 import {
   DndContext,
@@ -24,7 +24,7 @@ import {
   useResetUrlFilters,
   useActiveFilterCount,
 } from "../hooks/useBoardFilters";
-import type { Task, TaskDetail } from "../types";
+import type { Task } from "../types";
 import {
   CURRENT_USER,
   MOCK_BOARD,
@@ -34,6 +34,7 @@ import {
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useBoardDnd } from "../hooks/useBoardDnd";
+import { useKanbanStore } from "@/store";
 
 // ─── Custom Collision Detection Strategy ──────────────────────────────────────
 const boardCollisionStrategy: CollisionDetection = (args) => {
@@ -74,11 +75,17 @@ function BoardsPage() {
   const resetFilters = useResetUrlFilters();
   const activeCount = useActiveFilterCount();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTask, setActiveTask] = useState<TaskDetail | null>(null);
-  const [drawerLoading, setDrawerLoading] = useState(false);
+  const boardState = useKanbanStore((state) => state.boardState);
+  const drawer = useKanbanStore((state) => state.drawer);
+  const initializeBoard = useKanbanStore((state) => state.initializeBoard);
+  const setBoardState = useKanbanStore((state) => state.setBoardState);
+  const openTaskDrawer = useKanbanStore((state) => state.openTaskDrawer);
+  const setDrawerTask = useKanbanStore((state) => state.setDrawerTask);
+  const setDrawerLoading = useKanbanStore((state) => state.setDrawerLoading);
+  const closeTaskDrawer = useKanbanStore((state) => state.closeTaskDrawer);
+  const updateTask = useKanbanStore((state) => state.updateTask);
+  const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
 
-  const [boardState, setBoardState] = useState(MOCK_BOARD);
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
   const boardDnd = useBoardDnd({
     boardState,
@@ -94,11 +101,14 @@ function BoardsPage() {
       console.log("move column", { columnId, newPositionFloat }),
   });
 
+  useEffect(() => {
+    initializeBoard(MOCK_BOARD, projectId);
+  }, [initializeBoard, projectId]);
+
   const handleCardClick = useCallback((task: Task) => {
-    setDrawerOpen(true);
-    setDrawerLoading(true);
+    openTaskDrawer(task);
     setTimeout(() => {
-      setActiveTask(
+      setDrawerTask(
         MOCK_TASK_DETAIL[task.id] ?? {
           ...task,
           subtasks: [],
@@ -108,7 +118,7 @@ function BoardsPage() {
       );
       setDrawerLoading(false);
     }, 250);
-  }, []);
+  }, [openTaskDrawer, setDrawerLoading, setDrawerTask]);
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
@@ -183,21 +193,19 @@ function BoardsPage() {
 
       {/* ── Drawer ── */}
       <TaskDetailDrawer
-        task={activeTask}
+        task={drawer.activeTask}
         columns={columns}
         members={MOCK_MEMBERS}
         currentUser={CURRENT_USER}
-        isOpen={drawerOpen}
-        isLoading={drawerLoading}
-        onClose={() => setDrawerOpen(false)}
+        isOpen={drawer.isOpen}
+        isLoading={drawer.isLoading}
+        onClose={closeTaskDrawer}
         onUpdatePriority={(taskId, priority) =>
-          console.log("priority", taskId, priority)
+          updateTask(taskId, { priority })
         }
         onUpdateAssignee={(taskId, id) => console.log("assignee", taskId, id)}
-        onUpdateDueDate={(taskId, date) => console.log("due", taskId, date)}
-        onMoveToColumn={(taskId, colId) =>
-          console.log("move", taskId, "→", colId)
-        }
+        onUpdateDueDate={(taskId, date) => updateTask(taskId, { dueDate: date })}
+        onMoveToColumn={moveTaskToColumn}
         onToggleSubtask={(subtaskId, done) =>
           console.log("subtask", subtaskId, done)
         }

@@ -1,16 +1,22 @@
-import { api } from "@/lib/axios";
+import { api } from "@/lib/api/axios";
 import type {
-  LoginDto,
-  RegisterDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
   AuthResponseData,
   RefreshResponseData,
-} from "../types";
+} from "../types/auth-response";
 import type { ApiResponse, InvitePreview, User } from "@/types";
+import type {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from "../types/auth-dto";
 
 export const authService = {
-  me: () => api.get<ApiResponse<User>>("/auth/me").then((r) => r.data),
+  me: () =>
+    api.get<ApiResponse<User>>("/auth/me").then((r) => ({
+      ...r.data,
+      data: r.data.data,
+    })),
 
   login: (dto: LoginDto) =>
     api
@@ -19,14 +25,20 @@ export const authService = {
 
   register: (dto: RegisterDto) =>
     api
-      .post<ApiResponse<AuthResponseData>>("/auth/register", dto)
+      .post<ApiResponse<AuthResponseData>>("/auth/signup", {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+        password: dto.password,
+        confirmPassword: dto.confirmPassword,
+      })
       .then((r) => r.data),
 
   logout: () => api.post<ApiResponse<null>>("/auth/logout").then((r) => r.data),
 
   forgotPassword: (dto: ForgotPasswordDto) =>
     api
-      .post<ApiResponse<null>>("/auth/forgot-password", dto)
+      .post<ApiResponse<null>>("/auth/forget-password", dto)
       .then((r) => r.data),
 
   resetPassword: (dto: ResetPasswordDto) =>

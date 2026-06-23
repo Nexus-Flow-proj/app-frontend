@@ -1,13 +1,13 @@
 import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import WithSuspense from "@/components/hoc/WithSuspense";
-import AuthLayout from "@/features/auth/layout";
 import { GuestGuard } from "./GuestGuard";
 import { AuthGuard } from "./AuthGuard";
 import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
 // import ProjectLayout from "@/layouts/ProjectLayout";
 import DashboardLayout from "@/features/dashboard/layout";
+import AuthLayout from "@/features/auth/layout";
 
 // ** ──────────────── Lazy page imports ───────────────────────────
 
@@ -68,14 +68,14 @@ const router = createBrowserRouter([
             element: <WithSuspense Component={AuthPages.Login} />,
           },
           {
-            path: "register",
-            element: <WithSuspense Component={AuthPages.Register} />,
-          },
-          {
             path: "forgot-password",
             element: <WithSuspense Component={AuthPages.ForgotPassword} />,
           },
         ],
+      },
+      {
+        path: "register",
+        element: <WithSuspense Component={AuthPages.Register} />,
       },
     ],
   },

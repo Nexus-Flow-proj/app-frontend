@@ -3,7 +3,7 @@ import type {
   AuthResponseData,
   RefreshResponseData,
 } from "../types/auth-response";
-import type { ApiResponse, InvitePreview, User } from "@/types";
+import type { ApiResponse, InvitePreview } from "@/types";
 import type {
   ForgotPasswordDto,
   LoginDto,
@@ -13,10 +13,7 @@ import type {
 
 export const authService = {
   me: () =>
-    api.get<ApiResponse<User>>("/auth/me").then((r) => ({
-      ...r.data,
-      data: r.data.data,
-    })),
+    api.get<ApiResponse<AuthResponseData>>("/auth/me").then((r) => r.data),
 
   login: (dto: LoginDto) =>
     api

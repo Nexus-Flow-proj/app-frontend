@@ -23,7 +23,7 @@ export function ActivityLog({ events }: ActivityLogProps) {
             <span className="text-xs text-muted-foreground">
               <span className="font-medium text-foreground">
                 {event.actor.name}
-              </span>{" "}
+              </span>
               {event.action}
             </span>
             <p className="text-[11px] text-muted-foreground/60 mt-0.5">

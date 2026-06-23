@@ -9,7 +9,7 @@ interface AuthNavigatorProps {
 function AuthNavigator({ linkTo, linkText, text }: AuthNavigatorProps) {
   return (
     <p className="text-center text-xs font-semibold text-muted-foreground">
-      {text}
+      {text}{" "}
       <Link to={linkTo} className="text-primary underline underline-offset-2">
         {linkText}
       </Link>

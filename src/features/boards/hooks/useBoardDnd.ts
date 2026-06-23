@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   KeyboardSensor,
   PointerSensor,
@@ -11,13 +11,15 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 
 import type { BoardColumn, BoardState, Task } from "../types";
 
+type BoardStateUpdater = BoardState | ((current: BoardState) => BoardState);
+
 type DragEntity =
   | { type: "Column"; column: BoardColumn }
   | { type: "Task"; task: Task };
 
 interface UseBoardDndParams {
   boardState: BoardState;
-  setBoardState: Dispatch<SetStateAction<BoardState>>;
+  setBoardState: (updater: BoardStateUpdater) => void;
   onMoveTask?: (
     taskId: string,
     sourceColumnId: string,

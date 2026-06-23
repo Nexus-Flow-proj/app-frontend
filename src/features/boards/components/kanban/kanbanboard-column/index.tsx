@@ -30,6 +30,7 @@ interface KanbanBoardColumnProps {
   columnId: string;
   boardState: BoardState;
   onCardClick: (task: Task) => void;
+  /** لما يضغط "Add task" — بيبعت الـ columnId للـ BoardsPage يفتح الـ Dialog */
   onAddTask: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
   onDeleteColumn?: (columnId: string) => void;
@@ -49,8 +50,7 @@ function KanbanBoardColumn({
   const tasks = boardState.tasks[columnId] ?? [];
   const filters = useUrlFilters();
   const filteredTasks = useFilteredTasks(tasks, CURRENT_USER.id);
-  const { attributes, listeners, setNodeRef, style } =
-    useSortableColumn(column);
+  const { attributes, listeners, setNodeRef, style } = useSortableColumn(column);
 
   const accentColor =
     column.color ?? COLUMN_ACCENT_COLORS[column.name] ?? "var(--primary)";
@@ -62,7 +62,8 @@ function KanbanBoardColumn({
   );
 
   return (
-    <Card ref={setNodeRef} style={style} className=" w-68">
+    <Card ref={setNodeRef} style={style} className="w-68">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <CardHeader
         className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
         {...attributes}
@@ -73,7 +74,6 @@ function KanbanBoardColumn({
             className="h-0.5 w-7 rounded-full mb-3 opacity-90"
             style={{ background: accentColor }}
           />
-
           <div className="flex items-center gap-2 min-w-0">
             <CardTitle className="text-[14px] font-semibold truncate">
               {column.name}
@@ -95,12 +95,14 @@ function KanbanBoardColumn({
           <KanbanColumnActionsMenu
             columnId={column.id}
             isProtected={isProtected}
+            onAddTask={() => onAddTask(columnId)}
             onRenameColumn={onRenameColumn}
             onDeleteColumn={onDeleteColumn}
           />
         </CardAction>
       </CardHeader>
 
+      {/* ── Tasks ──────────────────────────────────────────────────────── */}
       <CardContent
         className={cn(
           "flex-1 min-h-0 flex flex-col gap-2 px-3 overflow-y-auto transition-colors duration-150",
@@ -140,12 +142,13 @@ function KanbanBoardColumn({
         )}
       </CardContent>
 
+      {/* ── Footer ─────────────────────────────────────────────────────── */}
       <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
         <Button
           variant="outline"
           className="w-full justify-start"
           size="sm"
-          onClick={() => onAddTask(column.id)}
+          onClick={() => onAddTask(columnId)}
         >
           <Plus />
           Add task

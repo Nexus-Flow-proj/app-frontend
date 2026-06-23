@@ -28,7 +28,7 @@ export function NavMain({ items, label }: NavMainProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="space-y-0.5">
         {items.map((item) => {
           const hasSubItems = Boolean(item.items?.length);
           const isGroupActive =

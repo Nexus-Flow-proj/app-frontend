@@ -1,4 +1,5 @@
 import { BASE_URL, CSRF_TOKEN_HEADER } from "@/constants/BackendApisConfig";
+import { navigateToLogin } from "@/router/navigation";
 import { useAuthStore } from "@/store";
 import type { ApiError } from "@/types";
 import axios, {
@@ -84,7 +85,7 @@ api.interceptors.response.use(
       useAuthStore.getState().logout();
 
       if (typeof window !== "undefined") {
-        window.location.assign("/login");
+        await navigateToLogin();
       }
 
       return Promise.reject(normalizedRefreshError);

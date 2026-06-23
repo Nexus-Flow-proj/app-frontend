@@ -22,10 +22,11 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { MOCK_USER } from "../../mock";
 import NavUserInfo from "./NavUserInfo";
+import { useLogout } from "@/features/auth/hooks";
 
 export function NavUser() {
   const user = useAuthStore((s) => s.user) ?? MOCK_USER;
-  const logout = useAuthStore((s) => s.logout);
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const plan: string = "Free"; // Replace with actual plan logic if available
 
@@ -82,9 +83,13 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={logout} variant="destructive">
+            <DropdownMenuItem
+              onClick={() => logout()}
+              disabled={isLoggingOut}
+              variant="destructive"
+            >
               <LogOutIcon />
-              Log out
+              {isLoggingOut ? "Logging out..." : "Log out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,11 +1,12 @@
 import { ProjectStatus, UserRole, type Project, type User } from "@/types";
 
-// Mock data (until backend is ready)
 export const MOCK_NOW = new Date().toISOString();
 export const MOCK_USER: User = {
   id: "user-1",
-  name: "Ava Brooks",
   email: "ava@nexusflow.app",
+  firstName: "Ava",
+  lastName: "Smith",
+  name: "Ava Smith",
   role: UserRole.ADMIN,
   avatar: "",
   createdAt: MOCK_NOW,

@@ -12,13 +12,13 @@ export const description = "A sidebar with a header and a search form.";
 
 export default function DashboardLayout() {
   const setAuth = useAuthStore((s) => s.setAuth);
-  const { data: user } = useMe();
+  const { data } = useMe();
 
   useEffect(() => {
-    if (user) {
-      setAuth(user);
+    if (data?.user) {
+      setAuth(data.user);
     }
-  }, [setAuth, user]);
+  }, [setAuth, data?.user]);
 
   return (
     <div className="[--header-height:calc(--spacing(14))]">

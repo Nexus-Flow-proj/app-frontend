@@ -4,9 +4,19 @@ interface MyAvatarProps {
   name: string;
   avatarUrl?: string;
   isActive?: boolean;
+  className?: string;
+  classNameAvatar?: string;
+  size?: "sm" | "lg";
 }
 
-function MyAvatar({ name, avatarUrl, isActive }: MyAvatarProps) {
+function MyAvatar({
+  name,
+  avatarUrl,
+  isActive,
+  className,
+  classNameAvatar,
+  size,
+}: MyAvatarProps) {
   const charactersName = name
     .split(" ")
     .map((n) => n[0])
@@ -15,9 +25,11 @@ function MyAvatar({ name, avatarUrl, isActive }: MyAvatarProps) {
     .toUpperCase();
 
   return (
-    <Avatar size="sm">
+    <Avatar size={size || "default"} className={className}>
       <AvatarImage src={avatarUrl} alt={name} />
-      <AvatarFallback>{charactersName}</AvatarFallback>
+      <AvatarFallback className={classNameAvatar}>
+        {charactersName}
+      </AvatarFallback>
       {isActive && <AvatarBadge className="bg-green-600 dark:bg-green-800" />}
     </Avatar>
   );

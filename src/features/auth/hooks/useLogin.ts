@@ -16,10 +16,8 @@ export function useLogin() {
     showSuccessToast: false,
     onSuccess: (res) => {
       const { user } = res.data;
-      console.log(res);
-      console.log(res.data);
+      const displayName = user.firstName + " " + user.lastName;
 
-      const displayName = user.name ?? user.firstName ?? "there";
       setAuth(user);
       queryClient.setQueryData(QUERY_KEYS.auth.me, res);
       toast.success(`Welcome back, ${displayName}!`);

@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import type {
   BoardColumn,
+  BoardMember,
   BoardState,
   ColumnId,
+  Comment,
+  Subtask,
   Task,
   TaskDetail,
   TaskId,
@@ -19,8 +22,18 @@ type BoardStateUpdater = BoardState | ((current: BoardState) => BoardState);
 interface KanbanDrawerState {
   isOpen: boolean;
   isLoading: boolean;
+  isSubmittingComment: boolean;
   activeTaskId: TaskId | null;
   activeTask: TaskDetail | null;
+}
+
+interface AddTaskInput {
+  title?: string;
+  description?: string;
+  priority?: Task["priority"];
+  assignee?: BoardMember | null;
+  dueDate?: string | null;
+  tags?: string[];
 }
 
 interface KanbanStoreState {
@@ -40,10 +53,15 @@ interface KanbanStoreState {
   setDrawerLoading: (isLoading: boolean) => void;
   closeTaskDrawer: () => void;
 
-  addColumn: (name?: string) => ColumnId;
-  addTask: (columnId: ColumnId, title?: string) => TaskId | null;
+  addColumn: (name?: string, color?: string) => ColumnId;
+  addTask: (columnId: ColumnId, input?: AddTaskInput) => Task | null;
   updateTask: (taskId: TaskId, patch: UpdateTaskDto) => void;
+  updateTaskAssignee: (taskId: TaskId, assignee: BoardMember | null) => void;
   moveTaskToColumn: (taskId: TaskId, targetColumnId: ColumnId) => void;
+  toggleSubtask: (subtaskId: string, completed: boolean) => void;
+  addSubtask: (title: string) => void;
+  deleteSubtask: (subtaskId: string) => void;
+  addComment: (content: string, author: BoardMember) => void;
   reset: () => void;
 }
 
@@ -56,6 +74,7 @@ const emptyBoardState: BoardState = {
 const initialDrawerState: KanbanDrawerState = {
   isOpen: false,
   isLoading: false,
+  isSubmittingComment: false,
   activeTaskId: null,
   activeTask: null,
 };
@@ -95,6 +114,26 @@ function applyTaskPatch<T extends Task>(task: T, patch: UpdateTaskDto): T {
   return nextTask;
 }
 
+function patchBoardTask(
+  boardState: BoardState,
+  taskId: TaskId,
+  patch: Partial<Task>,
+): BoardState {
+  return {
+    ...boardState,
+    tasks: Object.fromEntries(
+      Object.entries(boardState.tasks).map(([columnId, tasks]) => [
+        columnId,
+        tasks.map((task) =>
+          task.id === taskId
+            ? { ...task, ...patch, updatedAt: new Date().toISOString() }
+            : task,
+        ),
+      ]),
+    ) as BoardState["tasks"],
+  };
+}
+
 export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
   projectId: null,
   boardState: emptyBoardState,
@@ -125,6 +164,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       drawer: {
         isOpen: true,
         isLoading: true,
+        isSubmittingComment: false,
         activeTaskId: task.id,
         activeTask: createTaskDetail(task),
       },
@@ -149,7 +189,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
 
   closeTaskDrawer: () => set({ drawer: initialDrawerState }),
 
-  addColumn: (name = "Untitled column") => {
+  addColumn: (name = "Untitled column", color) => {
     const id = crypto.randomUUID();
 
     set((state) => {
@@ -161,6 +201,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         id,
         projectId,
         name,
+        color,
         sortOrder: getNextSortOrder(orderedColumns, "sortOrder"),
         isProtected: false,
         createdAt: new Date().toISOString(),
@@ -185,7 +226,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
     return id;
   },
 
-  addTask: (columnId, title = "Untitled task") => {
+  addTask: (columnId, input = {}) => {
     const { boardState, projectId } = get();
     const column = boardState.columns[columnId];
 
@@ -193,23 +234,26 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
 
     const id = crypto.randomUUID();
     const columnTasks = boardState.tasks[columnId] ?? [];
+    const title = input.title?.trim() || "Untitled task";
     const task: Task = {
       id,
       projectId: projectId ?? column.projectId,
       createdBy: "current-user",
       title,
-      description: "",
-      status: TaskStatus.BACKLOG,
-      priority: TaskPriority.MEDIUM,
+      description: input.description || undefined,
+      status: TaskStatus.TODO,
+      priority: input.priority ?? TaskPriority.MEDIUM,
+      dueDate: input.dueDate ?? undefined,
       boardColumnId: columnId,
       columnOrder: getNextSortOrder(columnTasks, "columnOrder"),
       source: TaskSource.MANUAL,
       createdAt: new Date().toISOString(),
+      assignee: input.assignee ?? null,
       subtaskCount: 0,
       completedSubtaskCount: 0,
       commentCount: 0,
       attachmentCount: 0,
-      tags: [],
+      tags: input.tags ?? [],
     };
 
     set((state) => ({
@@ -222,7 +266,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       },
     }));
 
-    return id;
+    return task;
   },
 
   updateTask: (taskId, patch) =>
@@ -250,6 +294,22 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
             : state.drawer,
       };
     }),
+
+  updateTaskAssignee: (taskId, assignee) =>
+    set((state) => ({
+      boardState: patchBoardTask(state.boardState, taskId, { assignee }),
+      drawer:
+        state.drawer.activeTask?.id === taskId
+          ? {
+              ...state.drawer,
+              activeTask: {
+                ...state.drawer.activeTask,
+                assignee,
+                updatedAt: new Date().toISOString(),
+              },
+            }
+          : state.drawer,
+    })),
 
   moveTaskToColumn: (taskId, targetColumnId) =>
     set((state) => {
@@ -298,6 +358,149 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
             : state.drawer,
       };
     }),
+
+  toggleSubtask: (subtaskId, completed) =>
+    set((state) => {
+      const activeTask = state.drawer.activeTask;
+      if (!activeTask) return {};
+
+      const subtask = activeTask.subtasks.find((item) => item.id === subtaskId);
+      if (!subtask || subtask.completed === completed) return {};
+
+      const completedSubtaskCount = completed
+        ? (activeTask.completedSubtaskCount ?? 0) + 1
+        : Math.max((activeTask.completedSubtaskCount ?? 0) - 1, 0);
+      const nextActiveTask: TaskDetail = {
+        ...activeTask,
+        completedSubtaskCount,
+        subtasks: activeTask.subtasks.map((item) =>
+          item.id === subtaskId ? { ...item, completed } : item,
+        ),
+      };
+
+      return {
+        boardState: patchBoardTask(state.boardState, activeTask.id, {
+          completedSubtaskCount,
+        }),
+        drawer: {
+          ...state.drawer,
+          activeTask: nextActiveTask,
+        },
+      };
+    }),
+
+  addSubtask: (title) =>
+    set((state) => {
+      const activeTask = state.drawer.activeTask;
+      const trimmed = title.trim();
+      if (!activeTask || !trimmed) return {};
+
+      const now = new Date().toISOString();
+      const newSubtask: Subtask = {
+        id: crypto.randomUUID(),
+        taskId: activeTask.id,
+        title: trimmed,
+        completed: false,
+        position: activeTask.subtasks.length + 1,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const subtaskCount = (activeTask.subtaskCount ?? 0) + 1;
+
+      return {
+        boardState: patchBoardTask(state.boardState, activeTask.id, {
+          subtaskCount,
+        }),
+        drawer: {
+          ...state.drawer,
+          activeTask: {
+            ...activeTask,
+            subtaskCount,
+            subtasks: [...activeTask.subtasks, newSubtask],
+          },
+        },
+      };
+    }),
+
+  deleteSubtask: (subtaskId) =>
+    set((state) => {
+      const activeTask = state.drawer.activeTask;
+      if (!activeTask) return {};
+
+      const deletedSubtask = activeTask.subtasks.find(
+        (item) => item.id === subtaskId,
+      );
+      if (!deletedSubtask) return {};
+
+      const subtaskCount = Math.max((activeTask.subtaskCount ?? 0) - 1, 0);
+      const completedSubtaskCount = deletedSubtask.completed
+        ? Math.max((activeTask.completedSubtaskCount ?? 0) - 1, 0)
+        : activeTask.completedSubtaskCount;
+
+      return {
+        boardState: patchBoardTask(state.boardState, activeTask.id, {
+          subtaskCount,
+          completedSubtaskCount,
+        }),
+        drawer: {
+          ...state.drawer,
+          activeTask: {
+            ...activeTask,
+            subtaskCount,
+            completedSubtaskCount,
+            subtasks: activeTask.subtasks.filter(
+              (item) => item.id !== subtaskId,
+            ),
+          },
+        },
+      };
+    }),
+
+  addComment: (content, author) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    set((state) => {
+      const activeTask = state.drawer.activeTask;
+      if (!activeTask) return {};
+
+      const now = new Date().toISOString();
+      const newComment: Comment = {
+        id: crypto.randomUUID(),
+        taskId: activeTask.id,
+        authorId: author.id,
+        author,
+        content: trimmed,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const commentCount = (activeTask.commentCount ?? 0) + 1;
+
+      return {
+        boardState: patchBoardTask(state.boardState, activeTask.id, {
+          commentCount,
+        }),
+        drawer: {
+          ...state.drawer,
+          isSubmittingComment: true,
+          activeTask: {
+            ...activeTask,
+            commentCount,
+            comments: [...activeTask.comments, newComment],
+          },
+        },
+      };
+    });
+
+    window.setTimeout(() => {
+      set((state) => ({
+        drawer: {
+          ...state.drawer,
+          isSubmittingComment: false,
+        },
+      }));
+    }, 300);
+  },
 
   reset: () =>
     set({

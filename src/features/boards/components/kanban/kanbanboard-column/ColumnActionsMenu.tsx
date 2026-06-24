@@ -12,6 +12,7 @@ import {
 interface ColumnActionsMenuProps {
   columnId: string;
   isProtected: boolean;
+  onAddTask?: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
   onDeleteColumn?: (columnId: string) => void;
 }
@@ -19,6 +20,7 @@ interface ColumnActionsMenuProps {
 function ColumnActionsMenu({
   columnId,
   isProtected,
+  onAddTask,
   onRenameColumn,
   onDeleteColumn,
 }: ColumnActionsMenuProps) {
@@ -32,7 +34,7 @@ function ColumnActionsMenu({
       <DropdownMenuContent align="end">
         {!isProtected ? (
           <>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onAddTask?.(columnId)}>
               <Plus />
               Add task
             </DropdownMenuItem>
@@ -60,3 +62,4 @@ function ColumnActionsMenu({
 }
 
 export default ColumnActionsMenu;
+

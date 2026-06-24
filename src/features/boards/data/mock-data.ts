@@ -1,4 +1,12 @@
-import type { BoardMember, BoardState, Task, TaskDetail } from "../types";
+import type {
+  BoardMember,
+  BoardState,
+  Task,
+  TaskDetail,
+  Subtask,
+  Comment,
+  ActivityEvent,
+} from "../types";
 import { TaskPriority, TaskSource, TaskStatus } from "../types/enums";
 
 export const CURRENT_USER: BoardMember = {
@@ -25,7 +33,328 @@ export const MOCK_MEMBERS: BoardMember[] = [
 const TODAY = new Date().toISOString().slice(0, 10);
 const PROJECT_ID = "p1";
 
-const createTask = (task: Task): Task => task;
+// ─── Single source of truth ───────────────────────────────────────────────────
+// Subtasks/comments/activity live HERE. Task card counts (subtaskCount,
+// commentCount, …) are derived from these arrays below — so the board and
+// the drawer can never go out of sync again.
+
+const SUBTASKS_BY_TASK: Record<string, Omit<Subtask, "taskId">[]> = {
+  t1: [
+    {
+      id: "s-t1-1",
+      title: "Define primary/secondary color tokens",
+      completed: true,
+      position: 1,
+      createdAt: "2026-06-01T10:00:00.000Z",
+      updatedAt: "2026-06-01T10:00:00.000Z",
+    },
+    {
+      id: "s-t1-2",
+      title: "Pick type scale (xs → 3xl)",
+      completed: false,
+      position: 2,
+      createdAt: "2026-06-01T10:10:00.000Z",
+      updatedAt: "2026-06-01T10:10:00.000Z",
+    },
+    {
+      id: "s-t1-3",
+      title: "Wire tokens into tailwind.config",
+      completed: false,
+      position: 3,
+      createdAt: "2026-06-01T10:20:00.000Z",
+      updatedAt: "2026-06-01T10:20:00.000Z",
+    },
+    {
+      id: "s-t1-4",
+      title: "Document usage in Storybook",
+      completed: false,
+      position: 4,
+      createdAt: "2026-06-01T10:30:00.000Z",
+      updatedAt: "2026-06-01T10:30:00.000Z",
+    },
+  ],
+  t4: [
+    {
+      id: "s1",
+      title: "Update axios.ts and remove Bearer interceptor",
+      completed: true,
+      position: 1,
+      createdAt: "2026-06-04T10:00:00.000Z",
+      updatedAt: "2026-06-04T10:00:00.000Z",
+    },
+    {
+      id: "s2",
+      title: "Simplify authStore.setAuth to user only",
+      completed: true,
+      position: 2,
+      createdAt: "2026-06-04T10:30:00.000Z",
+      updatedAt: "2026-06-04T10:30:00.000Z",
+    },
+    {
+      id: "s3",
+      title: "Remove accessToken from authService types",
+      completed: false,
+      position: 3,
+      createdAt: "2026-06-04T11:00:00.000Z",
+      updatedAt: "2026-06-04T11:00:00.000Z",
+    },
+  ],
+  t5: [
+    {
+      id: "s-t5-1",
+      title: "Pan + zoom with wheel/trackpad",
+      completed: true,
+      position: 1,
+      createdAt: "2026-06-05T09:00:00.000Z",
+      updatedAt: "2026-06-05T09:00:00.000Z",
+    },
+    {
+      id: "s-t5-2",
+      title: "Snap-to-grid on drag end",
+      completed: true,
+      position: 2,
+      createdAt: "2026-06-05T09:20:00.000Z",
+      updatedAt: "2026-06-05T09:20:00.000Z",
+    },
+    {
+      id: "s-t5-3",
+      title: "Multi-select with marquee",
+      completed: false,
+      position: 3,
+      createdAt: "2026-06-05T09:40:00.000Z",
+      updatedAt: "2026-06-05T09:40:00.000Z",
+    },
+    {
+      id: "s-t5-4",
+      title: "Keyboard nudge (arrow keys)",
+      completed: false,
+      position: 4,
+      createdAt: "2026-06-05T10:00:00.000Z",
+      updatedAt: "2026-06-05T10:00:00.000Z",
+    },
+    {
+      id: "s-t5-5",
+      title: "Export canvas as PNG",
+      completed: false,
+      position: 5,
+      createdAt: "2026-06-05T10:20:00.000Z",
+      updatedAt: "2026-06-05T10:20:00.000Z",
+    },
+  ],
+  t6: [
+    {
+      id: "s-t6-1",
+      title: "Login form + zod schema",
+      completed: true,
+      position: 1,
+      createdAt: "2026-06-06T09:00:00.000Z",
+      updatedAt: "2026-06-06T09:00:00.000Z",
+    },
+    {
+      id: "s-t6-2",
+      title: "Register form + zod schema",
+      completed: true,
+      position: 2,
+      createdAt: "2026-06-06T09:10:00.000Z",
+      updatedAt: "2026-06-06T09:10:00.000Z",
+    },
+    {
+      id: "s-t6-3",
+      title: "Inline error states",
+      completed: true,
+      position: 3,
+      createdAt: "2026-06-06T09:20:00.000Z",
+      updatedAt: "2026-06-06T09:20:00.000Z",
+    },
+    {
+      id: "s-t6-4",
+      title: "Success/error toasts",
+      completed: true,
+      position: 4,
+      createdAt: "2026-06-06T09:30:00.000Z",
+      updatedAt: "2026-06-06T09:30:00.000Z",
+    },
+  ],
+};
+
+const COMMENTS_BY_TASK: Record<string, Omit<Comment, "taskId">[]> = {
+  t1: [
+    {
+      id: "c-t1-1",
+      authorId: MOCK_MEMBERS[1].id,
+      author: MOCK_MEMBERS[1],
+      content: "Let's keep the type scale to 6 steps max.",
+      createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t1-2",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Agreed, pushed the first pass of tokens.",
+      createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+  t3: [
+    {
+      id: "c-t3-1",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Draft is in Notion, link is in the description.",
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+  t4: [
+    {
+      id: "c1",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Finished the axios interceptor. Moving to authStore now.",
+      createdAt: new Date(Date.now() - 7200000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c2",
+      authorId: MOCK_MEMBERS[1].id,
+      author: MOCK_MEMBERS[1],
+      content: "Check header name with the backend team.",
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+  t5: [
+    {
+      id: "c-t5-1",
+      authorId: MOCK_MEMBERS[1].id,
+      author: MOCK_MEMBERS[1],
+      content: "Snap-to-grid feels great, nice work.",
+      createdAt: new Date(Date.now() - 9 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t5-2",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Marquee select is next, should land tomorrow.",
+      createdAt: new Date(Date.now() - 4 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t5-3",
+      authorId: MOCK_MEMBERS[2].id,
+      author: MOCK_MEMBERS[2],
+      content: "Can we also support pinch-to-zoom on trackpad?",
+      createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+  t6: [
+    {
+      id: "c-t6-1",
+      authorId: MOCK_MEMBERS[3].id,
+      author: MOCK_MEMBERS[3],
+      content: "Tested both forms, validation looks solid.",
+      createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t6-2",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Thanks! Added a loading state on submit too.",
+      createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t6-3",
+      authorId: MOCK_MEMBERS[2].id,
+      author: MOCK_MEMBERS[2],
+      content: "LGTM, approving.",
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t6-4",
+      authorId: MOCK_MEMBERS[1].id,
+      author: MOCK_MEMBERS[1],
+      content: "One nit on the password field width, fixed.",
+      createdAt: new Date(Date.now() - 1800000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+  t7: [
+    {
+      id: "c-t7-1",
+      authorId: MOCK_MEMBERS[3].id,
+      author: MOCK_MEMBERS[3],
+      content: "Using recharts for the bar chart, WIP.",
+      createdAt: new Date(Date.now() - 10 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+    {
+      id: "c-t7-2",
+      authorId: MOCK_MEMBERS[0].id,
+      author: MOCK_MEMBERS[0],
+      content: "Sounds good, keep the colors on-brand.",
+      createdAt: new Date(Date.now() - 8 * 3600000).toISOString(),
+      updatedAt: "",
+    },
+  ],
+};
+
+const ACTIVITY_BY_TASK: Record<string, Omit<ActivityEvent, "id">[]> = {
+  t4: [
+    {
+      actor: MOCK_MEMBERS[0],
+      action: "moved this card to In Progress",
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+    },
+  ],
+  t6: [
+    {
+      actor: MOCK_MEMBERS[0],
+      action: "moved this card to In Review",
+      createdAt: new Date(Date.now() - 43200000).toISOString(),
+    },
+  ],
+};
+
+let activityIdCounter = 0;
+
+function buildActivityLog(taskId: string): ActivityEvent[] {
+  return (ACTIVITY_BY_TASK[taskId] ?? []).map((event) => ({
+    ...event,
+    id: `a-${taskId}-${activityIdCounter++}`,
+  }));
+}
+
+function buildSubtasks(taskId: string): Subtask[] {
+  return (SUBTASKS_BY_TASK[taskId] ?? []).map((s) => ({ ...s, taskId }));
+}
+
+function buildComments(taskId: string): Comment[] {
+  return (COMMENTS_BY_TASK[taskId] ?? []).map((c) => ({ ...c, taskId }));
+}
+
+// ─── Task cards — counts are derived, never hand-typed ───────────────────────
+type TaskInput = Omit<
+  Task,
+  "subtaskCount" | "completedSubtaskCount" | "commentCount"
+>;
+
+const createTask = (task: TaskInput): Task => {
+  const subtasks = buildSubtasks(task.id);
+  const comments = buildComments(task.id);
+
+  return {
+    ...task,
+    subtaskCount: subtasks.length,
+    completedSubtaskCount: subtasks.filter((s) => s.completed).length,
+    commentCount: comments.length,
+  };
+};
 
 const backlogTasks = [
   createTask({
@@ -42,9 +371,6 @@ const backlogTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-01T09:00:00.000Z",
     assignee: MOCK_MEMBERS[1],
-    subtaskCount: 4,
-    completedSubtaskCount: 1,
-    commentCount: 2,
     attachmentCount: 0,
     tags: ["design"],
   }),
@@ -62,9 +388,6 @@ const backlogTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-02T09:00:00.000Z",
     assignee: MOCK_MEMBERS[2],
-    subtaskCount: 0,
-    completedSubtaskCount: 0,
-    commentCount: 0,
     attachmentCount: 1,
     tags: ["backend"],
   }),
@@ -82,9 +405,6 @@ const backlogTasks = [
     source: TaskSource.AI,
     createdAt: "2026-06-03T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    subtaskCount: 0,
-    completedSubtaskCount: 0,
-    commentCount: 1,
     attachmentCount: 0,
     tags: [],
   }),
@@ -106,9 +426,6 @@ const inProgressTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-04T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    subtaskCount: 3,
-    completedSubtaskCount: 2,
-    commentCount: 5,
     attachmentCount: 0,
     tags: ["auth"],
   }),
@@ -126,9 +443,6 @@ const inProgressTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-05T09:00:00.000Z",
     assignee: MOCK_MEMBERS[1],
-    subtaskCount: 5,
-    completedSubtaskCount: 2,
-    commentCount: 3,
     attachmentCount: 0,
     tags: ["canvas"],
   }),
@@ -148,9 +462,6 @@ const reviewTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-06T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    subtaskCount: 4,
-    completedSubtaskCount: 4,
-    commentCount: 4,
     attachmentCount: 1,
     tags: ["auth"],
   }),
@@ -168,9 +479,6 @@ const reviewTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-07T09:00:00.000Z",
     assignee: MOCK_MEMBERS[3],
-    subtaskCount: 0,
-    completedSubtaskCount: 0,
-    commentCount: 2,
     attachmentCount: 0,
     tags: ["dashboard"],
   }),
@@ -190,9 +498,6 @@ const doneTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-08T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    subtaskCount: 0,
-    completedSubtaskCount: 0,
-    commentCount: 0,
     attachmentCount: 0,
     tags: ["infra"],
   }),
@@ -209,9 +514,6 @@ const doneTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-09T09:00:00.000Z",
     assignee: MOCK_MEMBERS[2],
-    subtaskCount: 0,
-    completedSubtaskCount: 0,
-    commentCount: 0,
     attachmentCount: 0,
     tags: ["routing"],
   }),
@@ -270,65 +572,18 @@ export const MOCK_TASKS_BY_ID: Record<string, Task> = Object.values(
     return tasksById;
   }, {});
 
-export const MOCK_TASK_DETAIL: Partial<Record<string, TaskDetail>> = {
-  t4: {
-    ...MOCK_TASKS_BY_ID.t4,
-    subtasks: [
-      {
-        id: "s1",
-        taskId: "t4",
-        title: "Update axios.ts and remove Bearer interceptor",
-        completed: true,
-        position: 1,
-        createdAt: "2026-06-04T10:00:00.000Z",
-        updatedAt: "2026-06-04T10:00:00.000Z",
-      },
-      {
-        id: "s2",
-        taskId: "t4",
-        title: "Simplify authStore.setAuth to user only",
-        completed: true,
-        position: 2,
-        createdAt: "2026-06-04T10:30:00.000Z",
-        updatedAt: "2026-06-04T10:30:00.000Z",
-      },
-      {
-        id: "s3",
-        taskId: "t4",
-        title: "Remove accessToken from authService types",
-        completed: false,
-        position: 3,
-        createdAt: "2026-06-04T11:00:00.000Z",
-        updatedAt: "2026-06-04T11:00:00.000Z",
-      },
-    ],
-    comments: [
-      {
-        id: "c1",
-        taskId: "t4",
-        authorId: MOCK_MEMBERS[0].id,
-        author: MOCK_MEMBERS[0],
-        content: "Finished the axios interceptor. Moving to authStore now.",
-        createdAt: new Date(Date.now() - 7200000).toISOString(),
-        updatedAt: "",
-      },
-      {
-        id: "c2",
-        taskId: "t4",
-        authorId: MOCK_MEMBERS[1].id,
-        author: MOCK_MEMBERS[1],
-        content: "Check header name with the backend team.",
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        updatedAt: "",
-      },
-    ],
-    activityLog: [
-      {
-        id: "a1",
-        actor: MOCK_MEMBERS[0],
-        action: "moved this card to In Progress",
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ],
-  },
-};
+// Built for EVERY task (not just t4) from the same subtasks/comments/activity
+// data the cards' counts came from — so opening the drawer always matches
+// what the board already showed.
+export const MOCK_TASK_DETAIL: Partial<Record<string, TaskDetail>> =
+  Object.values(MOCK_TASKS_BY_ID).reduce<
+    Partial<Record<string, TaskDetail>>
+  >((acc, task) => {
+    acc[task.id] = {
+      ...task,
+      subtasks: buildSubtasks(task.id),
+      comments: buildComments(task.id),
+      activityLog: buildActivityLog(task.id),
+    };
+    return acc;
+  }, {});

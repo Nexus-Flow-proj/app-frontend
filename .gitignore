@@ -1,3 +1,17 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+build
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.local
+
 # Logs
 logs
 *.log
@@ -7,16 +21,26 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Test and coverage output
+coverage
+.nyc_output
+
+# Caches
+.vite
+.eslintcache
+.stylelintcache
+.cache
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Visual Studio files
 *.suo
 *.ntvs*
 *.njsproj

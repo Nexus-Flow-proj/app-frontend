@@ -10,6 +10,7 @@ export const ROUTES = {
 
   PROJECT_NEW: "/projects/new",
 
+  PROJECT_OVERVIEW: (id: string) => `/projects/${id}`,
   PROJECT_SETTINGS: (id: string) => `/projects/${id}/settings`,
   WORKSHOP: (id: string) => `/projects/${id}/workshop`,
   BOARDS: (id: string) => `/projects/${id}/boards`,

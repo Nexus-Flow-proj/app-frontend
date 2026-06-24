@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { type ComponentPropsWithoutRef } from "react";
 import { NavLink } from "react-router";
 import {
   SidebarGroup,
@@ -11,7 +11,7 @@ import {
 export interface NavSecondaryItem {
   title: string;
   url: string;
-  icon: ReactNode;
+  icon: React.ComponentType;
 }
 
 interface NavSecondaryProps extends ComponentPropsWithoutRef<
@@ -36,7 +36,7 @@ export function NavSecondary({ items, ...props }: NavSecondaryProps) {
                       : ""
                   }
                 >
-                  {item.icon}
+                  <item.icon />
                   <span>{item.title}</span>
                 </NavLink>
               </SidebarMenuButton>

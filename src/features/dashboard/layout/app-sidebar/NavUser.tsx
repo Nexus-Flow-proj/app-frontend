@@ -5,7 +5,6 @@ import {
   LogOutIcon,
   SparklesIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,18 +18,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
-import type { User } from "@/types/models/user";
-import { formatInitials } from "@/lib/format";
+import { useAuthStore } from "@/store/authStore";
+import { MOCK_USER } from "../../mock";
+import NavUserInfo from "./NavUserInfo";
 
-interface NavUserProps {
-  user: User;
-  onLogout: () => void;
-}
+export function NavUser() {
+  const user = useAuthStore((s) => s.user) ?? MOCK_USER;
+  const logout = useAuthStore((s) => s.logout);
 
-export function NavUser({ user, onLogout }: NavUserProps) {
-  const { isMobile } = useSidebar();
+  const plan: string = "Free"; // Replace with actual plan logic if available
 
   return (
     <SidebarMenu>
@@ -41,49 +38,30 @@ export function NavUser({ user, onLogout }: NavUserProps) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-indigo-100 text-indigo-700 font-semibold text-xs">
-                  {formatInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-              </div>
-              <ChevronsUpDownIcon className="ml-auto size-4" />
+              <NavUserInfo
+                avatarUrl={user.avatar}
+                email={user.email}
+                name={`${user.firstName} ${user.lastName}`}
+              />
+              <ChevronsUpDownIcon />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg bg-indigo-100 text-indigo-700 font-semibold text-xs">
-                    {formatInitials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                </div>
+          <DropdownMenuContent className="bg-sidebar-accent border-sidebar-accent-foreground text-sidebar-accent-foreground ">
+            <DropdownMenuLabel>
+              <div className="flex items-center gap-2 text-left text-sm">
+                <NavUserInfo
+                  avatarUrl={user.avatar}
+                  email={user.email}
+                  name={`${user.firstName} ${user.lastName}`}
+                />
               </div>
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem disabled>
+              <DropdownMenuItem disabled={plan !== "Free"}>
                 <SparklesIcon />
                 Upgrade to Pro
               </DropdownMenuItem>
@@ -104,10 +82,7 @@ export function NavUser({ user, onLogout }: NavUserProps) {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              onClick={onLogout}
-              className="text-red-600 focus:text-red-600 focus:bg-red-50"
-            >
+            <DropdownMenuItem onClick={logout} variant="destructive">
               <LogOutIcon />
               Log out
             </DropdownMenuItem>

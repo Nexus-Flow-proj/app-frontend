@@ -1,4 +1,4 @@
-interface BreadcrumbSegment {
+export interface BreadcrumbSegment {
   label: string;
   href?: string;
 }

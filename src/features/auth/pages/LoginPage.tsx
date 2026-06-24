@@ -1,18 +1,32 @@
+import CardAuth from "../components/CardAuth";
 import { LoginForm } from "../components/LoginForm";
+import AuthNavigator from "../components/AuthNavigator";
 
-export default function LoginPage() {
+function LoginPage() {
   return (
     <>
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Welcome back
-        </h1>
-        <p className="mt-1.5 text-sm text-slate-500">
-          Sign in to your Nexus-Flow account
-        </p>
-      </div>
+      <CardAuth
+        title="Welcome back"
+        subtitle="Login with your Google account"
+        Navigator={
+          <AuthNavigator
+            linkTo="/register"
+            linkText="Sign up"
+            text="Don't have an account?"
+          />
+        }
+      >
+        <LoginForm />
+      </CardAuth>
 
-      <LoginForm />
+      <p className="mx-auto mt-6 max-w-70 text-center text-xs font-medium leading-5 text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <span className="underline underline-offset-2">Terms of Service</span>{" "}
+        and <span className="underline underline-offset-2">Privacy Policy</span>
+        .
+      </p>
     </>
   );
 }
+
+export default LoginPage;

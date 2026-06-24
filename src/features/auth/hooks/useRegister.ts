@@ -3,7 +3,8 @@ import { toast } from "sonner";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useAuthStore } from "@/store";
 import { authService } from "../services";
-import type { AuthResponseData, RegisterDto } from "../types";
+import type { AuthResponseData } from "../types/auth-response";
+import type { RegisterDto } from "../types/auth-dto";
 
 export function useRegister() {
   const { setAuth } = useAuthStore();

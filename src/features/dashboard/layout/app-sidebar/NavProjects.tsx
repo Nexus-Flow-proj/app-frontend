@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
@@ -36,7 +37,7 @@ import { useAuthStore, useProjectStore } from "@/store";
 import { UserRole } from "@/types/enums";
 import type { Project } from "@/types/models/project";
 import { ROUTES } from "@/constants";
-import { formatInitials } from "@/lib/format";
+import { formatInitials } from "@/lib/format/text";
 
 interface NavProjectsProps {
   projects: Project[];
@@ -68,15 +69,11 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center justify-between">
-        <span>Projects</span>
-        <button
-          onClick={() => navigate(ROUTES.PROJECT_NEW)}
-          className="flex size-4 items-center justify-center rounded hover:text-sidebar-foreground text-sidebar-foreground/60 transition-colors"
-          title="New project"
-        >
-          <PlusIcon className="size-3.5" />
-        </button>
+      <SidebarGroupLabel>
+        Projects
+        <SidebarGroupAction>
+          <PlusIcon className="size-3.5!" />
+        </SidebarGroupAction>
       </SidebarGroupLabel>
       <SidebarMenu>
         {projects.length === 0 && (
@@ -99,7 +96,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           >
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={project.name}>
-                <CollapsibleTrigger className="flex items-center gap-2 w-full">
+                <CollapsibleTrigger>
                   <span
                     className="flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white leading-none"
                     style={{ backgroundColor: project.color }}

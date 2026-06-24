@@ -1,12 +1,6 @@
 import type { ComponentProps } from "react";
 import { Link } from "react-router";
 import {
-  LayoutDashboardIcon,
-  LifeBuoyIcon,
-  SendIcon,
-  LayersIcon,
-} from "lucide-react";
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -15,41 +9,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuthStore } from "@/store";
-import { UserRole } from "@/types/enums";
-import { NavMain, type NavMainItem } from "./NavMain";
+import { NavMain } from "./NavMain";
 import { NavProjects } from "./NavProjects";
-import { NavSecondary, type NavSecondaryItem } from "./NavSecondary";
+import { NavSecondary } from "./NavSecondary";
 import { NavUser } from "./NavUser";
 import { SearchForm } from "./SearchForm";
-import { MOCK_PROJECTS, MOCK_USER } from "../../mock";
-
-// Static navigation items
-const NAV_MAIN: NavMainItem[] = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: <LayoutDashboardIcon />,
-  },
-];
-
-const NAV_SECONDARY: NavSecondaryItem[] = [
-  {
-    title: "Support",
-    url: "#",
-    icon: <LifeBuoyIcon />,
-  },
-  {
-    title: "Feedback",
-    url: "#",
-    icon: <SendIcon />,
-  },
-];
+import { MOCK_PROJECTS } from "../../mock";
+import { NAV_MAIN, NAV_SECONDARY } from "../../constants/navItems";
+import Logo from "@/components/shared/Logo";
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
-  const user = useAuthStore((s) => s.user) ?? MOCK_USER;
-  const logout = useAuthStore((s) => s.logout);
-
   const projects = MOCK_PROJECTS;
   const projectsLoading = false;
 
@@ -64,17 +33,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link to="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-500/40">
-                  <LayersIcon className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold tracking-tight">
-                    Nexus<span className="text-indigo-500">-Flow</span>
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.role === UserRole.ADMIN ? "Admin" : "Team Member"}
-                  </span>
-                </div>
+                <Logo />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -92,7 +51,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={user} onLogout={logout} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

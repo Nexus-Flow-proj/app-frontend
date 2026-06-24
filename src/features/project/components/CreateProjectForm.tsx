@@ -1,11 +1,13 @@
 import { useId } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FormInput } from "@/components/shared/FormInput";
+import { cn } from "@/lib/utils";
+import { DEFAULT_PROJECT_COLOR, PROJECT_COLORS } from "../constants";
 import { useCreateProject } from "../hooks";
 import {
   createProjectSchema,
@@ -14,19 +16,33 @@ import {
 
 export function CreateProjectForm() {
   const descriptionId = useId();
+  const colorId = useId();
   const { mutate: createProject, isPending } = useCreateProject();
 
   const {
     register,
+    control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateProjectFormValues>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: {
       name: "",
       description: "",
+      color: DEFAULT_PROJECT_COLOR,
     },
   });
+
+  const selectedColor = useWatch({ control, name: "color" });
+
+  function handleColorChange(color: string) {
+    setValue("color", color, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  }
 
   return (
     <form
@@ -72,7 +88,7 @@ export function CreateProjectForm() {
         )}
       </div>
 
-      {/* <div className="space-y-2">
+      <div className="space-y-2">
         <Label id={colorId} className="text-xs font-bold text-foreground">
           Project color<span className="text-destructive">*</span>
         </Label>
@@ -113,7 +129,7 @@ export function CreateProjectForm() {
         {errors.color?.message && (
           <p className="text-xs text-destructive">{errors.color.message}</p>
         )}
-      </div> */}
+      </div>
 
       <Button
         type="submit"

@@ -22,7 +22,7 @@ export const createProjectSchema = z.object({
     )
     .optional()
     .or(z.literal("")),
-  // color: z.string().min(1, "Choose a project color"),
+  color: z.string().min(1, "Choose a project color"),
 });
 
 export type CreateProjectFormValues = z.infer<typeof createProjectSchema>;

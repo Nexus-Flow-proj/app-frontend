@@ -75,7 +75,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           <PlusIcon className="size-3.5!" />
         </SidebarGroupAction>
       </SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="space-y-0.5">
         {projects.length === 0 && (
           <SidebarMenuItem>
             <SidebarMenuButton

@@ -1,7 +1,7 @@
 export interface ApiResponse<T> {
   success: boolean;
-  message: string;
-  error?: string;
+  message: unknown;
+  error?: unknown;
   statusCode: number;
   data: T;
 }
@@ -20,7 +20,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 export interface ApiError {
-  message?: string | string[];
-  error?: string;
+  message?: unknown;
+  error?: unknown;
   statusCode?: number;
 }

@@ -1,5 +1,6 @@
 import type { ApiError } from "@/types";
 import type { AxiosError } from "axios";
+import { toApiMessageText } from "./Messages";
 
 export function getErrorMessage(
   error: AxiosError<ApiError>,
@@ -11,12 +12,16 @@ export function getErrorMessage(
     return bodyMessage.length > 0 ? bodyMessage : "Something went wrong";
   }
 
-  if (bodyMessage) {
-    return bodyMessage;
+  const messageText = toApiMessageText(bodyMessage);
+
+  if (messageText) {
+    return messageText;
   }
 
-  if (error.response?.data?.error) {
-    return error.response.data.error;
+  const errorText = toApiMessageText(error.response?.data?.error);
+
+  if (errorText) {
+    return errorText;
   }
 
   if (statusCode === 409) {
@@ -38,7 +43,7 @@ export function normalizeApiError(error: AxiosError<ApiError>): ApiError {
   console.log("normalizeApiError", error);
   return {
     message: getErrorMessage(error),
-    error: error.response?.data?.error,
+    error: toApiMessageText(error.response?.data?.error),
     statusCode:
       error.response?.status ?? error.response?.data?.statusCode ?? 500,
   };

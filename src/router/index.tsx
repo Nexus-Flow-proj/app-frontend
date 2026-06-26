@@ -138,23 +138,21 @@ const router = createBrowserRouter([
                 ],
               },
 
-              // Member routes
-              {
-                element: <MemberGuard />,
-                children: [
-                  {
-                    path: "boards",
-                    element: <WithSuspense Component={BoardPages.TeamBoard} />,
-                  },
-                  {
-                    path: "my-workspace",
-                    element: (
-                      <WithSuspense Component={WorkshopPages.MiniWorkshop} />
-                    ),
-                  },
-                ],
-              },
             ],
+          },
+        ],
+      },
+      // Member routes render without the dashboard shell.
+      {
+        element: <MemberGuard />,
+        children: [
+          {
+            path: "/projects/:id/boards",
+            element: <WithSuspense Component={BoardPages.TeamBoard} />,
+          },
+          {
+            path: "/projects/:id/my-workspace",
+            element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
           },
         ],
       },

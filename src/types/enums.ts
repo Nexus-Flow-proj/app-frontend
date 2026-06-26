@@ -28,8 +28,10 @@ export type TaskType = (typeof TaskType)[keyof typeof TaskType];
 export const InviteStatus = {
   PENDING: "PENDING",
   ACCEPTED: "ACCEPTED",
+  REJECTED: "REJECTED",
   EXPIRED: "EXPIRED",
-  REVOKED: "REVOKED",
+  CANCELLED: "CANCELLED",
+
 } as const;
 export type InviteStatus = (typeof InviteStatus)[keyof typeof InviteStatus];
 
@@ -58,15 +60,21 @@ export type CanvasObjectType =
 
 export const NotificationType = {
   TASK_ASSIGNED: "TASK_ASSIGNED",
+  TASK_UNASSIGNED: "TASK_UNASSIGNED",
   TASK_UPDATED: "TASK_UPDATED",
-  TASK_COMPLETED: "TASK_COMPLETED",
+  TASK_DUE_SOON: "TASK_DUE_SOON",
+
   COMMENT_ADDED: "COMMENT_ADDED",
-  INVITE_RECEIVED: "INVITE_RECEIVED",
-  INVITE_ACCEPTED: "INVITE_ACCEPTED",
-  PROJECT_UPDATED: "PROJECT_UPDATED",
-  MEMBER_JOINED: "MEMBER_JOINED",
-  MENTION: "MENTION",
+  COMMENT_REPLY: "COMMENT_REPLY",
+
+  INVITATION_RECEIVED: "INVITATION_RECEIVED",
+  INVITATION_ACCEPTED: "INVITATION_ACCEPTED",
+  INVITATION_REJECTED: "INVITATION_REJECTED",
+  INVITATION_CANCELLED: "INVITATION_CANCELLED",
+
+  REMOVED_FROM_PROJECT: "REMOVED_FROM_PROJECT"
 } as const;
+
 export type NotificationType =
   (typeof NotificationType)[keyof typeof NotificationType];
 

@@ -19,6 +19,7 @@ import {
   type RetryableRequestConfig,
 } from "./refresh";
 import { AUTH_REFRESH_PATH } from "./routes";
+import { queryClient } from "../queryClient";
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -83,6 +84,7 @@ api.interceptors.response.use(
 
       processRefreshQueue(normalizedRefreshError);
       useAuthStore.getState().logout();
+      queryClient.clear();
 
       if (typeof window !== "undefined") {
         await navigateToLogin();

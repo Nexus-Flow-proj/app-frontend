@@ -15,7 +15,10 @@ import {
 
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { AddColumnDialog } from "../components/kanban/AddColumnDialog";
-import { AddTaskDialog, type NewTaskFormData } from "../components/kanban/AddTaskDialog";
+import {
+  AddTaskDialog,
+  type NewTaskFormData,
+} from "../components/kanban/AddTaskDialog";
 import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
 import { BoardFilters } from "../components/Topbar/BoardFilters";
 import { BoardSearchBar } from "../components/Topbar/BoardSearchBar";
@@ -36,6 +39,7 @@ import {
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
+import BoardInfo from "../components/Topbar/BoardInfo";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -51,7 +55,9 @@ const boardCollisionStrategy: CollisionDetection = (args) => {
   }
 
   const pointerCollisions = pointerWithin(args);
-  return pointerCollisions.length > 0 ? pointerCollisions : closestCorners(args);
+  return pointerCollisions.length > 0
+    ? pointerCollisions
+    : closestCorners(args);
 };
 
 function createEmptyTaskDetail(task: Task): TaskDetail {
@@ -159,12 +165,7 @@ function BoardsPage() {
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <header className="border-b border-border shrink-0">
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-sm font-semibold text-foreground">
-              Team Board
-            </h1>
-            <span className="text-xs text-muted-foreground">- {projectId}</span>
-          </div>
+          <BoardInfo />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
             <BoardSearchBar
@@ -248,7 +249,9 @@ function BoardsPage() {
         isLoading={drawer.isLoading}
         isSubmittingComment={drawer.isSubmittingComment}
         onClose={closeTaskDrawer}
-        onUpdatePriority={(taskId, priority) => updateTask(taskId, { priority })}
+        onUpdatePriority={(taskId, priority) =>
+          updateTask(taskId, { priority })
+        }
         onUpdateAssignee={(taskId, assigneeId) =>
           updateTaskAssignee(
             taskId,
@@ -258,7 +261,9 @@ function BoardsPage() {
               : null,
           )
         }
-        onUpdateDueDate={(taskId, date) => updateTask(taskId, { dueDate: date })}
+        onUpdateDueDate={(taskId, date) =>
+          updateTask(taskId, { dueDate: date })
+        }
         onMoveToColumn={moveTaskToColumn}
         onToggleSubtask={toggleSubtask}
         onAddSubtask={addSubtask}

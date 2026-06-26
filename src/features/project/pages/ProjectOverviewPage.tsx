@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router";
 import { dateformat } from "@/lib/format/date";
+import { useAuthStore } from "@/store";
 import {
   ProjectActivityFeedCard,
   ProjectDetailsCard,
@@ -11,10 +12,12 @@ import {
   type ProjectActivityItem,
 } from "../components/overview";
 import { useProject, useProjectMembers } from "../hooks";
+import { findProjectMemberForUser, isProjectOwner } from "../utils/roles";
 
 export default function ProjectOverviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const {
     data: project,
     isLoading: isProjectLoading,
@@ -37,8 +40,10 @@ export default function ProjectOverviewPage() {
     taskCount > 0 ? Math.round((completedTaskCount / taskCount) * 100) : 0;
   const createdAt = project.created_at ?? "";
   const updatedAt = project.updated_at ?? "";
-  const adminCount = members.filter((member) => member.isAdmin).length;
-  const owner = members.find((member) => member.isAdmin) ?? members[0];
+  const ownerCount = members.filter((member) => isProjectOwner(member)).length;
+  const owner = members.find((member) => isProjectOwner(member)) ?? members[0];
+  const currentMember = findProjectMemberForUser(members, user);
+  const canManageSettings = isProjectOwner(currentMember);
   const ownerName = owner
     ? `${owner.firstName} ${owner.lastName}`.trim() || owner.email
     : "Not loaded";
@@ -66,6 +71,7 @@ export default function ProjectOverviewPage() {
         <ProjectOverviewHero
           project={project}
           createdAt={createdAt}
+          canManageSettings={canManageSettings}
           onNavigate={navigate}
         />
         <ProjectStatsGrid
@@ -80,7 +86,7 @@ export default function ProjectOverviewPage() {
         <div className="grid">
           <ProjectMembersCard
             members={members}
-            adminCount={adminCount}
+            ownerCount={ownerCount}
             isLoading={isMembersLoading}
           />
         </div>

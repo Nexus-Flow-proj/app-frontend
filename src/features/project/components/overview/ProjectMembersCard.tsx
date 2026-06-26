@@ -12,13 +12,13 @@ import { ProjectMemberRow } from "./ProjectMemberRow";
 
 interface ProjectMembersCardProps {
   members: ProjectMemberSummary[];
-  adminCount: number;
+  ownerCount: number;
   isLoading: boolean;
 }
 
 export function ProjectMembersCard({
   members,
-  adminCount,
+  ownerCount,
   isLoading,
 }: ProjectMembersCardProps) {
   return (
@@ -27,7 +27,7 @@ export function ProjectMembersCard({
         <CardTitle>Project members</CardTitle>
         <CardDescription>
           {members.length} connected member{members.length === 1 ? "" : "s"} ·{" "}
-          {adminCount} admin{adminCount === 1 ? "" : "s"}
+          {ownerCount} owner{ownerCount === 1 ? "" : "s"}
         </CardDescription>
       </CardHeader>
       <CardContent>

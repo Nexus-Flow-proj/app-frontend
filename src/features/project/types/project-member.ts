@@ -1,3 +1,5 @@
+import type { ProjectRole } from "@/types";
+
 export interface ProjectMemberSummary {
   id: string;
   projectId: string;
@@ -7,7 +9,7 @@ export interface ProjectMemberSummary {
   lastName: string;
   title: string | null;
   avatarUrl: string | null;
-  roleLabel: string;
-  isAdmin: boolean;
+  roleLabel: ProjectRole;
+  isAdmin?: boolean;
   joinedAt: string;
 }

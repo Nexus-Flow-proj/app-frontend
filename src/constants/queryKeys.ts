@@ -11,6 +11,8 @@ export const QUERY_KEYS = {
       [...QUERY_KEYS.projects.all, "members", id] as const,
     invites: (id: string) =>
       [...QUERY_KEYS.projects.all, "invites", id] as const,
+    invitation: (token: string) =>
+      [...QUERY_KEYS.projects.all, "invitation", token] as const,
   },
   tasks: {
     all: ["tasks"] as const,

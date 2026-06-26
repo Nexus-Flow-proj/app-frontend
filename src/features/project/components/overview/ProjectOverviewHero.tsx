@@ -13,12 +13,14 @@ import type { ProjectDetails } from "../../types";
 interface ProjectOverviewHeroProps {
   project: ProjectDetails;
   createdAt: string;
+  canManageSettings: boolean;
   onNavigate: (to: string) => void;
 }
 
 export function ProjectOverviewHero({
   project,
   createdAt,
+  canManageSettings,
   onNavigate,
 }: ProjectOverviewHeroProps) {
   return (
@@ -54,7 +56,7 @@ export function ProjectOverviewHero({
         </div>
       </div>
 
-      <div className="grid w-full gap-2 sm:grid-cols-3 lg:w-auto lg:min-w-108">
+      <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-72">
         <Button
           size="lg"
           className="justify-center gap-2"
@@ -72,15 +74,17 @@ export function ProjectOverviewHero({
           <KanbanSquareIcon data-icon="inline-start" className="size-4" />
           <span>Board</span>
         </Button>
-        <Button
-          size="lg"
-          variant="surface"
-          className="justify-center gap-2"
-          onClick={() => onNavigate(ROUTES.PROJECT_SETTINGS(project.id))}
-        >
-          <Settings2Icon data-icon="inline-start" className="size-4" />
-          <span>Settings</span>
-        </Button>
+        {canManageSettings && (
+          <Button
+            size="lg"
+            variant="surface"
+            className="justify-center gap-2"
+            onClick={() => onNavigate(ROUTES.PROJECT_SETTINGS(project.id))}
+          >
+            <Settings2Icon data-icon="inline-start" className="size-4" />
+            <span>Settings</span>
+          </Button>
+        )}
       </div>
     </div>
   );

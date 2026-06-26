@@ -31,6 +31,9 @@ const DashboardPages = {
 const ProjectPages = {
   Overview: lazy(() => import("@/features/project/pages/ProjectOverviewPage")),
   Create: lazy(() => import("@/features/project/pages/CreateProjectPage")),
+  Invitation: lazy(
+    () => import("@/features/project/pages/ProjectInvitationPage"),
+  ),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
 };
 
@@ -93,6 +96,10 @@ const router = createBrowserRouter([
         element: <WithSuspense Component={AuthPages.InviteAccept} />,
       },
     ],
+  },
+  {
+    path: "project/invitation/:token",
+    element: <WithSuspense Component={ProjectPages.Invitation} />,
   },
 
   // ── Auth-required routes

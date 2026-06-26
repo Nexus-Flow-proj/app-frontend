@@ -81,3 +81,10 @@ export const MemberRole = {
   MEMBER: "MEMBER",
 } as const;
 export type MemberRole = (typeof MemberRole)[keyof typeof MemberRole];
+
+export const ProjectRole = {
+  OWNER: "OWNER",
+  EDITOR: "EDITOR",
+  VIEWER: "VIEWER",
+} as const;
+export type ProjectRole = (typeof ProjectRole)[keyof typeof ProjectRole];

@@ -182,7 +182,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border;
+  }
+  body:hover {
+    @apply scrollbar-thumb-muted-foreground/30;
   }
   html {
     @apply font-sans;

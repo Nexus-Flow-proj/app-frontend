@@ -1,16 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants";
-import { useAuthStore } from "@/store";
+import { useApiQuery } from "@/hooks/useApiQuery";
 import { authService } from "../services";
 
-export function useMe() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-
-  return useQuery({
-    queryKey: QUERY_KEYS.auth.me,
-    queryFn: authService.me,
-    select: (res) => res.data,
-    enabled: isAuthenticated,
+export function useMe(enabled = true) {
+  return useApiQuery(QUERY_KEYS.auth.me, authService.me, {
+    enabled,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });

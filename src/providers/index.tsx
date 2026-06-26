@@ -15,9 +15,10 @@ function Providers({ children }: ProvidersProps) {
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <Toaster
             richColors
+            expand={true}
             position="top-right"
-            expand={false}
             toastOptions={{ duration: 3500 }}
+            closeButton
           />
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>

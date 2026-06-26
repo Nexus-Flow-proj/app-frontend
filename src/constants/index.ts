@@ -1,4 +1,3 @@
-export * from "./cookies";
 export * from "./query";
 export * from "./routing";
 export * from "./BackendApisConfig";

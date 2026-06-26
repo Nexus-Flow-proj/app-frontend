@@ -1,12 +1,17 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/shared/FormInput";
 import { loginSchema, type LoginFormValues } from "../validation";
 import { useLogin } from "../hooks";
+import MySeparator from "@/components/shared/MySeparator";
+import AuthErrorMessage from "./AuthErrorMessage";
+import GoogleAuthBtn from "./GoogleAuthBtn";
 
 export function LoginForm() {
-  const { mutate: login, isPending } = useLogin();
+  const { mutate: login, isPending, error } = useLogin();
 
   const {
     register,
@@ -16,79 +21,55 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
-      {/* Email */}
-      <div className="space-y-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-slate-700">
-          Email
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            disabled={isPending}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-            {...register("email")}
-          />
-        </div>
-        {errors.email && (
-          <p className="text-xs text-red-600">{errors.email.message}</p>
-        )}
-      </div>
+      <GoogleAuthBtn isPending={isPending} text="Login with Google" />
 
-      {/* Password */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-slate-700"
-          >
-            Password
-          </label>
+      <MySeparator text="Or continue with" />
+
+      <FormInput
+        id="email"
+        label="Email"
+        type="text"
+        autoComplete="email"
+        placeholder="m@example.com"
+        disabled={isPending}
+        leftIcon={<Mail className="size-4" />}
+        error={errors.email?.message}
+        {...register("email")}
+        required
+      />
+
+      <FormInput
+        id="password"
+        label="Password"
+        type="password"
+        placeholder="Password"
+        autoComplete="current-password"
+        disabled={isPending}
+        leftIcon={<Lock className="size-4" />}
+        error={errors.password?.message}
+        showPasswordToggle
+        labelAction={
           <Link
             to="/forgot-password"
-            className="text-xs text-indigo-600 hover:underline"
+            className="text-xs font-semibold text-primary hover:underline"
           >
-            Forgot password?
+            Forgot your password?
           </Link>
-        </div>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            disabled={isPending}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-            {...register("password")}
-          />
-        </div>
-        {errors.password && (
-          <p className="text-xs text-red-600">{errors.password.message}</p>
-        )}
-      </div>
+        }
+        {...register("password")}
+        required
+      />
 
-      <button
+      <AuthErrorMessage error={error} />
+
+      <Button
         type="submit"
-        disabled={isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        isLoading={isPending}
+        size="lg"
+        className="w-full text-xs font-bold"
       >
-        {isPending && <Loader2 className="size-4 animate-spin" />}
-        {isPending ? "Signing in…" : "Sign in"}
-      </button>
-
-      <p className="text-center text-sm text-slate-500">
-        Don&apos;t have an account?{" "}
-        <Link
-          to="/register"
-          className="font-medium text-indigo-600 hover:underline"
-        >
-          Create one
-        </Link>
-      </p>
+        Login
+      </Button>
     </form>
   );
 }

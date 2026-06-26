@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { dueDateFormate } from "@/lib/dueDateFormate";
+import { dueDateFormate } from "@/lib/format/date";
 import { cn } from "@/lib/utils";
 import { Calendar } from "lucide-react";
 

@@ -1,5 +1,4 @@
 import { Moon, Sun } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/providers/ThemeProvider";
+import { DARK_MODE_OPTIONS } from "@/constants/darkModeOptions";
 
 function DarkModeToggle() {
   const { setTheme } = useTheme();
@@ -21,16 +21,16 @@ function DarkModeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="w-25">
+        {DARK_MODE_OPTIONS.map((option) => (
+          <DropdownMenuItem
+            key={option.option}
+            onClick={() => setTheme(option.option)}
+          >
+            <option.icon className="size-3.5" />
+            {option.option.charAt(0).toUpperCase() + option.option.slice(1)}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useAuthStore } from "@/store";
 import { authService } from "../services";
-import type { AuthResponseData } from "../types";
+import type { AuthResponseData } from "../types/auth-response";
 
 export function useInviteAccept() {
   const { setAuth } = useAuthStore();

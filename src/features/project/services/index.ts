@@ -7,6 +7,7 @@ import type {
   ProjectListItem,
   ProjectMemberSummary,
   SendProjectInviteDto,
+  UpdateProjectMemberRoleDto,
   UpdateProjectDto,
 } from "../types";
 
@@ -32,6 +33,23 @@ export const projectService = {
   updateProject: (projectId: string, dto: UpdateProjectDto) =>
     api
       .patch<ApiResponse<Project>>(`/projects/${projectId}`, dto)
+      .then((r) => r.data),
+
+  updateMemberRole: (
+    projectId: string,
+    memberId: string,
+    dto: UpdateProjectMemberRoleDto,
+  ) =>
+    api
+      .patch<ApiResponse<ProjectMemberSummary>>(
+        `/projects/${projectId}/members/${memberId}`,
+        dto,
+      )
+      .then((r) => r.data),
+
+  removeMember: (projectId: string, memberId: string) =>
+    api
+      .delete<ApiResponse<null>>(`/projects/${projectId}/members/${memberId}`)
       .then((r) => r.data),
 
   sendInvite: (projectId: string, dto: SendProjectInviteDto) =>

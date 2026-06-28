@@ -20,7 +20,12 @@ This document tracks what is currently implemented for the project feature and p
 - `/projects/:id/settings`
   - Auth-required and project-owner-only route.
   - Protected by `AdminGuard`.
-  - Currently contains the invite member form.
+  - Contains project details editing.
+
+- `/projects/:id/members`
+  - Auth-required and project-owner-only route.
+  - Protected by `AdminGuard`.
+  - Contains project member management and invitation form.
 
 - `/project/invitation/:token`
   - Public route.
@@ -110,6 +115,7 @@ Behavior:
 Current protected routes:
 
 - `/projects/:id/settings`
+- `/projects/:id/members`
 - `/projects/:id/workshop`
 
 Note: `workshop` is currently under `AdminGuard` too.
@@ -150,6 +156,57 @@ Behavior:
   - success toast is shown
   - project invites query is invalidated
   - project members query is invalidated
+- Current location is `/projects/:id/members`.
+
+### Project Settings
+
+Implemented files:
+
+- `src/features/project/pages/ProjectSettingsPage.tsx`
+- `src/features/project/hooks/useUpdateProject.ts`
+
+Endpoint:
+
+```txt
+PATCH /projects/:projectId
+```
+
+Behavior:
+
+- Project owner can update project name, description, and color.
+- Uses the same validation and color options as project creation.
+- On success:
+  - project details query is invalidated
+  - project list query is invalidated
+
+### Project Members Management
+
+Implemented files:
+
+- `src/features/project/pages/ProjectMembersPage.tsx`
+- `src/features/project/hooks/useUpdateProjectMemberRole.ts`
+- `src/features/project/hooks/useRemoveProjectMember.ts`
+
+Endpoints:
+
+```txt
+GET    /projects/:projectId/members
+PATCH  /projects/:projectId/members/:memberId
+DELETE /projects/:projectId/members/:memberId
+```
+
+Behavior:
+
+- Project owner can view project members in a table.
+- Table displays avatar, name, email, and role.
+- Role select updates a member role immediately.
+- Remove button opens a confirmation dialog before removing access.
+- Current user is labeled as `You` and cannot remove themselves from the table.
+- On member role update:
+  - project members query is invalidated
+- On member removal:
+  - project members query is invalidated
+  - project list query is invalidated
 
 ### Public Project Invitation Page
 
@@ -291,6 +348,8 @@ POST   /projects
 GET    /projects/:projectId
 PATCH  /projects/:projectId
 GET    /projects/:projectId/members
+PATCH  /projects/:projectId/members/:memberId
+DELETE /projects/:projectId/members/:memberId
 ```
 
 Invitations:
@@ -335,34 +394,15 @@ Existing query key:
 QUERY_KEYS.projects.invites(projectId)
 ```
 
-### Project Settings
-
-Partially implemented:
-
-- Settings page exists.
-- Invite members form exists.
-
-Not implemented yet:
-
-- Edit project name.
-- Edit project description.
-- Edit project color.
-- Archive project.
-- Delete project.
-- Transfer ownership.
-
-Existing service method:
-
-```ts
-projectService.updateProject(projectId, dto)
-```
-
 ### Member Management
 
-Not implemented yet:
+Implemented:
 
 - Change member role.
 - Remove member.
+
+Not implemented yet:
+
 - Leave project.
 - Display role-specific permissions in UI.
 
@@ -428,6 +468,9 @@ Project services and hooks:
 - `src/features/project/services/index.ts`
 - `src/features/auth/hooks/useLogin.ts`
 - `src/features/project/hooks/useInviteMember.ts`
+- `src/features/project/hooks/useUpdateProject.ts`
+- `src/features/project/hooks/useUpdateProjectMemberRole.ts`
+- `src/features/project/hooks/useRemoveProjectMember.ts`
 - `src/features/project/hooks/useProjectInvitation.ts`
 - `src/features/project/hooks/useAcceptProjectInvitation.ts`
 - `src/features/project/hooks/useDeclineProjectInvitation.ts`
@@ -437,6 +480,7 @@ Project pages:
 - `src/features/project/pages/CreateProjectPage.tsx`
 - `src/features/project/pages/ProjectOverviewPage.tsx`
 - `src/features/project/pages/ProjectSettingsPage.tsx`
+- `src/features/project/pages/ProjectMembersPage.tsx`
 - `src/features/project/pages/ProjectInvitationPage.tsx`
 
 Invitation components:

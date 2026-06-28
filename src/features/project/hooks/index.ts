@@ -6,3 +6,6 @@ export { useProject } from "./useProject";
 export { useProjectInvitation } from "./useProjectInvitation";
 export { useProjectMembers } from "./useProjectMembers";
 export { useProjects } from "./useProjects";
+export { useRemoveProjectMember } from "./useRemoveProjectMember";
+export { useUpdateProject } from "./useUpdateProject";
+export { useUpdateProjectMemberRole } from "./useUpdateProjectMemberRole";

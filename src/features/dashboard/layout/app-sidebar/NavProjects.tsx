@@ -7,6 +7,7 @@ import {
   Wand2Icon,
   KanbanIcon,
   StickyNoteIcon,
+  UsersRoundIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,7 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useAuthStore, useProjectStore } from "@/store";
+import { useAuthStore } from "@/store";
 import { UserRole } from "@/types/enums";
 import { ROUTES } from "@/constants";
 import { formatInitials } from "@/lib/format/text";
@@ -48,9 +49,8 @@ interface NavProjectsProps {
 export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  const isAdmin = useProjectStore((s) => s.isAdmin());
-  const userRole = useAuthStore((s) => s.user?.role);
-  const canAdmin = isAdmin || userRole === UserRole.ADMIN;
+  const user = useAuthStore((s) => s.user);
+  const isAppAdmin = user?.role === UserRole.ADMIN;
 
   if (isLoading) {
     return (
@@ -94,6 +94,8 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
         {projects.map((project) => {
           const projectColor = project.color ?? "#2563eb";
+          const canManageProject =
+            isAppAdmin || (!!project.adminId && project.adminId === user?.id);
 
           return (
             <Collapsible
@@ -159,7 +161,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
                     </DropdownMenuItem>
-                    {canAdmin && (
+                    {canManageProject && (
                       <>
                         <DropdownMenuItem
                           onClick={() => navigate(ROUTES.WORKSHOP(project.id))}
@@ -168,6 +170,35 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           <span>Main Workshop</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(ROUTES.PROJECT_MEMBERS(project.id))
+                          }
+                        >
+                          <UsersRoundIcon className="text-muted-foreground" />
+                          <span>Members</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(ROUTES.PROJECT_SETTINGS(project.id))
+                          }
+                        >
+                          <Settings2Icon className="text-muted-foreground" />
+                          <span>Settings</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {!canManageProject && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(ROUTES.PROJECT_MEMBERS(project.id))
+                          }
+                        >
+                          <UsersRoundIcon className="text-muted-foreground" />
+                          <span>Members</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
                             navigate(ROUTES.PROJECT_SETTINGS(project.id))
@@ -183,7 +214,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {canAdmin && (
+                    {canManageProject && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <button
@@ -222,21 +253,32 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         </button>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
-                    {canAdmin && (
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              navigate(ROUTES.PROJECT_SETTINGS(project.id))
-                            }
-                            className="w-full text-left"
-                          >
-                            <Settings2Icon className="size-3.5" />
-                            <span>Settings</span>
-                          </button>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    )}
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <button
+                          onClick={() =>
+                            navigate(ROUTES.PROJECT_MEMBERS(project.id))
+                          }
+                          className="w-full text-left"
+                        >
+                          <UsersRoundIcon className="size-3.5" />
+                          <span>Members</span>
+                        </button>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <button
+                          onClick={() =>
+                            navigate(ROUTES.PROJECT_SETTINGS(project.id))
+                          }
+                          className="w-full text-left"
+                        >
+                          <Settings2Icon className="size-3.5" />
+                          <span>Settings</span>
+                        </button>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

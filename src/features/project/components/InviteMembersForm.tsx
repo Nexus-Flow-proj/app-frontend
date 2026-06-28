@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { FormInput } from "@/components/shared/FormInput";
 import { ProjectRole } from "@/types";
+import { PROJECT_ROLE_OPTIONS } from "../constants";
 import { useInviteMember } from "../hooks";
 import {
   inviteMemberSchema,
@@ -21,24 +22,6 @@ import {
 interface InviteMembersFormProps {
   projectId: string;
 }
-
-const PROJECT_ROLE_OPTIONS = [
-  {
-    value: ProjectRole.EDITOR,
-    label: "Editor",
-    description: "Can collaborate on project work.",
-  },
-  {
-    value: ProjectRole.VIEWER,
-    label: "Viewer",
-    description: "Can view project work.",
-  },
-  {
-    value: ProjectRole.OWNER,
-    label: "Owner",
-    description: "Full project ownership.",
-  },
-] as const;
 
 export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
   const { mutate: inviteMember, isPending } = useInviteMember();

@@ -1,4 +1,8 @@
-export type { CreateProjectDto, UpdateProjectDto } from "./project-dto";
+export type {
+  CreateProjectDto,
+  UpdateProjectDto,
+  UpdateProjectMemberRoleDto,
+} from "./project-dto";
 export type {
   ProjectInviteDetails,
   ProjectInviteProject,

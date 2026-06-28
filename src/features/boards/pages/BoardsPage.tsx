@@ -1,7 +1,3 @@
-// features/boards/pages/BoardsPage.tsx
-// Route: /projects/:id/boards
-// All filters are URL-driven via useSearchParams.
-
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Plus } from "lucide-react";
@@ -12,7 +8,6 @@ import {
   pointerWithin,
   type CollisionDetection,
 } from "@dnd-kit/core";
-
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { AddColumnDialog } from "../components/kanban/AddColumnDialog";
 import {

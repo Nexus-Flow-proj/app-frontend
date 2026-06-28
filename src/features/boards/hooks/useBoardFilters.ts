@@ -1,12 +1,10 @@
-// features/boards/hooks/useBoardFilters.ts
-// Dev 4 — filter state synced between Zustand (UI) and URL (useSearchParams).
-// RULE: filters only HIDE cards visually — never mutate columnOrder arrays.
-
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { isPast, isToday, endOfWeek, isBefore } from "date-fns";
+import { useFilterParams } from "@/hooks/useSearchParams";
 import type { Task, BoardFiltersState } from "../types";
 import type { TaskPriority } from "../types/enums";
+import { BOARD_FILTER_PARAM_KEYS } from "../constants/boardBaramKeys";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -29,43 +27,33 @@ export function useUrlFilters(): BoardFiltersState {
 
 // ─── Write filters to URL ─────────────────────────────────────────────────────
 export function useSetUrlFilters() {
-  const [, setParams] = useSearchParams();
+  const { setParams } = useFilterParams();
 
   return useCallback(
     (patch: Partial<BoardFiltersState>) => {
-      setParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (patch.search !== undefined) {
-            if (patch.search) next.set("search", patch.search);
-            else next.delete("search");
-          }
-          if (patch.priorities !== undefined) {
-            if (patch.priorities.length) {
-              next.set("priority", patch.priorities.join(","));
-            } else {
-              next.delete("priority");
-            }
-          }
-          if (patch.assigneeIds !== undefined) {
-            if (patch.assigneeIds.length) {
-              next.set("assignee", patch.assigneeIds.join(","));
-            } else {
-              next.delete("assignee");
-            }
-          }
-          if (patch.dueDateRange !== undefined) {
-            if (patch.dueDateRange) next.set("due", patch.dueDateRange);
-            else next.delete("due");
-          }
-          if (patch.showOnlyMyTasks !== undefined) {
-            if (patch.showOnlyMyTasks) next.set("myTasks", "true");
-            else next.delete("myTasks");
-          }
-          return next;
-        },
-        { replace: true },
-      );
+      const nextParams: Record<string, string | null> = {};
+
+      if (patch.search !== undefined) {
+        nextParams.search = patch.search;
+      }
+      if (patch.priorities !== undefined) {
+        nextParams.priority = patch.priorities.length
+          ? patch.priorities.join(",")
+          : null;
+      }
+      if (patch.assigneeIds !== undefined) {
+        nextParams.assignee = patch.assigneeIds.length
+          ? patch.assigneeIds.join(",")
+          : null;
+      }
+      if (patch.dueDateRange !== undefined) {
+        nextParams.due = patch.dueDateRange;
+      }
+      if (patch.showOnlyMyTasks !== undefined) {
+        nextParams.myTasks = patch.showOnlyMyTasks ? "true" : null;
+      }
+
+      setParams(nextParams);
     },
     [setParams],
   );
@@ -73,8 +61,8 @@ export function useSetUrlFilters() {
 
 // ─── Reset all filters ────────────────────────────────────────────────────────
 export function useResetUrlFilters() {
-  const [, setParams] = useSearchParams();
-  return useCallback(() => setParams({}, { replace: true }), [setParams]);
+  const { clearAll } = useFilterParams();
+  return useCallback(() => clearAll(...BOARD_FILTER_PARAM_KEYS), [clearAll]);
 }
 
 // ─── Count active filters (for "Clear (n)" badge) ────────────────────────────
@@ -130,16 +118,11 @@ export function taskMatchesFilters(
 }
 
 // ─── Filtered tasks for one column — preserves columnOrder order ─────────────
-export function useFilteredTasks(
-  tasks: Task[],
-  currentUserId: string,
-): Task[] {
+export function useFilteredTasks(tasks: Task[], currentUserId: string): Task[] {
   const filters = useUrlFilters();
   return useMemo(
     () =>
-      tasks.filter((task) =>
-        taskMatchesFilters(task, filters, currentUserId),
-      ),
+      tasks.filter((task) => taskMatchesFilters(task, filters, currentUserId)),
     [tasks, filters, currentUserId],
   );
 }

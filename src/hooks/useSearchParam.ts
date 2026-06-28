@@ -30,16 +30,3 @@ export function useSearchParam(
 
   return [value, setValue];
 }
-
-/**
-
-// WorkshopPage — track which task drawer is open
-const [taskId, setTaskId] = useSearchParam("taskId");
-
-// open drawer
-setTaskId("task-abc-123");
-
-// close drawer
-setTaskId(null);
-
- */

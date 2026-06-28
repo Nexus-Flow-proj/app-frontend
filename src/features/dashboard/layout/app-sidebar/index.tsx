@@ -14,13 +14,12 @@ import { NavProjects } from "./NavProjects";
 import { NavSecondary } from "./NavSecondary";
 import { NavUser } from "./NavUser";
 import { SearchForm } from "./SearchForm";
-import { MOCK_PROJECTS } from "../../mock";
 import { NAV_MAIN, NAV_SECONDARY } from "../../constants/navItems";
 import Logo from "@/components/shared/Logo";
+import { useProjects } from "@/features/project/hooks";
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
-  const projects = MOCK_PROJECTS;
-  const projectsLoading = false;
+  const { data: projects = [], isLoading: projectsLoading } = useProjects();
 
   return (
     <Sidebar

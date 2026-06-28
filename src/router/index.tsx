@@ -29,6 +29,7 @@ const DashboardPages = {
 
 // ** Project Pages
 const ProjectPages = {
+  Overview: lazy(() => import("@/features/project/pages/ProjectOverviewPage")),
   Create: lazy(() => import("@/features/project/pages/CreateProjectPage")),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
 };
@@ -111,47 +112,47 @@ const router = createBrowserRouter([
             path: "/projects/new",
             element: <WithSuspense Component={ProjectPages.Create} />,
           },
-        ],
-      },
-
-      // ── Project-scoped pages ────────────────────────────────────────
-      // ProjectLayout loads project + members into store before children render.
-      // This means AdminGuard / MemberGuard always have role data available.
-      {
-        path: "/projects/:id",
-        children: [
           {
-            // Admin-only pages
-            element: <AdminGuard />,
+            path: "/projects/:id",
             children: [
               {
-                path: "workshop",
-                element: (
-                  <WithSuspense Component={WorkshopPages.MainWorkshop} />
-                ),
+                index: true,
+                element: <WithSuspense Component={ProjectPages.Overview} />,
               },
               {
-                path: "settings",
-                element: <WithSuspense Component={ProjectPages.Settings} />,
+                // Admin-only pages
+                element: <AdminGuard />,
+                children: [
+                  {
+                    path: "workshop",
+                    element: (
+                      <WithSuspense Component={WorkshopPages.MainWorkshop} />
+                    ),
+                  },
+                  {
+                    path: "settings",
+                    element: (
+                      <WithSuspense Component={ProjectPages.Settings} />
+                    ),
+                  },
+                ],
               },
+
             ],
           },
-
-          // Member routes
+        ],
+      },
+      // Member routes render without the dashboard shell.
+      {
+        element: <MemberGuard />,
+        children: [
           {
-            element: <MemberGuard />,
-            children: [
-              {
-                path: "boards",
-                element: <WithSuspense Component={BoardPages.TeamBoard} />,
-              },
-              {
-                path: "my-workspace",
-                element: (
-                  <WithSuspense Component={WorkshopPages.MiniWorkshop} />
-                ),
-              },
-            ],
+            path: "/projects/:id/boards",
+            element: <WithSuspense Component={BoardPages.TeamBoard} />,
+          },
+          {
+            path: "/projects/:id/my-workspace",
+            element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
           },
         ],
       },

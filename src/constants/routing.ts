@@ -4,7 +4,6 @@ export const ROUTES = {
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
 
-  INVITE: (token: string) => `/invite/${token}`,
   PROJECT_INVITATION: (token: string) => `/project/invitation/${token}`,
 
   DASHBOARD: "/dashboard",

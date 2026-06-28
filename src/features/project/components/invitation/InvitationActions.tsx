@@ -60,10 +60,10 @@ export function InvitationActions({
 
   if (showSignIn) {
     return (
-      <Button asChild className="w-full text-xs font-bold">
+      <Button asChild variant="default" className="w-full py-6 font-bold">
         <Link to={`${ROUTES.LOGIN}?inviteToken=${token}`}>
           <LogIn className="size-4" />
-          Sign in to accept
+          <span className="text-sm">Sign in to accept</span>
         </Link>
       </Button>
     );

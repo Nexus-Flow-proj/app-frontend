@@ -37,10 +37,3 @@ export interface Invite {
   invitedBy: User;
   createdAt: string;
 }
-
-export interface InvitePreview {
-  project: Pick<Project, "id" | "name" | "color" | "description">;
-  invitedBy: Pick<User, "id" | "name" | "avatar">;
-  role: MemberRole;
-  expiresAt: string;
-}

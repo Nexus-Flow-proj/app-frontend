@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams } from "react-router";
 import { AlertCircle, CheckCircle2, Clock, LogIn } from "lucide-react";
 import {
@@ -13,7 +12,6 @@ import Loading from "@/components/shared/loading/Loading";
 import { dateformat } from "@/lib/format/date";
 import { useAuthStore } from "@/store";
 import { InviteStatus } from "@/types";
-import { useMe } from "@/features/auth/hooks";
 import {
   useAcceptProjectInvitation,
   useDeclineProjectInvitation,
@@ -30,9 +28,6 @@ import {
 export default function ProjectInvitationPage() {
   const { token = "" } = useParams<{ token: string }>();
   const user = useAuthStore((state) => state.user);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const setAuth = useAuthStore((state) => state.setAuth);
-  const { data: me } = useMe(!isAuthenticated);
   const {
     data: invitation,
     isLoading,
@@ -41,12 +36,6 @@ export default function ProjectInvitationPage() {
   const { mutate: acceptInvitation, isPending } = useAcceptProjectInvitation();
   const { mutate: declineInvitation, isPending: isDeclining } =
     useDeclineProjectInvitation();
-
-  useEffect(() => {
-    if (!isAuthenticated && me?.user) {
-      setAuth(me.user);
-    }
-  }, [isAuthenticated, me?.user, setAuth]);
 
   if (isLoading) {
     return <Loading fullPage text="Loading invitation..." />;

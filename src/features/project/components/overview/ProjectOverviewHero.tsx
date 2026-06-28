@@ -1,8 +1,4 @@
-import {
-  KanbanSquareIcon,
-  Settings2Icon,
-  SparklesIcon,
-} from "lucide-react";
+import { KanbanSquareIcon, Settings2Icon, SparklesIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
@@ -78,7 +74,7 @@ export function ProjectOverviewHero({
           <Button
             size="lg"
             variant="surface"
-            className="justify-center gap-2"
+            className="justify-center gap-2 w-full sm:col-span-2 lg:w-auto"
             onClick={() => onNavigate(ROUTES.PROJECT_SETTINGS(project.id))}
           >
             <Settings2Icon data-icon="inline-start" className="size-4" />

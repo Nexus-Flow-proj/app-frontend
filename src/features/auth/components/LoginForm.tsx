@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/FormInput";
@@ -11,7 +11,9 @@ import AuthErrorMessage from "./AuthErrorMessage";
 import GoogleAuthBtn from "./GoogleAuthBtn";
 
 export function LoginForm() {
-  const { mutate: login, isPending, error } = useLogin();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get("inviteToken") ?? undefined;
+  const { mutate: login, isPending, error } = useLogin({ inviteToken });
 
   const {
     register,

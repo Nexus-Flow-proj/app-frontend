@@ -3,7 +3,7 @@ import type {
   AuthResponseData,
   RefreshResponseData,
 } from "../types/auth-response";
-import type { ApiResponse, InvitePreview } from "@/types";
+import type { ApiResponse } from "@/types";
 import type {
   ForgotPasswordDto,
   LoginDto,
@@ -46,15 +46,5 @@ export const authService = {
   refresh: () =>
     api
       .post<ApiResponse<RefreshResponseData>>("/auth/refresh")
-      .then((r) => r.data),
-
-  getInvite: (token: string) =>
-    api
-      .get<ApiResponse<InvitePreview>>(`/auth/invite/${token}`)
-      .then((r) => r.data),
-
-  acceptInvite: (token: string) =>
-    api
-      .post<ApiResponse<AuthResponseData>>(`/auth/invite/${token}/accept`)
       .then((r) => r.data),
 };

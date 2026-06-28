@@ -18,7 +18,6 @@ const AuthPages = {
     () => import("@/features/auth/pages/ForgotPasswordPage"),
   ),
   ResetPassword: lazy(() => import("@/features/auth/pages/ResetPasswordPage")),
-  InviteAccept: lazy(() => import("@/features/auth/pages/InviteAcceptPage")),
   NotFound: lazy(() => import("@/features/auth/pages/NotFound")),
 };
 
@@ -90,10 +89,6 @@ const router = createBrowserRouter([
       {
         path: "reset-password",
         element: <WithSuspense Component={AuthPages.ResetPassword} />,
-      },
-      {
-        path: "invite/:token",
-        element: <WithSuspense Component={AuthPages.InviteAccept} />,
       },
     ],
   },

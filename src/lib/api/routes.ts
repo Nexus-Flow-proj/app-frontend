@@ -8,7 +8,6 @@ export const AUTH_ROUTES_WITHOUT_REFRESH = [
   "/auth/forget-password",
   "/auth/reset-password",
   "/auth/logout",
-  "/auth/invite",
 ];
 
 export function getRequestPath(url?: string): string {

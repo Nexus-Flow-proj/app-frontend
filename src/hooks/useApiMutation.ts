@@ -32,13 +32,13 @@ export function useApiMutation<TData, TVariables>(
   return useMutation<ApiResponse<TData>, ApiError, TVariables>({
     mutationFn,
 
-    onSuccess: (data, variables, context, mutationContext) => {
+    onSuccess: async (data, variables, context, mutationContext) => {
       console.log(data);
 
       if (showSuccessToast) {
         toast.success(successMessage ?? getApiMessage(data.message));
       }
-      onSuccess?.(data, variables, context, mutationContext);
+      await onSuccess?.(data, variables, context, mutationContext);
     },
 
     onError: (error, variables, context, mutationContext) => {

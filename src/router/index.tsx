@@ -35,6 +35,7 @@ const ProjectPages = {
   ),
   Members: lazy(() => import("@/features/project/pages/ProjectMembersPage")),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
+  Roles: lazy(() => import("@/features/project/pages/ProjectRolesPage")),
 };
 
 // ** Workshop Pages
@@ -141,6 +142,10 @@ const router = createBrowserRouter([
                   {
                     path: "members",
                     element: <WithSuspense Component={ProjectPages.Members} />,
+                  },
+                  {
+                    path: "roles",
+                    element: <WithSuspense Component={ProjectPages.Roles} />,
                   },
                 ],
               },

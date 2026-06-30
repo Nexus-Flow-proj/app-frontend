@@ -2,10 +2,9 @@ import type { Socket } from "socket.io-client";
 import { socket } from "./socket-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "./types/events";
 import { SOCKET_EVENTS } from "./constants/socket-events";
-import { registerAllHandlers } from "./handlers";
 export class SocketManager {
     private static instance: SocketManager
-    private listenersRegistered: boolean = false;
+    private isInitialized: boolean = false;
     private activeProjectId: string | null = null;
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -21,11 +20,10 @@ export class SocketManager {
 
 
     initialize() {
-        if (this.listenersRegistered) return;
+        if (this.isInitialized) return;
         this.registerInternalListeners();
-        const SocketManagerInstance = SocketManager.getInstance();
-        registerAllHandlers(SocketManagerInstance);
-        this.listenersRegistered = true;
+        this.connect();
+        this.isInitialized = true;
         if (import.meta.env.DEV) {
             console.log("✅ SocketManager initialized (listeners ready)");
         }
@@ -55,30 +53,25 @@ export class SocketManager {
                 console.log(`📡 Event: ${event}`);
             });
         }
-        this.connect();
     }
 
 
 
     connect() {
-        if (this.socket.active) return;
+        if (!this.isInitialized)
+            throw new Error("You must call initialize() first")
+        if (this.socket.connected) return;
         this.socket.connect();
     }
     disconnect() {
         if (this.socket.disconnected) return;
         this.socket.disconnect();
     }
-    // reconnectProject(): void {
-    //     if (this.socket.connected) return;
-    //     this.listenersRegistered = false;
-    //     this.initialize();
-    // }
-
     destroy() {
-        if (!this.listenersRegistered) return;
+        if (!this.isInitialized) return;
         this.disconnect();
         this.socket.removeAllListeners();
-        this.listenersRegistered = false;
+        this.isInitialized = false;
         this.activeProjectId = null;
         if (import.meta.env.DEV) {
             console.log("SocketManager destroyed")
@@ -125,7 +118,6 @@ export class SocketManager {
     once<K extends keyof ServerToClientEvents>(event: K, listener: ServerToClientEvents[K]): void {
         this.socket.once(event, listener as any)
     }
-
 }
 
 

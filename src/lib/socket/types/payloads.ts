@@ -8,7 +8,7 @@ import type { BoardColumn, Task, Subtask, Comment } from '@/features/boards/type
 
 // COLUMNS PAYLOADS
 export interface ColumnCreatedPayload {
-    projectId: string;
+    // projectId: string;
     column: BoardColumn;
 }
 export interface ColumnUpdatedPayload {
@@ -25,7 +25,7 @@ export interface ColumnReorderedPayload {
     columns: {
         id: string;
         sortOrder: number;
-    }[];
+    }[];    
 }
 // TASKS PAYLOADS
 export interface TaskCreatedPayload {

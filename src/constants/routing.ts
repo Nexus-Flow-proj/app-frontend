@@ -14,5 +14,5 @@ export const ROUTES = {
   PROJECT_SETTINGS: (id: string) => `/projects/${id}/settings`,
   WORKSHOP: (id: string) => `/projects/${id}/workshop`,
   BOARDS: (id: string) => `/projects/${id}/boards`,
-  MY_WORKSPACE: (id: string) => `/projects/${id}/my-workspace`,
+  MY_WORKSPACE: (id: string) => `/projects/${id}/my-workshop`,
 } as const;

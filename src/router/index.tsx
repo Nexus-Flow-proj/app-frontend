@@ -124,20 +124,11 @@ const router = createBrowserRouter([
                 element: <AdminGuard />,
                 children: [
                   {
-                    path: "workshop",
-                    element: (
-                      <WithSuspense Component={WorkshopPages.MainWorkshop} />
-                    ),
-                  },
-                  {
                     path: "settings",
-                    element: (
-                      <WithSuspense Component={ProjectPages.Settings} />
-                    ),
+                    element: <WithSuspense Component={ProjectPages.Settings} />,
                   },
                 ],
               },
-
             ],
           },
         ],
@@ -153,6 +144,15 @@ const router = createBrowserRouter([
           {
             path: "/projects/:id/my-workspace",
             element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
+          },
+        ],
+      },
+      {
+        element: <AdminGuard />,
+        children: [
+          {
+            path: "/projects/:id/workshop",
+            element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
           },
         ],
       },

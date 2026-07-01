@@ -36,10 +36,10 @@ export interface ApiTaskSummary {
     created_at: string;
     updated_at: string;
     assignee: ApiUserSummary | null;
-    commentCount: number;
-    subtaskCount: number;
-    attachmentCount: number;
-    completedSubtaskCount: number;
+    commentsCount: number;
+    subtasksCount: number;
+    attachmentsCount: number;
+    completedSubtasksCount: number;
     source: TaskSource;
 }
 export interface ApiTask {
@@ -61,10 +61,10 @@ export interface ApiTask {
     comments: ApiComment[];
     subtasks: ApiSubtask[];
     attachments: ApiAttachment[];
-    commentCount: number;
-    subtaskCount: number;
-    attachmentCount: number;
-    completedSubtaskCount: number;
+    commentsCount: number;
+    subtasksCount: number;
+    attachmentsCount: number;
+    completedSubtasksCount: number;
     source: TaskSource;
 }
 export interface ApiSubtask {
@@ -102,6 +102,24 @@ export interface ApiAttachment {
 
 
 // Request DTOs
+export interface CreateBoardColumnDto {
+    name: string;
+    color?: string;
+}
+export interface UpdateBoardColumnDto {
+    name?: string;
+    color?: string;
+}
+export interface ReorderBoardColumnItemDto {
+    id: string;
+    sortOrder: number;
+}
+
+export interface ReorderBoardColumnsDto {
+    columns: ReorderBoardColumnItemDto[];
+}
+
+
 export interface CreateTaskDto {
     title: string;
 
@@ -153,4 +171,28 @@ export interface CreateTimeLogDto {
     loggedDate: string;
 
     note?: string;
+}
+
+
+
+
+export interface ApiMessageResponse {
+    message: string;
+}
+interface ApiListResponse {
+    total: number;
+    page: number;
+    limit: number;
+}
+export interface ApiTaskListResponse extends ApiListResponse {
+    tasks: ApiTaskSummary[];
+
+}
+
+export interface ApiCommentListResponse extends ApiListResponse {
+    comments: ApiComment[];
+}
+
+export interface ApiTimeLogListResponse extends ApiListResponse {
+    timeLogs: ApiTimeLog[];
 }

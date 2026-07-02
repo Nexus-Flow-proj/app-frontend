@@ -80,7 +80,7 @@ export interface ApiComment {
     body: string;
     user: ApiUserSummary;
     created_at: string;
-    updated_at: string;
+    updated_at?: string;
 }
 export interface ApiTimeLog {
     id: string;
@@ -110,29 +110,26 @@ export interface UpdateBoardColumnDto {
     name?: string;
     color?: string;
 }
-export interface ReorderBoardColumnItemDto {
-    id: string;
-    sortOrder: number;
-}
+// export interface ReorderBoardColumnItemDto {
+//     id: string;
+//     sortOrder: number;
+// }
 
 export interface ReorderBoardColumnsDto {
-    columns: ReorderBoardColumnItemDto[];
+    columns: {
+        id: string;
+        sortOrder: number;
+    }[];
 }
 
 
 export interface CreateTaskDto {
     title: string;
-
     description?: string;
-
     label?: string;
-
     deadline?: string;
-
     type: string;
-
     status: string;
-
     priority: string;
 }
 export interface UpdateTaskDto {
@@ -167,9 +164,7 @@ export interface UpdateSubtaskDto {
 
 export interface CreateTimeLogDto {
     durationMin: number;
-
     loggedDate: string;
-
     note?: string;
 }
 

@@ -31,7 +31,7 @@ function mapBoardMember(user: ApiUserSummary): BoardMember {
         avatarUrl: user.avatarUrl ?? undefined,
     }
 }
-function mapComment(comment: ApiComment, taskId: string): Comment {
+export function mapComment(comment: ApiComment, taskId: string): Comment {
     return {
         id: comment.id,
         taskId,
@@ -42,7 +42,7 @@ function mapComment(comment: ApiComment, taskId: string): Comment {
         updatedAt: comment.updated_at,
     }
 }
-function mapSubtask(subtask: ApiSubtask, taskId: string): Subtask {
+export function mapSubtask(subtask: ApiSubtask, taskId: string): Subtask {
     return {
         id: subtask.id,
         taskId,
@@ -104,12 +104,10 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
         assignee: task.assignee
             ? mapBoardMember(task.assignee)
             : null,
-
-        commentCount: task.commentCount,
-        subtaskCount: task.subtaskCount,
-        completedSubtaskCount:
-            task.completedSubtaskCount,
-        attachmentCount: task.attachmentCount,
+        commentsCount: task.commentsCount,
+        subtasksCount: task.subtasksCount,
+        completedSubtasksCount: task.completedSubtasksCount,
+        attachmentsCount: task.attachmentsCount,
     };
 }
 export function mapTaskDetail(
@@ -132,11 +130,11 @@ export function mapTaskDetail(
         assignee: task.assignee
             ? mapBoardMember(task.assignee)
             : null,
-        commentCount: task.commentCount,
-        subtaskCount: task.subtaskCount,
-        completedSubtaskCount:
-            task.completedSubtaskCount,
-        attachmentCount: task.attachmentCount,
+        commentsCount: task.commentsCount,
+        subtasksCount: task.subtasksCount,
+        completedSubtasksCount:
+            task.completedSubtasksCount,
+        attachmentsCount: task.attachmentsCount,
     };
 
     return {

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useParams } from "react-router";
 import { Crosshair, Maximize2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,9 +15,10 @@ import type { WorkshopObjectKind } from "../types/workshopKinds";
 function WorkshopPage() {
   const { id: projectId } = useParams();
   const [stageWrapRef, stageSize] = useElementSize<HTMLDivElement>();
-  const [openObjectId, setOpenObjectId] = useState<Nullable<string>>(null);
   const { nodes, edges, viewport, addItem, setViewport } = useMockWorkshop();
   const isDirty = useWorkshopStore((s) => s.isDirty);
+  const detailsObjectId = useWorkshopStore((s) => s.detailsObjectId);
+  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
 
   useCanvasState();
 
@@ -29,7 +29,7 @@ function WorkshopPage() {
 
   const handleAddItem = (kind: WorkshopObjectKind) => {
     const id = addItem(kind, canvasPointAtCenter());
-    setOpenObjectId(id);
+    openObjectDetails(id);
   };
 
   const handleResetView = () => {
@@ -127,11 +127,7 @@ function WorkshopPage() {
         <WorkshopSidebar />
         <div ref={stageWrapRef} className="relative min-w-0 flex-1">
           {stageSize.width > 0 && stageSize.height > 0 ? (
-            <WorkshopStage
-              width={stageSize.width}
-              height={stageSize.height}
-              onObjectOpen={setOpenObjectId}
-            />
+            <WorkshopStage width={stageSize.width} height={stageSize.height} />
           ) : null}
           <div className="pointer-events-none absolute bottom-4 left-4 rounded-md border border-border bg-card/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur">
             {nodes.length} items / {edges.length} connections /{" "}
@@ -141,9 +137,8 @@ function WorkshopPage() {
       </div>
 
       <TaskDetailDrawer
-        key={openObjectId ?? "closed"}
-        objectId={openObjectId}
-        onClose={() => setOpenObjectId(null)}
+        key={detailsObjectId ?? "closed"}
+        objectId={detailsObjectId}
       />
     </div>
   );

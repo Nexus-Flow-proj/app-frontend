@@ -22,6 +22,7 @@ export interface WorkshopState {
   isDirty: boolean; // indicates if the canvas has unsaved changes
   activeTool: WorkshopTool;
   selectedObjectId: Nullable<string>;
+  detailsObjectId: Nullable<string>; // The object currently open in the details drawer. UI-only, never persisted.
   hoveredObjectId: Nullable<string>; // The object currently under the mouse. Used for hover styling.
   isConnecting: boolean; // True when the user has clicked a source node and is hovering over the canvas to select a target node.
   connectFromId: Nullable<string>; // The ID of the source node when isConnecting is true. Used to create a new connection when the user clicks a target node.
@@ -33,6 +34,8 @@ export interface WorkshopState {
 interface WorkshopActions {
   setActiveTool: (tool: WorkshopTool) => void;
   selectObject: (id: Nullable<string>) => void; // Select or deselect an object.
+  openObjectDetails: (id: string) => void; // Open the details drawer for an object.
+  closeObjectDetails: () => void; // Close the details drawer.
   setHoveredObject: (id: Nullable<string>) => void; // Set the object currently under the mouse. Used for hover styling.
   setViewport: (vp: Partial<CanvasViewport>) => void;
 
@@ -81,6 +84,7 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     // At first, no object selected or hovered.
     selectedObjectId: null,
+    detailsObjectId: null,
     hoveredObjectId: null,
 
     // At first, user is not creating a connection.
@@ -102,6 +106,8 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
       }),
 
     selectObject: (id) => set({ selectedObjectId: id }),
+    openObjectDetails: (id) => set({ detailsObjectId: id }),
+    closeObjectDetails: () => set({ detailsObjectId: null }),
     setHoveredObject: (id) => set({ hoveredObjectId: id }), // This is UI-only state. It should never be saved to backend
 
     startConnect: (fromId) =>
@@ -208,6 +214,8 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         ),
         selectedObjectId:
           state.selectedObjectId === id ? null : state.selectedObjectId,
+        detailsObjectId:
+          state.detailsObjectId === id ? null : state.detailsObjectId,
         undoStack: pushUndo(state),
         redoStack: [],
         isDirty: true,
@@ -281,6 +289,7 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         undoStack: [],
         redoStack: [],
         selectedObjectId: null,
+        detailsObjectId: null,
       }),
   }),
 );

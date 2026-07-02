@@ -1,62 +1,41 @@
 import { Circle, Group, Rect, Text } from "react-konva";
-import type { CanvasObject, TaskCardData } from "../../types";
-import { STATUS_CONFIG, PRIORITY_CONFIG } from "../../constants";
-import { useWorkshopStore } from "../../store/workshopStore";
+import type { CanvasObject } from "../../types";
+import { formatInitials } from "@/lib/format/text";
+import { useTaskCardNode } from "../../hooks/useTaskCardNode";
 
 interface Props {
   obj: CanvasObject;
-  onOpen?: (objectId: string) => void;
 }
 
-function initials(name: string): string {
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-export function TaskCardNode({ obj, onOpen }: Props) {
-  const data = obj.data as TaskCardData;
-  const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
-  const hoveredObjectId = useWorkshopStore((s) => s.hoveredObjectId);
-  const selectObject = useWorkshopStore((s) => s.selectObject);
-  const setHoveredObject = useWorkshopStore((s) => s.setHoveredObject);
-  const moveObject = useWorkshopStore((s) => s.moveObject);
-  const startConnect = useWorkshopStore((s) => s.startConnect);
-  const finishConnect = useWorkshopStore((s) => s.finishConnect);
-  const activeTool = useWorkshopStore((s) => s.activeTool);
-
-  const isSelected = selectedObjectId === obj.id;
-  const isHovered = hoveredObjectId === obj.id;
-  const statusCfg = STATUS_CONFIG[data.status] ?? STATUS_CONFIG.BACKLOG;
-  const priorityCfg = PRIORITY_CONFIG[data.priority] ?? PRIORITY_CONFIG.LOW;
+export function TaskCardNode({ obj }: Props) {
+  const {
+    data,
+    isSelected,
+    isHovered,
+    statusCfg,
+    priorityCfg,
+    isDraggable,
+    handleClick,
+    handleDoubleClick,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleDragEnd,
+  } = useTaskCardNode(obj);
   const W = obj.width;
   const H = obj.height;
-
-  const handleClick = () => {
-    if (activeTool === "connect") {
-      const store = useWorkshopStore.getState();
-      if (store.isConnecting && store.connectFromId) finishConnect(obj.id);
-      else startConnect(obj.id);
-      return;
-    }
-
-    if (activeTool === "select") {
-      selectObject(obj.id);
-      onOpen?.(obj.id);
-    }
-  };
-
   return (
     <Group
+      // Every child shape inside the group is positioned relative to this point.
       x={obj.x}
       y={obj.y}
-      draggable={activeTool === "select"}
+      draggable={isDraggable} // The card can be dragged only when select tool is active.
       onClick={handleClick}
-      onDblClick={() => activeTool === "select" && onOpen?.(obj.id)}
-      onMouseEnter={() => setHoveredObject(obj.id)}
-      onMouseLeave={() => setHoveredObject(null)}
-      onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
+      onDblClick={handleDoubleClick} // On double click, open details if select tool is active
+      onMouseEnter={handleMouseEnter} // When mouse enters card, mark it as hovered.
+      onMouseLeave={handleMouseLeave} // When mouse leaves, clear hover.
+      onDragEnd={handleDragEnd} // When user finishes dragging, update the object position in the store.
     >
+      {/* This draws a fake shadow behind the card. */}
       <Rect
         x={2}
         y={5}
@@ -66,6 +45,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         cornerRadius={8}
         listening={false}
       />
+      {/* Main card rectangle: The border color changes based on state */}
       <Rect
         width={W}
         height={H}
@@ -74,17 +54,20 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         strokeWidth={isSelected ? 2.5 : 1.25}
         cornerRadius={8}
       />
+      {/* This draws a small vertical stripe on the left. */}
       <Rect
-        width={5}
-        height={H}
+        y={10}
+        width={4}
+        height={H - 20}
         fill={priorityCfg.dot}
-        cornerRadius={[8, 0, 0, 8]}
+        cornerRadius={[8]}
         listening={false}
       />
+      {/* This displays the item kind */}
       <Text
-        x={16}
+        x={16} // The text should start after the left stripe: means 4px stripe + 12px padding = 16px.
         y={14}
-        width={W - 32}
+        width={W - 32} // The text should not exceed the card width minus padding: means 16px padding left and 16px padding right.
         text={data.kind ?? "Task"}
         fontSize={10}
         fontStyle="700"
@@ -92,6 +75,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         fontFamily="'Geist Variable', sans-serif"
         listening={false}
       />
+      {/* This displays the main title. */}
       <Text
         x={16}
         y={33}
@@ -101,11 +85,12 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         fontSize={14}
         fontStyle="600"
         fill="#1E293B"
-        wrap="word"
+        wrap="word" // Wrap text to next line if it exceeds the width.
         lineHeight={1.25}
         fontFamily="'Geist Variable', sans-serif"
         ellipsis
       />
+      {/* This renders description only if it exists. */}
       {data.description && (
         <Text
           x={16}
@@ -122,15 +107,17 @@ export function TaskCardNode({ obj, onOpen }: Props) {
           listening={false}
         />
       )}
+      {/* This draws the badge background near the bottom-left. */}
       <Rect
         x={16}
         y={H - 34}
-        width={96}
+        width={86}
         height={20}
         fill={statusCfg.bg}
         cornerRadius={10}
         listening={false}
       />
+      {/* Small colored circle inside the status badge. */}
       <Circle
         x={26}
         y={H - 24}
@@ -138,6 +125,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         fill={statusCfg.dot}
         listening={false}
       />
+      {/* Text inside the status badge. */}
       <Text
         x={36}
         y={H - 30}
@@ -149,12 +137,13 @@ export function TaskCardNode({ obj, onOpen }: Props) {
         fontFamily="'Geist Variable', sans-serif"
         listening={false}
       />
+      {/* This displays the due date only if it exists. */}
       {data.dueDate && (
         <Text
-          x={W - 98}
+          x={data.assigneeName ? W - 98 : W - 70}
           y={H - 30}
           width={58}
-          text={data.dueDate.slice(5)}
+          text={data.dueDate.slice(5)} // It removes the year.
           fontSize={10}
           align="right"
           fill="#64748B"
@@ -162,6 +151,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
           listening={false}
         />
       )}
+      {/* This displays the assignee name only if it exists. */}
       {data.assigneeName && (
         <>
           <Circle
@@ -178,7 +168,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
             y={H - 30}
             width={18}
             align="center"
-            text={initials(data.assigneeName)}
+            text={formatInitials(data.assigneeName)}
             fontSize={10}
             fontStyle="700"
             fill="#7A4FD4"

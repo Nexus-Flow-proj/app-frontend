@@ -4,13 +4,13 @@ import { useWorkshopStore } from "../../store/workshopStore";
 
 interface Props {
   obj: CanvasObject;
-  onOpen?: (objectId: string) => void;
 }
 
-export function StickyNoteNode({ obj, onOpen }: Props) {
+export function StickyNoteNode({ obj }: Props) {
   const data = obj.data as StickyNoteData;
   const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
   const selectObject = useWorkshopStore((s) => s.selectObject);
+  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const moveObject = useWorkshopStore((s) => s.moveObject);
   const startConnect = useWorkshopStore((s) => s.startConnect);
   const finishConnect = useWorkshopStore((s) => s.finishConnect);
@@ -27,7 +27,7 @@ export function StickyNoteNode({ obj, onOpen }: Props) {
 
     if (activeTool === "select") {
       selectObject(obj.id);
-      onOpen?.(obj.id);
+      openObjectDetails(obj.id);
     }
   };
 
@@ -38,7 +38,9 @@ export function StickyNoteNode({ obj, onOpen }: Props) {
       rotation={obj.rotation}
       draggable={activeTool === "select"}
       onClick={handleClick}
-      onDblClick={() => activeTool === "select" && onOpen?.(obj.id)}
+      onDblClick={() =>
+        activeTool === "select" && openObjectDetails(obj.id)
+      }
       onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
     >
       <Rect

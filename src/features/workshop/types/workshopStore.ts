@@ -16,6 +16,7 @@ export interface WorkshopStore {
   // UI state (never persisted)
   activeTool: WorkshopTool;
   selectedObjectId: Nullable<string>;
+  detailsObjectId: Nullable<string>;
   hoveredObjectId: Nullable<string>;
   isConnecting: boolean;
   connectFromId: Nullable<string>;

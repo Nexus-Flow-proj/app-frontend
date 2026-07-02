@@ -4,13 +4,13 @@ import { useWorkshopStore } from "../../store/workshopStore";
 
 interface Props {
   obj: CanvasObject;
-  onOpen?: (objectId: string) => void;
 }
 
-export function SectionFrameNode({ obj, onOpen }: Props) {
+export function SectionFrameNode({ obj }: Props) {
   const data = obj.data as SectionFrameData;
   const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
   const selectObject = useWorkshopStore((s) => s.selectObject);
+  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const moveObject = useWorkshopStore((s) => s.moveObject);
   const activeTool = useWorkshopStore((s) => s.activeTool);
   const isSelected = selectedObjectId === obj.id;
@@ -23,9 +23,11 @@ export function SectionFrameNode({ obj, onOpen }: Props) {
       onClick={() => {
         if (activeTool !== "select") return;
         selectObject(obj.id);
-        onOpen?.(obj.id);
+        openObjectDetails(obj.id);
       }}
-      onDblClick={() => activeTool === "select" && onOpen?.(obj.id)}
+      onDblClick={() =>
+        activeTool === "select" && openObjectDetails(obj.id)
+      }
       onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
     >
       <Rect

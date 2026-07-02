@@ -1,6 +1,6 @@
 import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
 import { NODE_SIZE } from "../constants";
-import type { CanvasObject, Coordinates } from "../types";
+import type { CanvasObject } from "../types";
 import type { WorkshopObjectKind } from "../types/workshopKinds";
 
 let localId = Date.now();

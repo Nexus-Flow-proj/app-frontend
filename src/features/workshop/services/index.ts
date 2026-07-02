@@ -3,7 +3,7 @@ import type {
   CanvasConnection,
   CanvasObject,
   CanvasViewport,
-} from "@/types/models/canvas";
+} from "../types";
 
 interface SaveCanvasPayload {
   objects: CanvasObject[];

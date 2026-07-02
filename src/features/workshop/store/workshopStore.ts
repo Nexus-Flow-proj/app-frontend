@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { MAX_UNDO_STEPS } from "../constants";
 import {
   mockCanvasConnections,
   mockCanvasObjects,
@@ -12,9 +11,10 @@ import type {
   WorkshopSnapshot,
   WorkshopTool,
 } from "../types";
+import { cloneSnapshot, pushUndo } from "../utils/cloneSnapshotCanvas";
 
 // Define the shape of the workshop Data (This describes the data stored inside Zustand.
-interface WorkshopState {
+export interface WorkshopState {
   canvasId: Nullable<string>;
   objects: CanvasObject[];
   connections: CanvasConnection[];
@@ -29,28 +29,35 @@ interface WorkshopState {
   redoStack: WorkshopSnapshot[];
 }
 
-// Define the shape of the workshop actions
+// Define the shape of the workshop actions (This describes all functions/actions the store can do.)
 interface WorkshopActions {
   setActiveTool: (tool: WorkshopTool) => void;
   selectObject: (id: Nullable<string>) => void; // Select or deselect an object.
   setHoveredObject: (id: Nullable<string>) => void; // Set the object currently under the mouse. Used for hover styling.
+  setViewport: (vp: Partial<CanvasViewport>) => void;
+
+  // Object CRUD.
+  addObject: (obj: CanvasObject) => void;
+  updateObject: (id: string, patch: Partial<CanvasObject>) => void;
+  moveObject: (id: string, { x, y }: Coordinates) => void;
+  deleteObject: (id: string) => void;
+
+  // Connection CRUD.
+  addConnection: (conn: CanvasConnection) => void;
+  deleteConnection: (id: string) => void;
+
   // Connection workflow.
   startConnect: (fromId: string) => void;
   finishConnect: (toId: string) => void;
   cancelConnect: () => void;
-  // Object CRUD.
-  addObject: (obj: CanvasObject) => void;
-  updateObject: (id: string, patch: Partial<CanvasObject>) => void;
-  moveObject: (id: string, x: number, y: number) => void;
-  deleteObject: (id: string) => void;
 
-  addConnection: (conn: CanvasConnection) => void;
-  deleteConnection: (id: string) => void;
-  setViewport: (vp: Partial<CanvasViewport>) => void;
+  // History operations (Undo and redo canvas changes)
   undo: () => void;
   redo: () => void;
-  markClean: () => void;
+
+  markClean: () => void; // Mark canvas as saved (Ex. after successful backend save later)
   loadCanvas: (
+    // Load a full canvas. Later, when backend is ready, this will be useful after fetching data
     canvasId: string,
     objects: CanvasObject[],
     connections: CanvasConnection[],
@@ -58,60 +65,56 @@ interface WorkshopActions {
   ) => void;
 }
 
-function cloneSnapshot(
-  objects: CanvasObject[],
-  connections: CanvasConnection[],
-): WorkshopSnapshot {
-  return {
-    objects: structuredClone(objects),
-    connections: structuredClone(connections),
-  };
-}
-
-function pushUndo(state: WorkshopState): WorkshopSnapshot[] {
-  return [
-    ...state.undoStack.slice(
-      Math.max(0, state.undoStack.length - MAX_UNDO_STEPS + 1),
-    ),
-    cloneSnapshot(state.objects, state.connections),
-  ];
-}
-
 export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
   (set) => ({
+    //** state
+    // This is the initial state of the store. Later, when backend is ready, this will be replaced with data fetched from the backend.
+    // For now, we use mock data.
     canvasId: "mock-canvas-01",
     objects: mockCanvasObjects,
     connections: mockCanvasConnections,
     viewport: mockViewport,
-    isDirty: false,
-    activeTool: "select",
+
+    isDirty: false, // At first, nothing changed
+
+    activeTool: "select", // Default tool is select.
+
+    // At first, no object selected or hovered.
     selectedObjectId: null,
     hoveredObjectId: null,
+
+    // At first, user is not creating a connection.
     isConnecting: false,
     connectFromId: null,
+
+    // At first, there is no undo/redo history.
     undoStack: [],
     redoStack: [],
 
+    //** actions
     setActiveTool: (tool) =>
       set({
         activeTool: tool,
+        // If the user changes to any tool except "connect", it cancels connection mode.
         ...(tool !== "connect"
           ? { isConnecting: false, connectFromId: null }
           : null),
       }),
 
     selectObject: (id) => set({ selectedObjectId: id }),
-    setHoveredObject: (id) => set({ hoveredObjectId: id }),
+    setHoveredObject: (id) => set({ hoveredObjectId: id }), // This is UI-only state. It should never be saved to backend
+
     startConnect: (fromId) =>
       set({ isConnecting: true, connectFromId: fromId }),
     cancelConnect: () => set({ isConnecting: false, connectFromId: null }),
-
     finishConnect: (toId) =>
       set((state) => {
+        // Case 1: no source, or source equals target: This prevents invalid connections
         if (!state.connectFromId || state.connectFromId === toId) {
           return { isConnecting: false, connectFromId: null };
         }
 
+        // Case 2: duplicate connection: This prevents duplicate arrows.
         const exists = state.connections.some(
           (conn) =>
             conn.fromObjectId === state.connectFromId &&
@@ -121,8 +124,10 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
         return {
           connections: [
+            // This is immutable update. We do not mutate the old array.
             ...state.connections,
             {
+              // newConnection
               id: `conn-${Date.now()}`,
               fromObjectId: state.connectFromId,
               toObjectId: toId,
@@ -151,8 +156,27 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         isDirty: true,
       })),
 
+    /**
+       * Important: this is a shallow patch.
+        This works:
+        updateObject(id, { x: 100 })
+        This works too:
+        updateObject(id, { data: newData })
+        But this would be wrong if you expected deep merging:
+        updateObject(id, {
+          data: { title: "Only title" }
+        })
+        That would replace the entire data object and lose other fields.
+        That is why drawer code does this:
+        data: {
+          ...(obj.data as TaskCardData),
+          title: form.title,
+        }
+        It preserves existing data manually.
+      */
     updateObject: (id, patch) =>
       set((state) => {
+        // First it checks if the object exists.
         if (!state.objects.some((obj) => obj.id === id)) return {};
         return {
           objects: state.objects.map((obj) =>
@@ -164,7 +188,11 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         };
       }),
 
-    moveObject: (id, x, y) =>
+    /**
+     * does not push to undo stack. because dragging fires many updates. If every drag movement pushed undo,
+     * one drag would create dozens or hundreds of undo entries.
+     */
+    moveObject: (id, { x, y }) =>
       set((state) => ({
         objects: state.objects.map((obj) =>
           obj.id === id ? { ...obj, x, y } : obj,
@@ -185,9 +213,9 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         isDirty: true,
       })),
 
-    addConnection: (conn) =>
+    addConnection: (newConnection) =>
       set((state) => ({
-        connections: [...state.connections, conn],
+        connections: [...state.connections, newConnection],
         undoStack: pushUndo(state),
         redoStack: [],
         isDirty: true,
@@ -206,12 +234,17 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     undo: () =>
       set((state) => {
+        // Gets the latest undo snapshot.
         const snapshot = state.undoStack.at(-1);
         if (!snapshot) return {};
+
         return {
+          // Restores old objects and connections.
           objects: snapshot.objects,
           connections: snapshot.connections,
+          //Removes the snapshot we just used.
           undoStack: state.undoStack.slice(0, -1),
+          // Pushes the current state to redo stack, so we can redo it later.
           redoStack: [
             ...state.redoStack,
             cloneSnapshot(state.objects, state.connections),

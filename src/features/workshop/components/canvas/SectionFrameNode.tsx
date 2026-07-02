@@ -26,7 +26,7 @@ export function SectionFrameNode({ obj, onOpen }: Props) {
         onOpen?.(obj.id);
       }}
       onDblClick={() => activeTool === "select" && onOpen?.(obj.id)}
-      onDragEnd={(e) => moveObject(obj.id, e.target.x(), e.target.y())}
+      onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
     >
       <Rect
         width={obj.width}

@@ -8,7 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
 import { PRIORITY_CONFIG, STATUS_CONFIG, STICKY_COLORS } from "../../constants";
 import { useWorkshopStore } from "../../store/workshopStore";
-import type { SectionFrameData, StickyNoteData, TaskCardData } from "../../types";
+import type {
+  SectionFrameData,
+  SectionFrameKind,
+  StickyNoteData,
+  StickyNoteKind,
+  TaskCardData,
+  TaskCardKind,
+  WorkshopObjectKind,
+} from "../../types";
 
 interface TaskDetailDrawerProps {
   objectId: Nullable<string>;
@@ -16,7 +24,7 @@ interface TaskDetailDrawerProps {
 }
 
 type FormState = {
-  kind: string;
+  kind: WorkshopObjectKind;
   title: string;
   description: string;
   status: TaskStatus;
@@ -36,6 +44,15 @@ const defaultForm: FormState = {
   dueDate: "",
   color: "#FEF08A",
 };
+
+const TASK_KIND_OPTIONS: TaskCardKind[] = [
+  "Task",
+  "Milestone",
+  "Decision",
+  "Risk",
+];
+const STICKY_KIND_OPTIONS: StickyNoteKind[] = ["Note"];
+const SECTION_KIND_OPTIONS: SectionFrameKind[] = ["Project", "Phase"];
 
 function formFromObject(obj: ReturnType<typeof useWorkshopStore.getState>["objects"][number] | null): FormState {
   if (!obj) return defaultForm;
@@ -97,7 +114,7 @@ export function TaskDetailDrawer({ objectId, onClose }: TaskDetailDrawerProps) {
       updateObject(obj.id, {
         data: {
           ...(obj.data as TaskCardData),
-          kind: form.kind,
+          kind: form.kind as TaskCardKind,
           title: form.title.trim(),
           description: form.description.trim() || undefined,
           status: form.status,
@@ -112,7 +129,7 @@ export function TaskDetailDrawer({ objectId, onClose }: TaskDetailDrawerProps) {
       updateObject(obj.id, {
         data: {
           ...(obj.data as StickyNoteData),
-          kind: form.kind,
+          kind: form.kind as StickyNoteKind,
           content: form.description.trim() || "Empty note",
           color: form.color,
         },
@@ -123,7 +140,7 @@ export function TaskDetailDrawer({ objectId, onClose }: TaskDetailDrawerProps) {
       updateObject(obj.id, {
         data: {
           ...(obj.data as SectionFrameData),
-          kind: form.kind,
+          kind: form.kind as SectionFrameKind,
           title: form.title.trim(),
           description: form.description.trim() || undefined,
           backgroundColor: form.color,
@@ -144,6 +161,12 @@ export function TaskDetailDrawer({ objectId, onClose }: TaskDetailDrawerProps) {
   const priorityCfg = PRIORITY_CONFIG[form.priority] ?? PRIORITY_CONFIG.LOW;
   const isTask = obj?.type === CanvasObjectType.TASK_CARD;
   const isSticky = obj?.type === CanvasObjectType.STICKY_NOTE;
+  const kindOptions: WorkshopObjectKind[] =
+    obj?.type === CanvasObjectType.SECTION_FRAME
+      ? SECTION_KIND_OPTIONS
+      : isSticky
+        ? STICKY_KIND_OPTIONS
+        : TASK_KIND_OPTIONS;
   const icon = isSticky ? (
     <StickyNote className="h-4 w-4 text-amber-500" />
   ) : (
@@ -169,12 +192,17 @@ export function TaskDetailDrawer({ objectId, onClose }: TaskDetailDrawerProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-muted-foreground">Type</label>
-              <Select value={form.kind} onValueChange={(value) => setValue("kind", value)}>
+              <Select
+                value={form.kind}
+                onValueChange={(value) =>
+                  setValue("kind", value as WorkshopObjectKind)
+                }
+              >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Project", "Phase", "Task", "Milestone", "Note", "Decision", "Risk"].map((kind) => (
+                  {kindOptions.map((kind) => (
                     <SelectItem key={kind} value={kind}>
                       {kind}
                     </SelectItem>

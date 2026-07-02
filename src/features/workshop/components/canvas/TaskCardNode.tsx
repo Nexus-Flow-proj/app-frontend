@@ -55,7 +55,7 @@ export function TaskCardNode({ obj, onOpen }: Props) {
       onDblClick={() => activeTool === "select" && onOpen?.(obj.id)}
       onMouseEnter={() => setHoveredObject(obj.id)}
       onMouseLeave={() => setHoveredObject(null)}
-      onDragEnd={(e) => moveObject(obj.id, e.target.x(), e.target.y())}
+      onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
     >
       <Rect
         x={2}

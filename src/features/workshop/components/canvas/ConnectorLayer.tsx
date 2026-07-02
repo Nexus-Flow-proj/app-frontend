@@ -18,6 +18,8 @@ function centre(obj: CanvasObject) {
 export function ConnectorLayer() {
   const objects = useWorkshopStore((s) => s.objects);
   const connections = useWorkshopStore((s) => s.connections);
+  console.log(connections);
+
   const deleteConnection = useWorkshopStore((s) => s.deleteConnection);
 
   const objMap = Object.fromEntries(objects.map((o) => [o.id, o]));

@@ -1,5 +1,4 @@
 import { useWorkshopStore } from "../store/workshopStore";
-import type { Coordinates } from "../types";
 import type { WorkshopObjectKind } from "../types/workshopKinds";
 import { createObject } from "../utils/workshopObjectFactory";
 

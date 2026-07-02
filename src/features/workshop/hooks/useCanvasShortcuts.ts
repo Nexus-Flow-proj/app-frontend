@@ -8,7 +8,7 @@
 import { useEffect } from "react";
 import { useWorkshopStore } from "../store/workshopStore";
 
-export function useCanvasState() {
+export function useCanvasShortcuts() {
   const undo = useWorkshopStore((s) => s.undo);
   const redo = useWorkshopStore((s) => s.redo);
   const deleteObject = useWorkshopStore((s) => s.deleteObject);

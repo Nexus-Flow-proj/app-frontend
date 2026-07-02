@@ -5,7 +5,7 @@ import { WorkshopStage } from "../components/canvas/WorkshopStage";
 import { TaskDetailDrawer } from "../components/task-drawer/TaskDetailDrawer";
 import { WorkshopSidebar } from "../components/toolbar/WorkshopSidebar";
 import { WorkshopToolbar } from "../components/toolbar/WorkshopToolbar";
-import { useCanvasState } from "../hooks/useCanvasState";
+import { useCanvasShortcuts } from "../hooks/useCanvasShortcuts";
 import { useMockWorkshop } from "../hooks/useMockWorkshop";
 import { useWorkshopStore } from "../store/workshopStore";
 import { useElementSize } from "@/hooks/useElementSize";
@@ -20,7 +20,7 @@ function WorkshopPage() {
   const detailsObjectId = useWorkshopStore((s) => s.detailsObjectId);
   const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
 
-  useCanvasState();
+  useCanvasShortcuts();
 
   const canvasPointAtCenter = () => ({
     x: (stageSize.width / 2 - viewport.x) / viewport.scale,

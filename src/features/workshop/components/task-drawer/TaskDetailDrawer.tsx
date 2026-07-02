@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Calendar,
   Flag,
@@ -23,172 +22,30 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
+import { TaskPriority, TaskStatus } from "@/types/enums";
 import { PRIORITY_CONFIG, STATUS_CONFIG, STICKY_COLORS } from "../../constants";
-import { useWorkshopStore } from "../../store/workshopStore";
-import type {
-  SectionFrameData,
-  SectionFrameKind,
-  StickyNoteData,
-  StickyNoteKind,
-  TaskCardData,
-  TaskCardKind,
-  WorkshopObjectKind,
-} from "../../types";
+import { useTaskDetailDrawer } from "../../hooks/useTaskDetailDrawer";
+import { CanvasObjectType } from "@/types/enums";
+import type { WorkshopObjectKind } from "../../types";
 
 interface TaskDetailDrawerProps {
   objectId: Nullable<string>;
 }
 
-type FormState = {
-  kind: WorkshopObjectKind;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  assigneeName: string;
-  dueDate: string;
-  color: string;
-};
-
-const defaultForm: FormState = {
-  kind: "Task",
-  title: "",
-  description: "",
-  status: TaskStatus.BACKLOG,
-  priority: TaskPriority.MEDIUM,
-  assigneeName: "",
-  dueDate: "",
-  color: "#FEF08A",
-};
-
-const TASK_KIND_OPTIONS: TaskCardKind[] = [
-  "Task",
-  "Milestone",
-  "Decision",
-  "Risk",
-];
-const STICKY_KIND_OPTIONS: StickyNoteKind[] = ["Note"];
-const SECTION_KIND_OPTIONS: SectionFrameKind[] = ["Project", "Phase"];
-
-function formFromObject(
-  obj: ReturnType<typeof useWorkshopStore.getState>["objects"][number] | null,
-): FormState {
-  if (!obj) return defaultForm;
-
-  if (obj.type === CanvasObjectType.TASK_CARD) {
-    const data = obj.data as TaskCardData;
-    return {
-      kind: data.kind ?? "Task",
-      title: data.title,
-      description: data.description ?? "",
-      status: data.status,
-      priority: data.priority,
-      assigneeName: data.assigneeName ?? "",
-      dueDate: data.dueDate ?? "",
-      color: defaultForm.color,
-    };
-  }
-
-  if (obj.type === CanvasObjectType.STICKY_NOTE) {
-    const data = obj.data as StickyNoteData;
-    return {
-      ...defaultForm,
-      kind: data.kind ?? "Note",
-      title: "Sticky note",
-      description: data.content,
-      color: data.color,
-    };
-  }
-
-  if (obj.type === CanvasObjectType.SECTION_FRAME) {
-    const data = obj.data as SectionFrameData;
-    return {
-      ...defaultForm,
-      kind: data.kind ?? "Phase",
-      title: data.title,
-      description: data.description ?? "",
-      color: data.backgroundColor,
-    };
-  }
-
-  return defaultForm;
-}
-
 export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
-  const objects = useWorkshopStore((s) => s.objects);
-  const updateObject = useWorkshopStore((s) => s.updateObject);
-  const deleteObject = useWorkshopStore((s) => s.deleteObject);
-  const closeObjectDetails = useWorkshopStore((s) => s.closeObjectDetails);
-  const obj = objectId
-    ? (objects.find((o) => o.id === objectId) ?? null)
-    : null;
-  const [form, setForm] = useState<FormState>(() => formFromObject(obj));
-
-  const setValue = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
-  };
-
-  const handleSave = () => {
-    if (!obj || !form.title.trim()) return;
-
-    if (obj.type === CanvasObjectType.TASK_CARD) {
-      updateObject(obj.id, {
-        data: {
-          ...(obj.data as TaskCardData),
-          kind: form.kind as TaskCardKind,
-          title: form.title.trim(),
-          description: form.description.trim() || undefined,
-          status: form.status,
-          priority: form.priority,
-          assigneeName: form.assigneeName.trim() || undefined,
-          dueDate: form.dueDate || undefined,
-        },
-      });
-    }
-
-    if (obj.type === CanvasObjectType.STICKY_NOTE) {
-      updateObject(obj.id, {
-        data: {
-          ...(obj.data as StickyNoteData),
-          kind: form.kind as StickyNoteKind,
-          content: form.description.trim() || "Empty note",
-          color: form.color,
-        },
-      });
-    }
-
-    if (obj.type === CanvasObjectType.SECTION_FRAME) {
-      updateObject(obj.id, {
-        data: {
-          ...(obj.data as SectionFrameData),
-          kind: form.kind as SectionFrameKind,
-          title: form.title.trim(),
-          description: form.description.trim() || undefined,
-          backgroundColor: form.color,
-        },
-      });
-    }
-
-    closeObjectDetails();
-  };
-
-  const handleDelete = () => {
-    if (!obj) return;
-    deleteObject(obj.id);
-    closeObjectDetails();
-  };
-
-  const statusCfg = STATUS_CONFIG[form.status] ?? STATUS_CONFIG.BACKLOG;
-  const priorityCfg = PRIORITY_CONFIG[form.priority] ?? PRIORITY_CONFIG.LOW;
-  const isTask = obj?.type === CanvasObjectType.TASK_CARD;
-  const isSticky = obj?.type === CanvasObjectType.STICKY_NOTE;
-  const kindOptions: WorkshopObjectKind[] =
-    obj?.type === CanvasObjectType.SECTION_FRAME
-      ? SECTION_KIND_OPTIONS
-      : isSticky
-        ? STICKY_KIND_OPTIONS
-        : TASK_KIND_OPTIONS;
+  const {
+    obj,
+    form,
+    isTask,
+    isSticky,
+    kindOptions,
+    statusCfg,
+    priorityCfg,
+    setValue,
+    handleSave,
+    handleDelete,
+    closeObjectDetails,
+  } = useTaskDetailDrawer(objectId);
   const icon = isSticky ? (
     <StickyNote className="h-4 w-4 text-amber-500" />
   ) : (
@@ -202,7 +59,7 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
     >
       <SheetContent
         side="right"
-        className="flex w-[420px] flex-col gap-0 p-0 sm:w-[420px]"
+        className="flex w-105 flex-col gap-0 p-0 sm:w-105"
       >
         <SheetHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
@@ -285,7 +142,7 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
             <Textarea
               value={form.description}
               onChange={(e) => setValue("description", e.target.value)}
-              className="min-h-[96px] resize-none text-sm"
+              className="min-h-24 resize-none text-sm"
               placeholder="Add useful planning context"
             />
           </div>

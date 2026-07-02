@@ -21,8 +21,10 @@ export function TaskCardNode({ obj }: Props) {
     handleMouseLeave,
     handleDragEnd,
   } = useTaskCardNode(obj);
+
   const W = obj.width;
   const H = obj.height;
+
   return (
     <Group
       // Every child shape inside the group is positioned relative to this point.

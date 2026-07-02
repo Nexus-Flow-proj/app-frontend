@@ -1,47 +1,30 @@
 import { Group, Rect, Text } from "react-konva";
-import type { CanvasObject, StickyNoteData } from "../../types";
-import { useWorkshopStore } from "../../store/workshopStore";
+import type { CanvasObject } from "../../types";
+import { useStickyNoteNode } from "../../hooks/useStickyNoteNode";
 
 interface Props {
   obj: CanvasObject;
 }
 
 export function StickyNoteNode({ obj }: Props) {
-  const data = obj.data as StickyNoteData;
-  const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
-  const selectObject = useWorkshopStore((s) => s.selectObject);
-  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
-  const moveObject = useWorkshopStore((s) => s.moveObject);
-  const startConnect = useWorkshopStore((s) => s.startConnect);
-  const finishConnect = useWorkshopStore((s) => s.finishConnect);
-  const activeTool = useWorkshopStore((s) => s.activeTool);
-  const isSelected = selectedObjectId === obj.id;
-
-  const handleClick = () => {
-    if (activeTool === "connect") {
-      const store = useWorkshopStore.getState();
-      if (store.isConnecting && store.connectFromId) finishConnect(obj.id);
-      else startConnect(obj.id);
-      return;
-    }
-
-    if (activeTool === "select") {
-      selectObject(obj.id);
-      openObjectDetails(obj.id);
-    }
-  };
+  const {
+    data,
+    isSelected,
+    isDraggable,
+    handleClick,
+    handleDoubleClick,
+    handleDragEnd,
+  } = useStickyNoteNode(obj);
 
   return (
     <Group
       x={obj.x}
       y={obj.y}
       rotation={obj.rotation}
-      draggable={activeTool === "select"}
+      draggable={isDraggable}
       onClick={handleClick}
-      onDblClick={() =>
-        activeTool === "select" && openObjectDetails(obj.id)
-      }
-      onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
+      onDblClick={handleDoubleClick}
+      onDragEnd={handleDragEnd}
     >
       <Rect
         width={obj.width}

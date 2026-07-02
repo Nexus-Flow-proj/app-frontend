@@ -9,26 +9,32 @@ interface GridPatternProps {
 }
 
 function GridPattern({ width, height, viewport }: GridPatternProps) {
-  const step = CANVAS_GRID_SIZE;
-  const dots: React.ReactElement[] = [];
-  const scaledStep = step * viewport.scale;
-  const offsetX = viewport.x % scaledStep;
-  const offsetY = viewport.y % scaledStep;
+  const step = CANVAS_GRID_SIZE; // The distance between grid dots in canvas/world pixels.
+  const dots: React.ReactElement[] = []; // You will push many <Circle /> elements into it.
 
-  for (let x = offsetX - scaledStep; x < width + scaledStep; x += scaledStep) {
-    for (
-      let y = offsetY - scaledStep;
-      y < height + scaledStep;
-      y += scaledStep
-    ) {
+  // Stage already applies x/y/scale to every layer.
+  // So the grid must be calculated in canvas/world coordinates, not screen coordinates.
+  const left = -viewport.x / viewport.scale;
+  const top = -viewport.y / viewport.scale;
+  const right = left + width / viewport.scale;
+  const bottom = top + height / viewport.scale;
+
+  const startX = Math.floor(left / step) * step;
+  const startY = Math.floor(top / step) * step;
+  const endX = Math.ceil(right / step) * step;
+  const endY = Math.ceil(bottom / step) * step;
+
+  // This loops over the visible canvas/world area, with one extra step as padding.
+  for (let x = startX - step; x <= endX + step; x += step) {
+    for (let y = startY - step; y <= endY + step; y += step) {
       dots.push(
         <Circle
           key={`${Math.round(x)}-${Math.round(y)}`}
           x={x}
           y={y}
-          radius={1}
+          radius={1 / viewport.scale}
           fill="#CBD5E1"
-          opacity={0.55}
+          opacity={0.7}
         />,
       );
     }

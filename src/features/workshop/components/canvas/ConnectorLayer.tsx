@@ -1,48 +1,18 @@
-// ============================================================
-// features/workshop/components/canvas/ConnectorLayer.tsx
-//
-// Draws all CanvasConnections as Konva arrows.
-// Renders on a dedicated Layer below node layers so
-// arrows always appear behind cards but above frames.
-// ============================================================
-
 import { Arrow, Text, Group } from "react-konva";
-import { useWorkshopStore } from "../../store/workshopStore";
-import type { CanvasObject } from "../../types";
-
-/** Returns the centre point of a canvas object */
-function centre(obj: CanvasObject) {
-  return { x: obj.x + obj.width / 2, y: obj.y + obj.height / 2 };
-}
+import { useConnectorLayer } from "../../hooks/useConnectorLayer";
 
 export function ConnectorLayer() {
-  const objects = useWorkshopStore((s) => s.objects);
-  const connections = useWorkshopStore((s) => s.connections);
-  console.log(connections);
-
-  const deleteConnection = useWorkshopStore((s) => s.deleteConnection);
-
-  const objMap = Object.fromEntries(objects.map((o) => [o.id, o]));
+  const { renderedConnections, deleteConnection } = useConnectorLayer();
 
   return (
     <>
-      {connections.map((conn) => {
-        const from = objMap[conn.fromObjectId];
-        const to = objMap[conn.toObjectId];
-        if (!from || !to) return null;
-
-        const fc = centre(from);
-        const tc = centre(to);
+      {renderedConnections.map(({ conn, points, midX, midY }) => {
         const { color, strokeWidth, dashed, arrowEnd } = conn.style;
-
-        // Midpoint for label
-        const midX = (fc.x + tc.x) / 2;
-        const midY = (fc.y + tc.y) / 2;
 
         return (
           <Group key={conn.id}>
             <Arrow
-              points={[fc.x, fc.y, tc.x, tc.y]}
+              points={points}
               stroke={color}
               strokeWidth={strokeWidth}
               fill={arrowEnd ? color : "transparent"}

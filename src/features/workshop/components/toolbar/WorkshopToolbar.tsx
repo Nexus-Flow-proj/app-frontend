@@ -1,37 +1,28 @@
-// ============================================================
-// features/workshop/components/toolbar/WorkshopToolbar.tsx
-//
-// Vertical icon toolbar on the left edge of the canvas.
-// Tool icons: Select · Pan · Task · Sticky · Section · Connect
-// Undo / Redo at the bottom.
-// Keyboard shortcuts shown in tooltips.
-// ============================================================
-
+import type { ReactNode } from "react";
 import {
-  MousePointer2,
-  Hand,
-  SquareDashedMousePointer,
-  StickyNote,
   Frame,
   GitBranch,
-  Undo2,
+  Hand,
+  MousePointer2,
   Redo2,
+  SquareDashedMousePointer,
+  StickyNote,
+  Undo2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-
-import { useWorkshopStore } from "../../store/workshopStore";
+import { useWorkshopToolbar } from "../../hooks/useWorkshopToolbar";
 import type { WorkshopTool } from "../../types";
 
 interface ToolDef {
   tool: WorkshopTool;
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   shortcut: string;
 }
@@ -76,16 +67,11 @@ const TOOLS: ToolDef[] = [
 ];
 
 export function WorkshopToolbar() {
-  const activeTool = useWorkshopStore((s) => s.activeTool);
-  const setActiveTool = useWorkshopStore((s) => s.setActiveTool);
-  const undo = useWorkshopStore((s) => s.undo);
-  const redo = useWorkshopStore((s) => s.redo);
-  const undoStack = useWorkshopStore((s) => s.undoStack);
-  const redoStack = useWorkshopStore((s) => s.redoStack);
+  const { activeTool, setActiveTool, undo, redo, canUndo, canRedo } =
+    useWorkshopToolbar();
 
   return (
     <div className="flex h-full w-14 flex-col items-center gap-1 border-r border-border bg-card py-3">
-      {/* Tool buttons */}
       {TOOLS.map(({ tool, icon, label, shortcut }) => (
         <ToolButton
           key={tool}
@@ -100,7 +86,6 @@ export function WorkshopToolbar() {
       <div className="mt-auto flex flex-col items-center gap-1">
         <Separator className="my-1 w-8" />
 
-        {/* Undo */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -108,18 +93,16 @@ export function WorkshopToolbar() {
               size="icon"
               className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
               onClick={undo}
-              disabled={undoStack.length === 0}
+              disabled={!canUndo}
             >
               <Undo2 className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" className="text-xs">
-            Undo{" "}
-            <kbd className="ml-1 rounded bg-muted px-1 text-[10px]">⌘Z</kbd>
+            Undo <kbd className="ml-1 rounded bg-muted px-1 text-[10px]">Ctrl Z</kbd>
           </TooltipContent>
         </Tooltip>
 
-        {/* Redo */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -127,14 +110,13 @@ export function WorkshopToolbar() {
               size="icon"
               className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
               onClick={redo}
-              disabled={redoStack.length === 0}
+              disabled={!canRedo}
             >
               <Redo2 className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" className="text-xs">
-            Redo{" "}
-            <kbd className="ml-1 rounded bg-muted px-1 text-[10px]">⌘Y</kbd>
+            Redo <kbd className="ml-1 rounded bg-muted px-1 text-[10px]">Ctrl Y</kbd>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -142,10 +124,8 @@ export function WorkshopToolbar() {
   );
 }
 
-// ─── Reusable tool button ─────────────────────────────────────
-
 interface ToolButtonProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   shortcut: string;
   active: boolean;

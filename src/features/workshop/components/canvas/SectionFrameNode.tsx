@@ -1,34 +1,29 @@
 import { Group, Rect, Text } from "react-konva";
-import type { CanvasObject, SectionFrameData } from "../../types";
-import { useWorkshopStore } from "../../store/workshopStore";
+import type { CanvasObject } from "../../types";
+import { useSectionFrameNode } from "../../hooks/useSectionFrameNode";
 
 interface Props {
   obj: CanvasObject;
 }
 
 export function SectionFrameNode({ obj }: Props) {
-  const data = obj.data as SectionFrameData;
-  const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
-  const selectObject = useWorkshopStore((s) => s.selectObject);
-  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
-  const moveObject = useWorkshopStore((s) => s.moveObject);
-  const activeTool = useWorkshopStore((s) => s.activeTool);
-  const isSelected = selectedObjectId === obj.id;
+  const {
+    data,
+    isSelected,
+    isDraggable,
+    handleClick,
+    handleDoubleClick,
+    handleDragEnd,
+  } = useSectionFrameNode(obj);
 
   return (
     <Group
       x={obj.x}
       y={obj.y}
-      draggable={activeTool === "select"}
-      onClick={() => {
-        if (activeTool !== "select") return;
-        selectObject(obj.id);
-        openObjectDetails(obj.id);
-      }}
-      onDblClick={() =>
-        activeTool === "select" && openObjectDetails(obj.id)
-      }
-      onDragEnd={(e) => moveObject(obj.id, { x: e.target.x(), y: e.target.y() })}
+      draggable={isDraggable}
+      onClick={handleClick}
+      onDblClick={handleDoubleClick}
+      onDragEnd={handleDragEnd}
     >
       <Rect
         width={obj.width}

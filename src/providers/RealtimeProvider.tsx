@@ -1,5 +1,6 @@
 import { registerAllHandlers } from "@/lib/socket/handlers";
 import { SocketManager } from "@/lib/socket/socket-manager";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
 
 interface RealTimeProviderProps {
@@ -7,15 +8,16 @@ interface RealTimeProviderProps {
 }
 
 export default function RealTimeProvider({ children }: RealTimeProviderProps) {
+    const qc = useQueryClient();
     const socketManager: SocketManager = SocketManager.getInstance()
 
     useEffect(() => {
         socketManager.initialize();
-        registerAllHandlers(socketManager);
+        registerAllHandlers(socketManager, qc);
         return () => {
             socketManager.destroy();
         }
-    }, [socketManager]);
+    }, [socketManager, qc]);
     return (
         <>{children}</>
     )

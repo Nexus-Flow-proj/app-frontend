@@ -1,41 +1,34 @@
 import type {
-    ApiBoardColumn,
-    ApiTaskSummary,
-} from "../types/api/board-api.types";
-
-import type { BoardState } from "../types";
-
-import { mapBoardColumn } from "./board.mapper";
-import { mapTaskSummary } from "./task.mapper";
+    BoardColumn,
+    BoardState,
+    Task,
+} from "../types";
 
 export function buildBoardState(
-    apiColumns: ApiBoardColumn[],
-    apiTasks: ApiTaskSummary[],
-    projectId: string,
+    columns: BoardColumn[],
+    tasks: Task[],
 ): BoardState {
-    const columns: BoardState["columns"] = {};
-
-    const tasks: BoardState["tasks"] = {};
-
+    const columnsMap: BoardState["columns"] = {};
+    const tasksMap: BoardState["tasks"] = {};
     const columnOrder: string[] = [];
 
-    // Build columns
-    for (const column of apiColumns) {
-        const mappedColumn = mapBoardColumn(column, projectId);
-        columns[mappedColumn.id] = mappedColumn;
-        tasks[mappedColumn.id] = [];
-        columnOrder.push(mappedColumn.id);
+    // Build column lookup
+    for (const column of columns) {
+        columnsMap[column.id] = column;
+        tasksMap[column.id] = [];
+        columnOrder.push(column.id);
     }
-    // Group tasks by column
-    for (const task of apiTasks) {
-        const mappedTask = mapTaskSummary(task);
-        const columnId = mappedTask.boardColumnId;
-        if (!columnId) continue;
-        tasks[columnId]?.push(mappedTask);
+
+    // Group tasks by their board column
+    for (const task of tasks) {
+        if (!task.boardColumnId) continue;
+
+        tasksMap[task.boardColumnId]?.push(task);
     }
+
     return {
-        columns,
-        tasks,
+        columns: columnsMap,
+        tasks: tasksMap,
         columnOrder,
     };
 }

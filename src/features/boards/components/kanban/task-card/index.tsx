@@ -68,17 +68,17 @@ function TaskCard({
           {task.title}
         </p>
 
-        {!!task.subtaskCount && task.subtaskCount > 0 && (
+        {!!task.subtasksCount && task.subtasksCount > 0 && (
           <SubtaskProgress
-            completed={task.completedSubtaskCount ?? 0}
-            total={task.subtaskCount}
+            completed={task.completedsubtasksCount ?? 0}
+            total={task.subtasksCount}
           />
         )}
 
         <TaskCardFooter
           dueDate={task.dueDate}
-          commentCount={task.commentCount ?? 0}
-          attachmentCount={task.attachmentCount ?? 0}
+          commentsCount={task.commentsCount ?? 0}
+          attachmentsCount={task.attachmentsCount ?? 0}
           assignee={task.assignee ?? null}
         />
       </div>

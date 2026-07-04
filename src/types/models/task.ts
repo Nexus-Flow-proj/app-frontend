@@ -19,10 +19,10 @@ export interface Task {
   loggedHours?: number;
   tags: string[];
   position: number;
-  subtaskCount: number;
-  completedSubtaskCount: number;
-  commentCount: number;
-  attachmentCount: number;
+  subtasksCount: number;
+  completedsubtasksCount: number;
+  commentsCount: number;
+  attachmentsCount: number;
   canvasObjectId?: string;
   createdAt: string;
   updatedAt: string;

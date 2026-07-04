@@ -7,8 +7,8 @@ import {
 import { toast } from "sonner";
 import { getApiErrorMessages, getApiMessage } from "../lib/api/Messages";
 
-interface ApiMutationOptions<TData, TVariables> extends Omit<
-  UseMutationOptions<ApiResponse<TData>, ApiError, TVariables>,
+interface ApiMutationOptions<TData, TVariables, TContext = unknown> extends Omit<
+  UseMutationOptions<ApiResponse<TData>, ApiError, TVariables, TContext>,
   "mutationFn"
 > {
   successMessage?: string;
@@ -16,10 +16,10 @@ interface ApiMutationOptions<TData, TVariables> extends Omit<
   showErrorToast?: boolean;
 }
 
-export function useApiMutation<TData, TVariables>(
+export function useApiMutation<TData, TVariables, TContext = unknown>(
   mutationFn: (variables: TVariables) => Promise<ApiResponse<TData>>,
-  options?: ApiMutationOptions<TData, TVariables>,
-): UseMutationResult<ApiResponse<TData>, ApiError, TVariables> {
+  options?: ApiMutationOptions<TData, TVariables, TContext>,
+): UseMutationResult<ApiResponse<TData>, ApiError, TVariables, TContext> {
   const {
     successMessage,
     showSuccessToast = true,
@@ -29,7 +29,7 @@ export function useApiMutation<TData, TVariables>(
     ...rest
   } = options ?? {};
 
-  return useMutation<ApiResponse<TData>, ApiError, TVariables>({
+  return useMutation<ApiResponse<TData>, ApiError, TVariables, TContext>({
     mutationFn,
 
     onSuccess: (data, variables, context, mutationContext) => {

@@ -1,5 +1,6 @@
 import type { CanvasObjectType, TaskStatus, CanvasType } from "@/types/enums";
 import type { CanvasObjectData } from "./canvasObjectData";
+import type { User } from "@/types";
 
 export * from "./canvasObjectData";
 export * from "./workshopKinds";
@@ -9,6 +10,7 @@ export * from "./workshopStore";
 export interface Canvas {
   id: string;
   projectId: string;
+  owner: User;
   type: CanvasType;
   objects: CanvasObject[];
   connections: CanvasConnection[];
@@ -40,8 +42,7 @@ export interface CanvasConnection {
 export interface ConnectionStyle {
   color: string;
   strokeWidth: number;
-  dashed: boolean;
-  arrowEnd: boolean;
+  type: "ARROW" | "LINE" | "DASHED";
 }
 
 export interface CanvasViewport {

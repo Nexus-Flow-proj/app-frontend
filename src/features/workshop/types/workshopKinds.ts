@@ -1,9 +1,9 @@
 export type WorkshopObjectKind =
   | "Project"
   | "Phase"
+  | "Note"
   | "Task"
   | "Milestone"
-  | "Note"
   | "Decision"
   | "Risk";
 

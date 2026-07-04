@@ -1,12 +1,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { authService } from "@/features/auth/services";
 import { Plus } from "lucide-react";
 
 export default function DashboardPage() {
   return (
     <div className="mx-auto grid w-full max-w-sm gap-4">
       {/* all buttons styles */}
-      <Button>default</Button>
+      <Button
+        onClick={() => {
+          authService.refresh();
+        }}
+      >
+        default
+      </Button>
       <Button variant="outline">outline</Button>
       <Button variant="destructive">destructive</Button>
       <Button variant="ghost">ghost</Button>

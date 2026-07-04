@@ -1,6 +1,3 @@
-// features/boards/components/BoardSearchBar.tsx
-// Dev 4 — search input bound to URL param. Uses shadcn Input.
-
 import { useRef } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";

@@ -1,10 +1,6 @@
-import { useState, type ReactNode, useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  DEFAULT_STALE_TIME,
-  DEFAULT_GC_TIME,
-  DEFAULT_RETRY,
-} from "@/constants";
+import { type ReactNode, useEffect, useState } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 
 interface ReactQueryProviderProps {
   children: ReactNode;
@@ -13,23 +9,6 @@ interface ReactQueryProviderProps {
 export default function ReactQueryProvider({
   children,
 }: ReactQueryProviderProps) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: DEFAULT_STALE_TIME,
-            gcTime: DEFAULT_GC_TIME,
-            retry: DEFAULT_RETRY,
-            refetchOnWindowFocus: false,
-          },
-          mutations: {
-            retry: DEFAULT_RETRY,
-          },
-        },
-      }),
-  );
-
   const [Devtools, setDevtools] = useState<null | React.ComponentType<{
     initialIsOpen?: boolean;
   }>>(null);

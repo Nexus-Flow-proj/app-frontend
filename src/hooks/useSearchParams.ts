@@ -1,4 +1,3 @@
-//  multi-key version for filter panels
 import { useSearchParams } from "react-router";
 import { useCallback } from "react";
 
@@ -72,57 +71,4 @@ export function useFilterParams() {
   return { setParam, setParams, clearAll, hasActiveFilters, getParam };
 }
 
-/**
-
-// features/boards/components/BoardFilters.tsx
-export function BoardFilters() {
-  const { setParam, setParams, clearAll, hasActiveFilters, getParam } = useFilterParams();
-
-  const assignee = getParam("assignee");
-  const priority = getParam("priority");
-  const search = getParam("search");
-  const isDirty = hasActiveFilters("assignee", "priority", "search");
-
-  return (
-    <div className="flex items-center gap-2">
-      <BoardSearchBar
-        value={search ?? ""}
-        onChange={(val) => setParam("search", val)}
-      />
-
-      <Select
-        value={assignee ?? ""}
-        onValueChange={(val) => setParam("assignee", val)}
-      >
-        ...
-      </Select>
-
-      <Select
-        value={priority ?? ""}
-        onValueChange={(val) => setParam("priority", val)}
-      >
-        ...
-      </Select>
-
-      {isDirty && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => clearAll("assignee", "priority", "search")}
-        >
-          Clear filters
-        </Button>
-      )}
-    </div>
-  );
-}
-
-
-// Or batch-set multiple params at once (e.g. applying a saved filter preset)
-setParams({
-  assignee: "user-123",
-  priority: "high",
-  search: null,   // clears search while setting the others
-});
-
- */
+export default useFilterParams;

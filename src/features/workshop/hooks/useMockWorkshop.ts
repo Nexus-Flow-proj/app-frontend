@@ -19,13 +19,13 @@ export function useMockWorkshop() {
   };
 
   return {
-    nodes: objects,
-    edges: connections,
+    objects,
+    connections,
     viewport,
-    selectedItemId: selectedObjectId,
+    selectedObjectId,
     addItem,
-    updateItem: updateObject,
-    deleteItem: deleteObject,
+    updateObject,
+    deleteObject,
     setViewport,
   };
 }

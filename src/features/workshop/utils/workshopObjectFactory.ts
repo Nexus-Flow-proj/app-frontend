@@ -10,6 +10,7 @@ export function createObject(
   kind: WorkshopObjectKind,
   position: Coordinates,
 ): CanvasObject {
+  // SectionFrame
   if (kind === "Project" || kind === "Phase") {
     const { w, h } = NODE_SIZE.SECTION_FRAME;
     return {

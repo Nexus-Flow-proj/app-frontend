@@ -16,8 +16,8 @@ export const QUERY_KEYS = {
     all: ["tasks"] as const,
     list: (projectId: string) =>
       [...QUERY_KEYS.tasks.all, "list", projectId] as const,
-    detail: (id: string) =>
-      [...QUERY_KEYS.tasks.all, "detail", id] as const,
+    detail: (taskId: string) =>
+      [...QUERY_KEYS.tasks.all, "detail", taskId] as const,
     timeLogs: (taskId: string) =>
       [...QUERY_KEYS.tasks.all, "timeLogs", taskId] as const,
     // comments: (taskId: string) =>

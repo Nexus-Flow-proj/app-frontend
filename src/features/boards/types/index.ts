@@ -5,6 +5,12 @@ export type Priority = TaskPriority;
 export type ColumnId = string;
 export type TaskId = string;
 
+export interface PaginatedData {
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface BoardMember {
   id: string;
   name: string;
@@ -25,25 +31,28 @@ export interface BoardColumn {
 
 export interface Task {
   id: TaskId;
-  projectId: string;
-  createdBy: string;
   title: string;
-  description?: string;
+  projectId: string;
+  columnOrder: number;
   status: TaskStatus;
   priority: Priority;
+  boardColumnId?: ColumnId;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+  assignee?: BoardMember | null;
+  commentsCount?: number;
+  subtasksCount?: number;
+  attachmentsCount?: number;
+  completedSubtasksCount?: number;
+  source: TaskSource;
+  description?: string;
   dueDate?: string;
   durationMin?: number;
-  boardColumnId?: ColumnId;
-  columnOrder: number;
-  source: TaskSource;
-  createdAt: string;
-  assignee?: BoardMember | null;
-  subtaskCount?: number;
-  completedSubtaskCount?: number;
-  commentCount?: number;
-  attachmentCount?: number;
   tags?: string[];
-  updatedAt?: string;
+}
+export interface TaskList extends PaginatedData {
+  tasks: Task[];
 }
 
 export interface TaskAttachment {
@@ -81,6 +90,10 @@ export interface Comment {
   updatedAt?: string;
 }
 
+export interface CommentList extends PaginatedData {
+  comments: Comment[];
+}
+
 export interface ActivityEvent {
   id: string;
   actor: BoardMember | Pick<User, "id" | "name" | "avatar">;
@@ -92,7 +105,7 @@ export interface TaskDetail extends Task {
   subtasks: Subtask[];
   comments: Comment[];
   activityLog: ActivityEvent[];
-  attachments?: TaskAttachment[];
+  attachments: TaskAttachment[];
 }
 
 export interface BoardState {
@@ -151,6 +164,9 @@ export interface TimeLog {
   description?: string;
   loggedAt: string;
   createdAt: string;
+}
+export interface TimeLogList extends PaginatedData {
+  timeLogs: TimeLog[];
 }
 
 export interface CreateTimeLogDto {

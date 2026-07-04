@@ -1,5 +1,6 @@
 import type { TaskPriority } from "@/types";
 import type { TaskSource, TaskStatus } from "../enums";
+import type { TaskAttachment } from "..";
 
 export interface ApiUserSummary {
     id: string;
@@ -31,7 +32,7 @@ export interface ApiTaskSummary {
     columnOrder: number;
     status: TaskStatus;
     priority: TaskPriority;
-    boardColumn: ApiTaskBoardColumn;
+    boardColumn: ApiBoardColumn;
     createdBy: ApiUserSummary;
     created_at: string;
     updated_at: string;
@@ -41,31 +42,35 @@ export interface ApiTaskSummary {
     attachmentsCount: number;
     completedSubtasksCount: number;
     source: TaskSource;
+    label: string | null;
+    description: string | null;
+    deadline: string | null;
+    type: string;
 }
 export interface ApiTask {
     id: string;
     title: string;
-    description: string | null;
-    label: string | null;
-    deadline: string | null;
-    type: string;
+    projectId: string;
+    columnOrder: number;
     status: TaskStatus;
     priority: TaskPriority;
-    columnOrder: number;
-    projectId: string;
-    boardColumn: ApiTaskBoardColumn;
+    boardColumn: ApiBoardColumn;
     createdBy: ApiUserSummary;
     created_at: string;
     updated_at: string;
     assignee: ApiUserSummary | null;
-    comments: ApiComment[];
-    subtasks: ApiSubtask[];
-    attachments: ApiAttachment[];
     commentsCount: number;
     subtasksCount: number;
     attachmentsCount: number;
     completedSubtasksCount: number;
     source: TaskSource;
+    label: string | null;
+    description: string | null;
+    deadline: string | null;
+    type: string;
+    attachments: TaskAttachment[];
+    comments: ApiComment[];
+    subtasks: ApiSubtask[];
 }
 export interface ApiSubtask {
     id: string;
@@ -90,16 +95,38 @@ export interface ApiTimeLog {
     user: ApiUserSummary;
     created_at: string;
 }
-export interface ApiAttachment {
-    id: string;
-    fileName: string;
-    fileUrl: string;
-    mimeType: string;
-    size: number;
-    uploadedBy: ApiUserSummary;
-    created_at: string;
+// export interface ApiAttachment {
+//     id: string;
+//     fileName: string;
+//     fileUrl: string;
+//     mimeType: string;
+//     size: number;
+//     uploadedBy: ApiUserSummary;
+//     created_at: string;
+// }
+export interface TaskUpdatedData {
+    id?: string;
+    title?: string;
+    projectId?: string;
+    columnOrder?: number;
+    status?: TaskStatus;
+    priority?: TaskPriority;
+    boardColumn?: ApiBoardColumn;
+    createdBy?: ApiUserSummary;
+    created_at?: string;
+    updated_at?: string;
+    assignee?: ApiUserSummary | null;
+    commentsCount?: number;
+    subtasksCount?: number;
+    attachmentsCount?: number;
+    completedSubtasksCount?: number;
+    source?: TaskSource;
+    label?: string | null;
+    description?: string | null;
+    deadline?: string | null;
+    type?: string;
+    attachments?: TaskAttachment[];
 }
-
 
 // Request DTOs
 export interface CreateBoardColumnDto {
@@ -141,10 +168,15 @@ export interface UpdateTaskDto {
 
     deadline?: string;
 
-    status?: string;
+    status?: TaskStatus;
 
-    priority?: string;
+    priority?: TaskPriority;
+
+    assigneeId?: string | null;
+
+    boardColumnId?: string;
 }
+
 
 export interface CreateCommentDto {
     body: string;
@@ -152,6 +184,7 @@ export interface CreateCommentDto {
 export interface UpdateCommentDto {
     body: string;
 }
+
 
 export interface CreateSubtaskDto {
     title: string;
@@ -161,6 +194,7 @@ export interface UpdateSubtaskDto {
 
     isCompleted?: boolean;
 }
+
 
 export interface CreateTimeLogDto {
     durationMin: number;

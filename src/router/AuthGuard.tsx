@@ -7,13 +7,13 @@ import { getCsrfToken } from "@/lib/api/csrf";
 
 export function AuthGuard() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  console.log(isAuthenticated);
-  console.log(getCsrfToken());
+  console.log("isAuthenticated", isAuthenticated);
+  console.log("CSRF Token", getCsrfToken());
 
   const setAuth = useAuthStore((s) => s.setAuth);
   const location = useLocation();
   const { data, isError, isFetching, isPending } = useMe(!isAuthenticated);
-  console.log(data);
+  console.log("useMe Data", data);
 
   useEffect(() => {
     if (!isAuthenticated && data?.user) {

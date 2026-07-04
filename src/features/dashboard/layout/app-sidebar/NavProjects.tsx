@@ -38,19 +38,25 @@ import { useAuthStore, useProjectStore } from "@/store";
 import { UserRole } from "@/types/enums";
 import { ROUTES } from "@/constants";
 import { formatInitials } from "@/lib/format/text";
-import type { ProjectListItem } from "@/features/project/types";
+import type { Project } from "@/types";
 
 interface NavProjectsProps {
-  projects: ProjectListItem[];
+  projects: Project[];
   isLoading?: boolean;
 }
 
 export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const setActiveProject = useProjectStore((s) => s.setActiveProject);
   const isAdmin = useProjectStore((s) => s.isAdmin());
   const userRole = useAuthStore((s) => s.user?.role);
   const canAdmin = isAdmin || userRole === UserRole.ADMIN;
+
+  const openProject = (project: Project, to: string) => {
+    setActiveProject(project);
+    navigate(to);
+  };
 
   if (isLoading) {
     return (
@@ -112,6 +118,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     </span>
                     <Link
                       to={ROUTES.PROJECT_OVERVIEW(project.id)}
+                      onClick={() => setActiveProject(project)}
                       className="min-w-0 flex-1 truncate"
                     >
                       {project.name}
@@ -148,13 +155,17 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     align={isMobile ? "end" : "start"}
                   >
                     <DropdownMenuItem
-                      onClick={() => navigate(ROUTES.BOARDS(project.id))}
+                      onClick={() =>
+                        openProject(project, ROUTES.BOARDS(project.id))
+                      }
                     >
                       <KanbanIcon className="text-muted-foreground" />
                       <span>Team Board</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => navigate(ROUTES.MY_WORKSPACE(project.id))}
+                      onClick={() =>
+                        openProject(project, ROUTES.MY_WORKSPACE(project.id))
+                      }
                     >
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
@@ -162,7 +173,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     {canAdmin && (
                       <>
                         <DropdownMenuItem
-                          onClick={() => navigate(ROUTES.WORKSHOP(project.id))}
+                          onClick={() =>
+                            openProject(project, ROUTES.WORKSHOP(project.id))
+                          }
                         >
                           <Wand2Icon className="text-muted-foreground" />
                           <span>Main Workshop</span>
@@ -170,7 +183,10 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() =>
-                            navigate(ROUTES.PROJECT_SETTINGS(project.id))
+                            openProject(
+                              project,
+                              ROUTES.PROJECT_SETTINGS(project.id),
+                            )
                           }
                         >
                           <Settings2Icon className="text-muted-foreground" />
@@ -188,7 +204,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         <SidebarMenuSubButton asChild>
                           <button
                             onClick={() =>
-                              navigate(ROUTES.WORKSHOP(project.id))
+                              openProject(project, ROUTES.WORKSHOP(project.id))
                             }
                             className="w-full text-left"
                           >
@@ -201,7 +217,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <button
-                          onClick={() => navigate(ROUTES.BOARDS(project.id))}
+                          onClick={() =>
+                            openProject(project, ROUTES.BOARDS(project.id))
+                          }
                           className="w-full text-left"
                         >
                           <KanbanIcon className="size-3.5" />
@@ -213,7 +231,10 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <SidebarMenuSubButton asChild>
                         <button
                           onClick={() =>
-                            navigate(ROUTES.MY_WORKSPACE(project.id))
+                            openProject(
+                              project,
+                              ROUTES.MY_WORKSPACE(project.id),
+                            )
                           }
                           className="w-full text-left"
                         >
@@ -227,7 +248,10 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         <SidebarMenuSubButton asChild>
                           <button
                             onClick={() =>
-                              navigate(ROUTES.PROJECT_SETTINGS(project.id))
+                              openProject(
+                                project,
+                                ROUTES.PROJECT_SETTINGS(project.id),
+                              )
                             }
                             className="w-full text-left"
                           >

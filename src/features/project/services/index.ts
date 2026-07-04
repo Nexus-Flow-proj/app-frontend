@@ -3,14 +3,13 @@ import type { ApiResponse, Project } from "@/types";
 import type {
   CreateProjectDto,
   ProjectDetails,
-  ProjectListItem,
   ProjectMemberSummary,
   UpdateProjectDto,
 } from "../types";
 
 export const projectService = {
   getProjects: () =>
-    api.get<ApiResponse<ProjectListItem[]>>("/projects").then((r) => r.data),
+    api.get<ApiResponse<Project[]>>("/projects").then((r) => r.data),
 
   createProject: (dto: CreateProjectDto) =>
     api.post<ApiResponse<Project>>("/projects", dto).then((r) => r.data),
@@ -22,9 +21,9 @@ export const projectService = {
 
   getProjectMembers: (projectId: string) =>
     api
-      .get<ApiResponse<ProjectMemberSummary[]>>(
-        `/projects/${projectId}/members`,
-      )
+      .get<
+        ApiResponse<ProjectMemberSummary[]>
+      >(`/projects/${projectId}/members`)
       .then((r) => r.data),
 
   updateProject: (projectId: string, dto: UpdateProjectDto) =>

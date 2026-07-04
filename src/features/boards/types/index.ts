@@ -138,6 +138,28 @@ export interface CreateCommentDto {
   content: string;
 }
 
+export interface UpdateCommentDto {
+  content: string;
+}
+
+export interface TimeLog {
+  id: string;
+  taskId: TaskId;
+  userId: string;
+  user?: Pick<User, "id" | "name" | "avatar">;
+  minutes: number;
+  description?: string;
+  loggedAt: string;
+  createdAt: string;
+}
+
+export interface CreateTimeLogDto {
+  taskId: TaskId;
+  minutes: number;
+  description?: string;
+  loggedAt?: string;
+}
+
 export type MoveTaskFn = (
   taskId: TaskId,
   sourceColId: ColumnId,

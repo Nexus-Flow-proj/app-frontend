@@ -16,24 +16,29 @@ export const QUERY_KEYS = {
     all: ["tasks"] as const,
     list: (projectId: string) =>
       [...QUERY_KEYS.tasks.all, "list", projectId] as const,
-    detail: (id: string) => [...QUERY_KEYS.tasks.all, "detail", id] as const,
-    byColumn: (projectId: string, columnId: string) =>
-      [...QUERY_KEYS.tasks.all, "byColumn", projectId, columnId] as const,
-    subtasks: (taskId: string) =>
-      [...QUERY_KEYS.tasks.all, "subtasks", taskId] as const,
-    comments: (taskId: string) =>
-      [...QUERY_KEYS.tasks.all, "comments", taskId] as const,
-    attachments: (taskId: string) =>
-      [...QUERY_KEYS.tasks.all, "attachments", taskId] as const,
-    activity: (taskId: string) =>
-      [...QUERY_KEYS.tasks.all, "activity", taskId] as const,
+    detail: (id: string) =>
+      [...QUERY_KEYS.tasks.all, "detail", id] as const,
+    timeLogs: (taskId: string) =>
+      [...QUERY_KEYS.tasks.all, "timeLogs", taskId] as const,
+    // comments: (taskId: string) =>
+    //   [...QUERY_KEYS.tasks.all, "comments", taskId] as const,
+    // subtasks: (taskId: string) =>
+    //   [...QUERY_KEYS.tasks.all, "subtasks", taskId] as const,
+    // activity: (taskId: string) =>
+    //   [...QUERY_KEYS.tasks.all, "activity", taskId] as const,
+    // attachments: (taskId: string) =>
+    //   [...QUERY_KEYS.tasks.all, "attachments", taskId] as const,
+    // byColumn: (projectId: string, columnId: string) =>
+    //   [...QUERY_KEYS.tasks.all, "byColumn", projectId, columnId] as const,
   },
   boards: {
     all: ["boards"] as const,
     columns: (projectId: string) =>
       [...QUERY_KEYS.boards.all, "columns", projectId] as const,
-    tasks: (projectId: string) =>
-      [...QUERY_KEYS.boards.all, "tasks", projectId] as const,
+    // board: (projectId: string) =>
+    //   [...QUERY_KEYS.boards.all, "board", projectId] as const,
+    // tasks: (projectId: string) =>
+    //   [...QUERY_KEYS.boards.all, "tasks", projectId] as const,
   },
   canvas: {
     all: ["canvas"] as const,

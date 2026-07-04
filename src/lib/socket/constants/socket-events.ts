@@ -51,6 +51,7 @@ export const SOCKET_EVENTS = {
     // Notifications
     NOTIFICATION: {
         NEW: 'notification:new',
+        READ_ALL: 'notification:read-all',
     },
 
     // Activity

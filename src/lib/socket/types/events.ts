@@ -1,10 +1,14 @@
 // src/lib/socket/types/events.ts
 import type {
-    TaskCreatedPayload, TaskDeletedPayload, TaskMovedPayload, TaskUpdatedPayload,
+    TaskCreatedPayload, TaskDeletedPayload, TaskUpdatedPayload,
     SubtaskCreatedPayload, SubtaskDeletedPayload, SubtaskUpdatedPayload,
     ColumnCreatedPayload, ColumnDeletedPayload, ColumnReorderedPayload, ColumnUpdatedPayload,
     CommentCreatedPayload, CommentDeletedPayload, CommentUpdatedPayload,
-    ActivityFeedNewPayload, NotificationNewPayload, PresencePayload
+    NotificationNewPayload,
+    PresenceJoinedPayload,
+    PresenceLeftPayload,
+    ActivityCreatedPayload,
+    NotificationReadAllPayload,
 } from "./payloads";
 import type { EventMetadata, ProjectPayload } from "./socket.types";
 import { SOCKET_EVENTS } from "../constants/socket-events";
@@ -12,7 +16,6 @@ export interface ServerToClientEvents {
     // Task Actions
     [SOCKET_EVENTS.TASK.CREATED]: (payload: TaskCreatedPayload) => void;
     [SOCKET_EVENTS.TASK.UPDATED]: (payload: TaskUpdatedPayload) => void;
-    [SOCKET_EVENTS.TASK.MOVED]: (payload: TaskMovedPayload) => void;
     [SOCKET_EVENTS.TASK.DELETED]: (payload: TaskDeletedPayload & EventMetadata) => void;
 
     // Subtask Realtime Synchronization
@@ -33,11 +36,13 @@ export interface ServerToClientEvents {
     [SOCKET_EVENTS.COMMENT.DELETED]: (payload: CommentDeletedPayload & EventMetadata) => void;
 
     [SOCKET_EVENTS.NOTIFICATION.NEW]: (payload: NotificationNewPayload) => void;
-    [SOCKET_EVENTS.ACTIVITY.NEW]: (payload: ActivityFeedNewPayload) => void;
+    [SOCKET_EVENTS.NOTIFICATION.READ_ALL]: (payload: NotificationReadAllPayload) => void;
+
+    [SOCKET_EVENTS.ACTIVITY.NEW]: (payload: ActivityCreatedPayload) => void;
 
     // Core Presence 
-    [SOCKET_EVENTS.PRESENCE.USER_ONLINE]: (payload: PresencePayload) => void;
-    [SOCKET_EVENTS.PRESENCE.USER_OFFLINE]: (payload: PresencePayload) => void;
+    [SOCKET_EVENTS.PRESENCE.USER_ONLINE]: (payload: PresenceJoinedPayload) => void;
+    [SOCKET_EVENTS.PRESENCE.USER_OFFLINE]: (payload: PresenceLeftPayload) => void;
 }
 
 export interface ClientToServerEvents {

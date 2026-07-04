@@ -4,11 +4,27 @@ import type { User } from "./user";
 export interface Notification {
   id: string;
   userId: string;
+
   type: NotificationType;
+
   title: string;
-  body: string;
-  read: boolean;
-  meta: Record<string, string>;
+  message: string;
+
+  actor?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+
+  metadata: {
+    projectId?: string;
+    taskId?: string;
+    commentId?: string;
+    invitationId?: string;
+  };
+
+  isRead: boolean;
+
   createdAt: string;
 }
 
@@ -24,3 +40,4 @@ export interface ActivityLog {
   changes?: Record<string, { from: unknown; to: unknown }>;
   createdAt: string;
 }
+

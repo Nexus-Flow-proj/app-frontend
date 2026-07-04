@@ -1,5 +1,4 @@
 import type {
-    ApiAttachment,
     ApiComment,
     ApiSubtask,
     ApiTask,
@@ -13,7 +12,6 @@ import type {
     Comment,
     Subtask,
     Task,
-    TaskAttachment,
     TaskDetail,
     TimeLog,
 } from "../types/index";
@@ -24,7 +22,7 @@ import type {
     TaskStatus,
 } from "../types/enums";
 
-function mapBoardMember(user: ApiUserSummary): BoardMember {
+export function mapBoardMember(user: ApiUserSummary): BoardMember {
     return {
         id: user.id,
         name: user.firstName + " " + user.lastName,
@@ -54,22 +52,22 @@ export function mapSubtask(subtask: ApiSubtask, taskId: string): Subtask {
     }
 }
 
-function mapAttachment(attachment: ApiAttachment, taskId: string): TaskAttachment {
-    return {
-        id: attachment.id,
-        taskId,
-        name: attachment.fileName,
-        url: attachment.fileUrl,
-        mimeType: attachment.mimeType,
-        size: attachment.size,
-        uploadedBy: {
-            id: attachment.uploadedBy.id,
-            name: attachment.uploadedBy.firstName + " " + attachment.uploadedBy.lastName,
-            avatar: attachment.uploadedBy.avatarUrl ?? undefined,
-        },
-        createdAt: attachment.created_at,
-    }
-}
+// function mapAttachment(attachment: TaskAttachment, taskId: string): TaskAttachment {
+//     return {
+//         id: attachment.id,
+//         taskId,
+//         name: attachment.fileName,
+//         url: attachment.fileUrl,
+//         mimeType: attachment.mimeType,
+//         size: attachment.size,
+//         uploadedBy: {
+//             id: attachment.uploadedBy.id,
+//             name: attachment.uploadedBy.firstName + " " + attachment.uploadedBy.lastName,
+//             avatar: attachment.uploadedBy.avatarUrl ?? undefined,
+//         },
+//         createdAt: attachment.created_at,
+//     }
+// }
 export function mapTimeLog(timeLog: ApiTimeLog, taskId: string): TimeLog {
     return {
         id: timeLog.id,
@@ -108,6 +106,9 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
         subtasksCount: task.subtasksCount,
         completedSubtasksCount: task.completedSubtasksCount,
         attachmentsCount: task.attachmentsCount,
+        description: task.description,
+        dueDate: task.deadline,
+
     };
 }
 export function mapTaskDetail(
@@ -148,9 +149,8 @@ export function mapTaskDetail(
             mapSubtask(subtask, task.id),
         ),
 
-        attachments: task.attachments.map((attachment) =>
-            mapAttachment(attachment, task.id),
-        ),
+        attachments: task.attachments,
+
         activityLog: [],// TODO: Confirm with backend whether activity log is a separate endpoint or the same as time logs.
     };
 }

@@ -16,7 +16,7 @@ export interface Notification {
     avatar?: string;
   };
 
-  metadata: {
+  metadata?: {
     projectId?: string;
     taskId?: string;
     commentId?: string;

@@ -249,10 +249,10 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       source: TaskSource.MANUAL,
       createdAt: new Date().toISOString(),
       assignee: input.assignee ?? null,
-      subtaskCount: 0,
-      completedSubtaskCount: 0,
-      commentCount: 0,
-      attachmentCount: 0,
+      subtasksCount: 0,
+      completedsubtasksCount: 0,
+      commentsCount: 0,
+      attachmentsCount: 0,
       tags: input.tags ?? [],
     };
 
@@ -288,9 +288,9 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         drawer:
           state.drawer.activeTask?.id === taskId
             ? {
-                ...state.drawer,
-                activeTask: applyTaskPatch(state.drawer.activeTask, patch),
-              }
+              ...state.drawer,
+              activeTask: applyTaskPatch(state.drawer.activeTask, patch),
+            }
             : state.drawer,
       };
     }),
@@ -301,13 +301,13 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       drawer:
         state.drawer.activeTask?.id === taskId
           ? {
-              ...state.drawer,
-              activeTask: {
-                ...state.drawer.activeTask,
-                assignee,
-                updatedAt: new Date().toISOString(),
-              },
-            }
+            ...state.drawer,
+            activeTask: {
+              ...state.drawer.activeTask,
+              assignee,
+              updatedAt: new Date().toISOString(),
+            },
+          }
           : state.drawer,
     })),
 
@@ -347,14 +347,14 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         drawer:
           state.drawer.activeTask?.id === taskId
             ? {
-                ...state.drawer,
-                activeTask: {
-                  ...state.drawer.activeTask,
-                  boardColumnId: movedTask.boardColumnId,
-                  columnOrder: movedTask.columnOrder,
-                  updatedAt: movedTask.updatedAt,
-                },
-              }
+              ...state.drawer,
+              activeTask: {
+                ...state.drawer.activeTask,
+                boardColumnId: movedTask.boardColumnId,
+                columnOrder: movedTask.columnOrder,
+                updatedAt: movedTask.updatedAt,
+              },
+            }
             : state.drawer,
       };
     }),
@@ -367,12 +367,12 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       const subtask = activeTask.subtasks.find((item) => item.id === subtaskId);
       if (!subtask || subtask.completed === completed) return {};
 
-      const completedSubtaskCount = completed
-        ? (activeTask.completedSubtaskCount ?? 0) + 1
-        : Math.max((activeTask.completedSubtaskCount ?? 0) - 1, 0);
+      const completedsubtasksCount = completed
+        ? (activeTask.completedsubtasksCount ?? 0) + 1
+        : Math.max((activeTask.completedsubtasksCount ?? 0) - 1, 0);
       const nextActiveTask: TaskDetail = {
         ...activeTask,
-        completedSubtaskCount,
+        completedsubtasksCount,
         subtasks: activeTask.subtasks.map((item) =>
           item.id === subtaskId ? { ...item, completed } : item,
         ),
@@ -380,7 +380,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
-          completedSubtaskCount,
+          completedsubtasksCount,
         }),
         drawer: {
           ...state.drawer,
@@ -405,17 +405,17 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         createdAt: now,
         updatedAt: now,
       };
-      const subtaskCount = (activeTask.subtaskCount ?? 0) + 1;
+      const subtasksCount = (activeTask.subtasksCount ?? 0) + 1;
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
-          subtaskCount,
+          subtasksCount,
         }),
         drawer: {
           ...state.drawer,
           activeTask: {
             ...activeTask,
-            subtaskCount,
+            subtasksCount,
             subtasks: [...activeTask.subtasks, newSubtask],
           },
         },
@@ -432,22 +432,22 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       );
       if (!deletedSubtask) return {};
 
-      const subtaskCount = Math.max((activeTask.subtaskCount ?? 0) - 1, 0);
-      const completedSubtaskCount = deletedSubtask.completed
-        ? Math.max((activeTask.completedSubtaskCount ?? 0) - 1, 0)
-        : activeTask.completedSubtaskCount;
+      const subtasksCount = Math.max((activeTask.subtasksCount ?? 0) - 1, 0);
+      const completedsubtasksCount = deletedSubtask.completed
+        ? Math.max((activeTask.completedsubtasksCount ?? 0) - 1, 0)
+        : activeTask.completedsubtasksCount;
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
-          subtaskCount,
-          completedSubtaskCount,
+          subtasksCount,
+          completedsubtasksCount,
         }),
         drawer: {
           ...state.drawer,
           activeTask: {
             ...activeTask,
-            subtaskCount,
-            completedSubtaskCount,
+            subtasksCount,
+            completedsubtasksCount,
             subtasks: activeTask.subtasks.filter(
               (item) => item.id !== subtaskId,
             ),
@@ -474,18 +474,18 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         createdAt: now,
         updatedAt: now,
       };
-      const commentCount = (activeTask.commentCount ?? 0) + 1;
+      const commentsCount = (activeTask.commentsCount ?? 0) + 1;
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
-          commentCount,
+          commentsCount,
         }),
         drawer: {
           ...state.drawer,
           isSubmittingComment: true,
           activeTask: {
             ...activeTask,
-            commentCount,
+            commentsCount,
             comments: [...activeTask.comments, newComment],
           },
         },

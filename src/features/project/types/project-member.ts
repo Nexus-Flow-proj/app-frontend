@@ -10,4 +10,5 @@ export interface ProjectMemberSummary {
   roleLabel: string;
   isAdmin: boolean;
   joinedAt: string;
+  isOnline: boolean
 }

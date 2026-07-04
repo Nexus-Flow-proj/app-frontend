@@ -34,8 +34,8 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const PROJECT_ID = "p1";
 
 // ─── Single source of truth ───────────────────────────────────────────────────
-// Subtasks/comments/activity live HERE. Task card counts (subtaskCount,
-// commentCount, …) are derived from these arrays below — so the board and
+// Subtasks/comments/activity live HERE. Task card counts (subtasksCount,
+// commentsCount, …) are derived from these arrays below — so the board and
 // the drawer can never go out of sync again.
 
 const SUBTASKS_BY_TASK: Record<string, Omit<Subtask, "taskId">[]> = {
@@ -341,7 +341,7 @@ function buildComments(taskId: string): Comment[] {
 // ─── Task cards — counts are derived, never hand-typed ───────────────────────
 type TaskInput = Omit<
   Task,
-  "subtaskCount" | "completedSubtaskCount" | "commentCount"
+  "subtasksCount" | "completedsubtasksCount" | "commentsCount"
 >;
 
 const createTask = (task: TaskInput): Task => {
@@ -350,9 +350,9 @@ const createTask = (task: TaskInput): Task => {
 
   return {
     ...task,
-    subtaskCount: subtasks.length,
-    completedSubtaskCount: subtasks.filter((s) => s.completed).length,
-    commentCount: comments.length,
+    subtasksCount: subtasks.length,
+    completedsubtasksCount: subtasks.filter((s) => s.completed).length,
+    commentsCount: comments.length,
   };
 };
 
@@ -371,7 +371,7 @@ const backlogTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-01T09:00:00.000Z",
     assignee: MOCK_MEMBERS[1],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["design"],
   }),
   createTask({
@@ -388,7 +388,7 @@ const backlogTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-02T09:00:00.000Z",
     assignee: MOCK_MEMBERS[2],
-    attachmentCount: 1,
+    attachmentsCount: 1,
     tags: ["backend"],
   }),
   createTask({
@@ -405,7 +405,7 @@ const backlogTasks = [
     source: TaskSource.AI,
     createdAt: "2026-06-03T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: [],
   }),
 ];
@@ -426,7 +426,7 @@ const inProgressTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-04T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["auth"],
   }),
   createTask({
@@ -443,7 +443,7 @@ const inProgressTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-05T09:00:00.000Z",
     assignee: MOCK_MEMBERS[1],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["canvas"],
   }),
 ];
@@ -462,7 +462,7 @@ const reviewTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-06T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    attachmentCount: 1,
+    attachmentsCount: 1,
     tags: ["auth"],
   }),
   createTask({
@@ -479,7 +479,7 @@ const reviewTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-07T09:00:00.000Z",
     assignee: MOCK_MEMBERS[3],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["dashboard"],
   }),
 ];
@@ -498,7 +498,7 @@ const doneTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-08T09:00:00.000Z",
     assignee: MOCK_MEMBERS[0],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["infra"],
   }),
   createTask({
@@ -514,7 +514,7 @@ const doneTasks = [
     source: TaskSource.MANUAL,
     createdAt: "2026-06-09T09:00:00.000Z",
     assignee: MOCK_MEMBERS[2],
-    attachmentCount: 0,
+    attachmentsCount: 0,
     tags: ["routing"],
   }),
 ];

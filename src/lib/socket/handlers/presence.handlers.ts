@@ -1,14 +1,18 @@
+import { markUserOffline, markUserOnline } from "@/features/project/cache/project-members.cache";
 import { SOCKET_EVENTS } from "../constants/socket-events";
 import type { SocketManager } from "../socket-manager";
-export function registerPresenceHandlers(socketManager: SocketManager): void {
+import type { QueryClient } from "@tanstack/react-query";
+export function registerPresenceHandlers(socketManager: SocketManager, qc: QueryClient): void {
     socketManager.on(SOCKET_EVENTS.PRESENCE.USER_ONLINE, payload => {
-        // presenceCache.userOnline(payload);
+        const { projectId, userId } = payload
+        markUserOnline(qc, projectId, userId)
         console.log("PRESENCE Event With Payload : ", payload);
 
     });
 
     socketManager.on(SOCKET_EVENTS.PRESENCE.USER_OFFLINE, payload => {
-        // presenceCache.userOffline(payload);
+        const { projectId, userId } = payload
+        markUserOffline(qc, projectId, userId)
         console.log("PRESENCE Event With Payload : ", payload);
     });
 }

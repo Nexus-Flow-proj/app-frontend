@@ -8,7 +8,6 @@ import type {
 } from "../types";
 
 export function useWorkshopSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -63,14 +62,12 @@ export function useWorkshopSidebar() {
   );
 
   return {
-    collapsed,
     search,
     typeFilter,
     statusFilter,
     filtered,
     selectedObjectId,
     ...stats,
-    setCollapsed,
     setSearch,
     setTypeFilter,
     setStatusFilter,

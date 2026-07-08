@@ -15,5 +15,6 @@ export function useTodaysFocus() {
     data: query.data ?? null,
     isLoading: query.isLoading,
     error: query.error?.message ?? null,
+    dataUpdatedAt: query.dataUpdatedAt,
   };
 }

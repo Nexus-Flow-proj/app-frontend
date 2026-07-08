@@ -15,5 +15,7 @@ export function useDashboardSummary() {
     isLoading: query.isLoading,
     error: query.error?.message ?? null,
     refetch: query.refetch,
+    dataUpdatedAt: query.dataUpdatedAt,
+
   };
 }

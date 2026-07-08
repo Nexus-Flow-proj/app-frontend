@@ -17,5 +17,6 @@ export function useTaskProgress() {
     data: query.data ?? null,
     isLoading: query.isLoading,
     error: query.error?.message ?? null,
+    dataUpdatedAt: query.dataUpdatedAt,
   };
 }

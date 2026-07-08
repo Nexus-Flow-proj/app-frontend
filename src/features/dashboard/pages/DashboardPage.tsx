@@ -1,10 +1,10 @@
-import { AlertCircle, Plus, RefreshCw } from "lucide-react";
-import { useNavigate } from "react-router";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardSummary } from "../hooks/useDashboardSummary";
 import { useDashboardUiStore } from "../store/dashboardUiStore";
 import { DashboardDrawer } from "../components/DashboardDrawer";
+import { DashboardUpdatedLabel } from "../components/DashboardUpdatedLabel";
 import { StatsGrid } from "../components/StatsGrid";
 import { TaskProgressChart } from "../components/TaskProgressChart";
 import { UpcomingDeadlines } from "../components/UpcomingDeadlines";
@@ -13,8 +13,8 @@ import { RecentActivity } from "../components/RecentActivity";
 import { RecentProjects } from "../components/RecentProjects";
 import { useAuthStore } from "@/store/authStore";
 
-// How many items the compact dashboard cards show before "View all" is
-// needed. The drawer always shows the complete list regardless of this.
+
+
 const PREVIEW_LIMIT = 4;
 
 function getGreeting(): string {
@@ -26,14 +26,14 @@ function getGreeting(): string {
 }
 
 function DashboardPage() {
-  const navigate = useNavigate();
-  const { data, isLoading, error, refetch } = useDashboardSummary();
+  const { data, isLoading, error, refetch, dataUpdatedAt } =
+    useDashboardSummary();
   const openDrawer = useDashboardUiStore((s) => s.openDrawer);
   const { user } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-background px-6 py-2 lg:px-10">
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div className="min-h-screen bg-background px-6 py-4 lg:px-10">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
             {getGreeting()}, {user?.firstName || "there"}! 
@@ -43,14 +43,19 @@ function DashboardPage() {
           </p>
         </div>
 
-        {/* No context needed to create a project (unlike "New Task", which
-            would need a project + column picked first) - safe default here.
-            NOTE: wire this to your actual project-creation route/dialog,
-            "/projects/new" is a placeholder. */}
-        <Button onClick={() => navigate("/projects/new")}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
+        {dataUpdatedAt > 0 && (
+          <div className="flex items-center gap-2">
+            <DashboardUpdatedLabel updatedAt={dataUpdatedAt} />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => refetch()}
+              aria-label="Refresh dashboard"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </header>
 
       {error ? (

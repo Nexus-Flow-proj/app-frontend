@@ -106,8 +106,8 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
         subtasksCount: task.subtasksCount,
         completedSubtasksCount: task.completedSubtasksCount,
         attachmentsCount: task.attachmentsCount,
-        description: task.description,
-        dueDate: task.deadline,
+        description: task.description ?? undefined,
+        dueDate: task.deadline ?? undefined,
 
     };
 }

@@ -61,6 +61,7 @@ function createEmptyTaskDetail(task: Task): TaskDetail {
     subtasks: [],
     comments: [],
     activityLog: [],
+    attachments: [],
   };
 }
 

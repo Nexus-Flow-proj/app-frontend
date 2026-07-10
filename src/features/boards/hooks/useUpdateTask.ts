@@ -147,7 +147,11 @@ export function updateTaskDetail(
         status: dto.status ?? task.status,
         attachmentsCount: task.attachmentsCount,
         source: dto.source ?? task.source,
-        assignee: mapBoardMember(dto.assignee) ?? task.assignee,
+        assignee: dto.assignee === undefined
+            ? task.assignee
+            : dto.assignee
+                ? mapBoardMember(dto.assignee)
+                : null,
         attachments: dto.attachments ?? task.attachments,
     };
 
@@ -175,7 +179,11 @@ export function updateTaskList(
         status: dto.status ?? task.status,
         attachmentsCount: task.attachmentsCount,
         source: dto.source ?? task.source,
-        assignee: mapBoardMember(dto.assignee) ?? task.assignee,
+        assignee: dto.assignee === undefined
+            ? task.assignee
+            : dto.assignee
+                ? mapBoardMember(dto.assignee)
+                : null,
 
     };
 }

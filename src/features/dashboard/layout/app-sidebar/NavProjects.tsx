@@ -38,6 +38,7 @@ import {
 // import { UserRole } from "@/types/enums";
 import { ROUTES } from "@/constants";
 import { formatInitials } from "@/lib/format/text";
+import { useProjectStore } from "@/store";
 import type { Project } from "@/types";
 
 interface NavProjectsProps {
@@ -48,6 +49,7 @@ interface NavProjectsProps {
 export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const setActiveProject = useProjectStore((s) => s.setActiveProject);
   // const isAdmin = useProjectStore((s) => s.isAdmin());
   // const userRole = useAuthStore((s) => s.user?.role);
   // const canAdmin = isAdmin || userRole === UserRole.ADMIN;

@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from "axios";
-import { AUTH_REFRESH_PATH, AUTH_ROUTES_WITHOUT_REFRESH, getRequestPath } from "./routes";
+import { AUTH_REFRESH_PATH, getRequestPath, isPublicAuthPath } from "./routes";
 
 export type RetryableRequestConfig = AxiosRequestConfig & {
   _retry?: boolean;
@@ -16,15 +16,23 @@ export function shouldAttemptRefresh(
   status?: number,
 ): boolean {
   const path = getRequestPath(config.url);
-  const isPublicAuthRoute = AUTH_ROUTES_WITHOUT_REFRESH.some((route) =>
-    path.startsWith(route),
-  );
-
   return (
     status === 401 &&
     !config._retry &&
     path !== AUTH_REFRESH_PATH &&
-    !isPublicAuthRoute
+    !isPublicAuthPath(path)
+  );
+}
+
+export function shouldEndSession(
+  config: RetryableRequestConfig,
+  status?: number,
+): boolean {
+  const path = getRequestPath(config.url);
+
+  return (
+    (path === AUTH_REFRESH_PATH && (status === 401 || status === 403)) ||
+    (status === 401 && !!config._retry && !isPublicAuthPath(path))
   );
 }
 

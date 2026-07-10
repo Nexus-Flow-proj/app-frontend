@@ -21,7 +21,11 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
-      <GoogleAuthBtn isPending={isPending} text="Login with Google" />
+      <GoogleAuthBtn
+        isPending={isPending}
+        text="Login with Google"
+        pathname="login"
+      />
 
       <MySeparator text="Or continue with" />
 

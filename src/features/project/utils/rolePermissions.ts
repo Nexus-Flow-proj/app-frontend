@@ -1,5 +1,87 @@
 import { ROLE_PERMISSION_GROUPS } from "../constants/rolePresets";
-import type { RolePermissions } from "../types/roles";
+import type {
+  PermissionGroupKey,
+  ProjectRoleDefinition,
+  RolePermissions,
+} from "../types/roles";
+
+export type RolePermissionPath = {
+  [TGroup in PermissionGroupKey]: `${TGroup}.${Extract<
+    keyof RolePermissions[TGroup],
+    string
+  >}`;
+}[PermissionGroupKey];
+
+export function hasPermission(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+  permissionPath: RolePermissionPath,
+) {
+  const [groupKey, permissionKey] = permissionPath.split(".") as [
+    PermissionGroupKey,
+    string,
+  ];
+
+  return Boolean(
+    role.permissions[groupKey][
+      permissionKey as keyof (typeof role.permissions)[typeof groupKey]
+    ],
+  );
+}
+
+export function canManageMembers(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return (
+    hasPermission(role, "members.invite") ||
+    hasPermission(role, "members.remove") ||
+    hasPermission(role, "members.changeRoles")
+  );
+}
+
+export function canInviteMembers(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "members.invite");
+}
+
+export function canRemoveMembers(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "members.remove");
+}
+
+export function canChangeMemberRoles(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+) {
+  return hasPermission(role, "members.changeRoles");
+}
+
+export function canManageProjectSettings(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+) {
+  return hasPermission(role, "project.updateSettings");
+}
+
+export function canManageRoles(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "project.updateSettings");
+}
+
+export function canReadProject(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "project.read");
+}
+
+export function canReadWorkshop(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "workshop.read");
+}
+
+export function canReadBoard(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "board.read");
+}
+
+export function canUseAiPlanning(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "workshop.generateWithAi");
+}
+
+export function canManageBoard(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return (
+    hasPermission(role, "board.moveTasks") ||
+    hasPermission(role, "board.manageColumns")
+  );
+}
 
 export function countEnabledPermissions(permissions: RolePermissions) {
   return ROLE_PERMISSION_GROUPS.reduce(

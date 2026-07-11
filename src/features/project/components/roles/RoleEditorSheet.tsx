@@ -18,6 +18,7 @@ interface RoleEditorSheetProps {
   onOpenChange: (open: boolean) => void;
   onChange: (role: ProjectRoleDefinition) => void;
   onSave: () => void;
+  isSaving?: boolean;
 }
 
 export function RoleEditorSheet({
@@ -26,6 +27,7 @@ export function RoleEditorSheet({
   onOpenChange,
   onChange,
   onSave,
+  isSaving = false,
 }: RoleEditorSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -44,9 +46,13 @@ export function RoleEditorSheet({
         </div>
 
         <SheetFooter className="border-t bg-background p-5 sm:p-6">
-          <Button onClick={onSave} disabled={!role?.name.trim()}>
+          <Button
+            onClick={onSave}
+            disabled={!role?.name.trim() || isSaving || role?.isSystemRole}
+            isLoading={isSaving}
+          >
             <Save />
-            Save role
+            {isSaving ? "Saving..." : "Save role"}
           </Button>
           <SheetClose asChild>
             <Button variant="outline">Cancel</Button>

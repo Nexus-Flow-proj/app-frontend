@@ -1,4 +1,56 @@
 import { ROLE_LEVELS } from "../constants/rolePresets";
+import type { ProjectRoleDefinition } from "../types/roles";
+
+export function sortRolesByLevel(roles: ProjectRoleDefinition[]) {
+  return [...roles].sort((a, b) => b.level - a.level);
+}
+
+export function canReadRoleContent(
+  actorRole: Pick<ProjectRoleDefinition, "level">,
+  targetRole: Pick<ProjectRoleDefinition, "level">,
+) {
+  return targetRole.level >= actorRole.level;
+}
+
+export function canEditRoleContent(
+  actorRole: Pick<ProjectRoleDefinition, "level">,
+  targetRole: Pick<ProjectRoleDefinition, "level">,
+  isContentOwner = false,
+) {
+  return isContentOwner || targetRole.level < actorRole.level;
+}
+
+export function canDeleteRoleContent(
+  actorRole: Pick<ProjectRoleDefinition, "level">,
+  targetRole: Pick<ProjectRoleDefinition, "level">,
+  isContentOwner = false,
+) {
+  return isContentOwner || targetRole.level < actorRole.level;
+}
+
+export function isProtectedRole(
+  role: Pick<ProjectRoleDefinition, "isSystemRole" | "level">,
+) {
+  return role.isSystemRole || role.level >= 100;
+}
+
+export function getRolesBelow(
+  actorRole: Pick<ProjectRoleDefinition, "level">,
+  roles: ProjectRoleDefinition[],
+) {
+  return sortRolesByLevel(
+    roles.filter((role) => role.level < actorRole.level),
+  );
+}
+
+export function getRolesAbove(
+  actorRole: Pick<ProjectRoleDefinition, "level">,
+  roles: ProjectRoleDefinition[],
+) {
+  return sortRolesByLevel(
+    roles.filter((role) => role.level > actorRole.level),
+  );
+}
 
 export function getRoleLevelLabel(level: number) {
   const exactLevel = ROLE_LEVELS.find((roleLevel) => roleLevel.value === level);

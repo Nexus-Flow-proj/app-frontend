@@ -1,5 +1,3 @@
-import type { ProjectRole } from "@/types";
-
 export interface CreateProjectDto {
   name: string;
   description?: string;
@@ -13,5 +11,12 @@ export interface UpdateProjectDto {
 }
 
 export interface UpdateProjectMemberRoleDto {
-  roleLabel: ProjectRole;
+  roleId: string;
+}
+
+export interface BulkUpdateProjectMemberRolesDto {
+  assignments: {
+    memberId: string;
+    roleId: string;
+  }[];
 }

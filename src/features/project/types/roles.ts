@@ -7,6 +7,8 @@ export interface ProjectRoleDefinition {
   permissions: RolePermissions;
   isSystemRole: boolean;
   memberCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface RolePermissions {

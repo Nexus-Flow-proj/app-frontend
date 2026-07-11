@@ -5,33 +5,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProjectRole } from "@/types";
-import { PROJECT_ROLE_OPTIONS } from "../../constants";
+import type { ProjectRoleDefinition } from "../../types";
 
 interface ProjectMemberRoleSelectProps {
-  value: ProjectRole;
+  value?: string;
+  roles: ProjectRoleDefinition[];
   disabled?: boolean;
-  onChange: (role: ProjectRole) => void;
+  onChange: (roleId: string) => void;
 }
 
 export function ProjectMemberRoleSelect({
   value,
+  roles,
   disabled = false,
   onChange,
 }: ProjectMemberRoleSelectProps) {
   return (
     <Select
       value={value}
-      disabled={disabled}
-      onValueChange={(role) => onChange(role as ProjectRole)}
+      disabled={disabled || roles.length === 0}
+      onValueChange={onChange}
     >
-      <SelectTrigger className="w-36 bg-background text-xs font-semibold">
-        <SelectValue />
+      <SelectTrigger className="w-44 bg-background text-xs font-semibold">
+        <SelectValue placeholder="Choose role" />
       </SelectTrigger>
       <SelectContent>
-        {PROJECT_ROLE_OPTIONS.map((role) => (
-          <SelectItem key={role.value} value={role.value}>
-            {role.label}
+        {roles.map((role) => (
+          <SelectItem key={role.id} value={role.id}>
+            <p className="p-0.5">{role.name}</p>
           </SelectItem>
         ))}
       </SelectContent>

@@ -1,9 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants";
 import { useApiMutation } from "@/hooks/useApiMutation";
-import type { Project } from "@/types";
 import { projectService } from "../services";
-import type { UpdateProjectDto } from "../types";
+import type { ProjectDetails, UpdateProjectDto } from "../types";
 
 interface UpdateProjectVariables extends UpdateProjectDto {
   projectId: string;
@@ -12,7 +11,7 @@ interface UpdateProjectVariables extends UpdateProjectDto {
 export function useUpdateProject() {
   const queryClient = useQueryClient();
 
-  return useApiMutation<Project, UpdateProjectVariables>(
+  return useApiMutation<ProjectDetails, UpdateProjectVariables>(
     ({ projectId, ...dto }) => projectService.updateProject(projectId, dto),
     {
       successMessage: "Project details updated.",

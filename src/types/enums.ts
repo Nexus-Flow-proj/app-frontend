@@ -30,6 +30,7 @@ export const InviteStatus = {
   ACCEPTED: "ACCEPTED",
   EXPIRED: "EXPIRED",
   REVOKED: "REVOKED",
+  CANCELLED: "CANCELLED",
 } as const;
 export type InviteStatus = (typeof InviteStatus)[keyof typeof InviteStatus];
 
@@ -75,16 +76,3 @@ export const UserRole = {
   ADMIN: "ADMIN",
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
-
-export const MemberRole = {
-  ADMIN: "ADMIN",
-  MEMBER: "MEMBER",
-} as const;
-export type MemberRole = (typeof MemberRole)[keyof typeof MemberRole];
-
-export const ProjectRole = {
-  OWNER: "OWNER",
-  EDITOR: "EDITOR",
-  VIEWER: "VIEWER",
-} as const;
-export type ProjectRole = (typeof ProjectRole)[keyof typeof ProjectRole];

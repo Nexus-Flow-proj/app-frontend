@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { ROLE_LEVELS } from "../../constants/rolePresets";
+import {
+  CUSTOM_ROLE_LEVEL_MAX,
+  CUSTOM_ROLE_LEVEL_MIN,
+  CUSTOM_ROLE_LEVELS,
+} from "../../constants/rolePresets";
 import type { ProjectRoleDefinition } from "../../types";
 import { getRoleLevelLabel } from "../../utils/roleHierarchy";
 import { RolePermissionMatrix } from "./RolePermissionMatrix";
@@ -21,6 +25,10 @@ interface RoleFormProps {
 }
 
 export function RoleForm({ role, onChange }: RoleFormProps) {
+  const hasPresetLevel = CUSTOM_ROLE_LEVELS.some(
+    (level) => level.value === role.level,
+  );
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-3">
@@ -62,7 +70,12 @@ export function RoleForm({ role, onChange }: RoleFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ROLE_LEVELS.map((level) => (
+            {!hasPresetLevel && (
+              <SelectItem value={String(role.level)}>
+                Custom - {role.level}
+              </SelectItem>
+            )}
+            {CUSTOM_ROLE_LEVELS.map((level) => (
               <SelectItem key={level.value} value={String(level.value)}>
                 {level.label} - {level.value}
               </SelectItem>
@@ -71,9 +84,9 @@ export function RoleForm({ role, onChange }: RoleFormProps) {
         </Select>
         <Slider
           value={[role.level]}
-          min={20}
-          max={100}
-          step={20}
+          min={CUSTOM_ROLE_LEVEL_MIN}
+          max={CUSTOM_ROLE_LEVEL_MAX}
+          step={1}
           onValueChange={([value]) => onChange({ ...role, level: value })}
           aria-label="Hierarchy level"
         />

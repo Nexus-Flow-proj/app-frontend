@@ -1,8 +1,9 @@
-import type { InviteStatus, ProjectRole } from "@/types";
+import type { InviteStatus } from "@/types";
+import type { ProjectRoleDefinition } from "./roles";
 
 export interface SendProjectInviteDto {
   email: string;
-  roleLabel: ProjectRole;
+  roleId: string;
 }
 
 export interface ProjectInviteProject {
@@ -27,11 +28,33 @@ export interface ProjectInviteDetails {
   projectId: string;
   email: string;
   projectName: string;
-  roleLabel: ProjectRole;
+  roleId?: string;
+  role?: ProjectRoleDefinition | null;
+  roleLabel?: string;
   status?: InviteStatus;
   token?: string;
   expiresAt?: string | null;
   createdAt?: string | null;
   project?: ProjectInviteProject | null;
   invitedBy?: ProjectInviteUser | null;
+}
+
+export interface ProjectInviteListItem {
+  id: string;
+  projectId?: string;
+  email: string;
+  roleId?: string;
+  role?: ProjectRoleDefinition | null;
+  roleLabel?: string;
+  status: InviteStatus;
+  expiresAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  invitedBy?: ProjectInviteUser | null;
+}
+
+export interface ProjectInvitesQuery {
+  status?: InviteStatus;
+  page?: number;
+  limit?: number;
 }

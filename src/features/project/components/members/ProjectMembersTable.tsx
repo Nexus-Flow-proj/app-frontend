@@ -1,22 +1,29 @@
 import Loading from "@/components/shared/loading/Loading";
-import type { User, ProjectRole } from "@/types";
-import type { ProjectMemberSummary } from "../../types";
+import type { ProjectMemberSummary, ProjectRoleDefinition } from "../../types";
 import { ProjectMemberRow } from "./ProjectMemberRow";
 
 interface ProjectMembersTableProps {
   projectId: string;
   members: ProjectMemberSummary[];
-  currentUser?: User | null;
+  roles: ProjectRoleDefinition[];
+  draftRoleIds?: Record<string, string>;
+  currentMember?: ProjectMemberSummary | null;
+  canChangeRoles: boolean;
+  canRemoveMembers: boolean;
   isLoading?: boolean;
   isBusy?: boolean;
-  onRoleChange: (projectId: string, memberId: string, role: ProjectRole) => void;
+  onRoleChange: (memberId: string, roleId: string) => void;
   onRemove: (projectId: string, memberId: string) => void;
 }
 
 export function ProjectMembersTable({
   projectId,
   members,
-  currentUser,
+  roles,
+  draftRoleIds = {},
+  currentMember,
+  canChangeRoles,
+  canRemoveMembers,
   isLoading = false,
   isBusy = false,
   onRoleChange,
@@ -42,11 +49,13 @@ export function ProjectMembersTable({
             <ProjectMemberRow
               key={member.id}
               member={member}
-              currentUser={currentUser}
+              roles={roles}
+              draftRoleId={draftRoleIds[member.id]}
+              currentMember={currentMember}
+              canChangeRoles={canChangeRoles}
+              canRemoveMembers={canRemoveMembers}
               isBusy={isBusy}
-              onRoleChange={(memberId, role) =>
-                onRoleChange(projectId, memberId, role)
-              }
+              onRoleChange={onRoleChange}
               onRemove={(memberId) => onRemove(projectId, memberId)}
             />
           ))}

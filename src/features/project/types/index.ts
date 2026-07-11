@@ -1,11 +1,14 @@
 export type {
   CreateProjectDto,
+  BulkUpdateProjectMemberRolesDto,
   UpdateProjectDto,
   UpdateProjectMemberRoleDto,
 } from "./project-dto";
 export type {
   ProjectInviteDetails,
+  ProjectInviteListItem,
   ProjectInviteProject,
+  ProjectInvitesQuery,
   ProjectInviteUser,
   SendProjectInviteDto,
 } from "./project-invite";

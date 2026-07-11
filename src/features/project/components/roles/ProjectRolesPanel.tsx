@@ -1,17 +1,39 @@
 import { useMemo, useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
-  DEFAULT_PROJECT_ROLES,
+  CUSTOM_ROLE_LEVEL_MAX,
   EMPTY_ROLE_PERMISSIONS,
 } from "../../constants/rolePresets";
+import {
+  useCreateProjectRole,
+  useDeleteProjectRole,
+  useProjectRoles,
+  useUpdateProjectRole,
+} from "../../hooks";
 import type {
   CreateProjectRoleDto,
   ProjectRoleDefinition,
   RolePreset,
   UpdateProjectRoleDto,
 } from "../../types";
+import {
+  createProjectRoleSchema,
+  updateProjectRoleSchema,
+} from "../../validation";
+import { sortRolesByLevel } from "../../utils/roleHierarchy";
 import { RoleEditorSheet } from "./RoleEditorSheet";
 import { RoleList } from "./RoleList";
 import { RolePresetSelector } from "./RolePresetSelector";
@@ -34,20 +56,32 @@ function buildUpdateRoleDto(role: ProjectRoleDefinition): UpdateProjectRoleDto {
 }
 
 export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
-  const [roles, setRoles] = useState<ProjectRoleDefinition[]>(
-    DEFAULT_PROJECT_ROLES,
-  );
+  const {
+    data: roles = [],
+    isLoading: isLoadingRoles,
+    isError: isRolesError,
+  } = useProjectRoles(projectId);
+  const { mutate: createRole, isPending: isCreatingRole } =
+    useCreateProjectRole();
+  const { mutate: updateRole, isPending: isUpdatingRole } =
+    useUpdateProjectRole();
+  const { mutate: deleteRole, isPending: isDeletingRole } =
+    useDeleteProjectRole();
   const [editingRole, setEditingRole] = useState<ProjectRoleDefinition | null>(
     null,
   );
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [rolePendingDelete, setRolePendingDelete] =
+    useState<ProjectRoleDefinition | null>(null);
 
-  const sortedRoles = useMemo(
-    () => [...roles].sort((a, b) => b.level - a.level),
-    [roles],
-  );
+  const sortedRoles = useMemo(() => sortRolesByLevel(roles), [roles]);
+  const isSavingRole = isCreatingRole || isUpdatingRole;
 
   function openEditor(role: ProjectRoleDefinition) {
+    if (role.isSystemRole) {
+      return;
+    }
+
     setEditingRole({ ...role, permissions: structuredClone(role.permissions) });
     setIsEditorOpen(true);
   }
@@ -65,6 +99,11 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
   }
 
   function handleDuplicatePreset(preset: RolePreset) {
+    if (preset.level > CUSTOM_ROLE_LEVEL_MAX) {
+      toast.error("Reserved system roles cannot be duplicated.");
+      return;
+    }
+
     openEditor({
       id: `new-${preset.id}-${Date.now()}`,
       name: `${preset.name} copy`,
@@ -85,37 +124,66 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
     const body = isCreate
       ? buildCreateRoleDto(editingRole)
       : buildUpdateRoleDto(editingRole);
+    const validationResult = isCreate
+      ? createProjectRoleSchema.safeParse(body)
+      : updateProjectRoleSchema.safeParse(body);
 
-    console.groupCollapsed(
-      `[roles:dto] ${isCreate ? "CreateProjectRoleDto" : "UpdateProjectRoleDto"}`,
+    if (!validationResult.success) {
+      validationResult.error.issues.forEach((issue) => {
+        toast.error(issue.message);
+      });
+      return;
+    }
+
+    if (isCreate) {
+      createRole(
+        { projectId, ...(body as CreateProjectRoleDto) },
+        {
+          onSuccess: () => {
+            setIsEditorOpen(false);
+            setEditingRole(null);
+          },
+        },
+      );
+      return;
+    }
+
+    updateRole(
+      {
+        projectId,
+        roleId: editingRole.id,
+        ...(body as UpdateProjectRoleDto),
+      },
+      {
+        onSuccess: () => {
+          setIsEditorOpen(false);
+          setEditingRole(null);
+        },
+      },
     );
-    console.log("method", isCreate ? "POST" : "PATCH");
-    console.log(
-      "endpoint",
-      isCreate
-        ? `/projects/${projectId}/roles`
-        : `/projects/${projectId}/roles/${editingRole.id}`,
-    );
-    console.log("body", body);
-    console.groupEnd();
-
-    setRoles((currentRoles) => {
-      const existingRole = currentRoles.some((role) => role.id === editingRole.id);
-
-      if (existingRole) {
-        return currentRoles.map((role) =>
-          role.id === editingRole.id ? editingRole : role,
-        );
-      }
-
-      return [...currentRoles, editingRole];
-    });
-    setIsEditorOpen(false);
   }
 
-  function handleDeleteRole(roleId: string) {
-    setRoles((currentRoles) =>
-      currentRoles.filter((role) => role.id !== roleId),
+  function handleDeleteRole(role: ProjectRoleDefinition) {
+    if (role.isSystemRole) {
+      return;
+    }
+
+    setRolePendingDelete(role);
+  }
+
+  function confirmDeleteRole() {
+    if (!rolePendingDelete) {
+      return;
+    }
+
+    deleteRole(
+      {
+        projectId,
+        roleId: rolePendingDelete.id,
+      },
+      {
+        onSuccess: () => setRolePendingDelete(null),
+      },
     );
   }
 
@@ -136,6 +204,10 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
         <TabsContent value="roles">
           <RoleList
             roles={sortedRoles}
+            isLoading={isLoadingRoles}
+            isError={isRolesError}
+            isCreating={isCreatingRole}
+            deletingRoleId={isDeletingRole ? rolePendingDelete?.id : null}
             onCreate={handleCreateRole}
             onEdit={openEditor}
             onDelete={handleDeleteRole}
@@ -157,7 +229,44 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
         onOpenChange={setIsEditorOpen}
         onChange={setEditingRole}
         onSave={handleSaveRole}
+        isSaving={isSavingRole}
       />
+
+      <AlertDialog
+        open={!!rolePendingDelete}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingRole) {
+            setRolePendingDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete role?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <span className="font-medium text-foreground">
+                {rolePendingDelete?.name}
+              </span>
+              . The backend will block deletion if the role is assigned to
+              members or pending invites.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingRole}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeletingRole}
+              onClick={(event) => {
+                event.preventDefault();
+                confirmDeleteRole();
+              }}
+            >
+              {isDeletingRole ? "Deleting..." : "Delete role"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

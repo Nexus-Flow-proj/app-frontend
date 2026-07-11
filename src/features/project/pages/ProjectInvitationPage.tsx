@@ -111,7 +111,7 @@ export default function ProjectInvitationPage() {
             <InvitationDetail label="Invited email" value={invitation.email} />
             <InvitationDetail
               label="Assigned role"
-              value={invitation.roleLabel}
+              value={invitation.role?.name ?? invitation.roleLabel ?? "Project role"}
             />
             <InvitationDetail label="Invited by" value={inviterName} />
             {invitation.expiresAt && (

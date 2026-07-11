@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
     detail: (id: string) => [...QUERY_KEYS.projects.all, "detail", id] as const,
     members: (id: string) =>
       [...QUERY_KEYS.projects.all, "members", id] as const,
+    roles: (id: string) => [...QUERY_KEYS.projects.all, "roles", id] as const,
     invites: (id: string) =>
       [...QUERY_KEYS.projects.all, "invites", id] as const,
     invitation: (token: string) =>

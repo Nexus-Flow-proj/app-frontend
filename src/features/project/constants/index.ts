@@ -1,5 +1,3 @@
-import { ProjectRole } from "@/types";
-
 export const PROJECT_COLORS = [
   { name: "Ocean", value: "#2563eb", swatchClassName: "bg-blue-600" },
   { name: "Emerald", value: "#059669", swatchClassName: "bg-emerald-600" },
@@ -16,21 +14,3 @@ export const PROJECT_LIMITS = {
   nameMax: 60,
   descriptionMax: 280,
 } as const;
-
-export const PROJECT_ROLE_OPTIONS = [
-  {
-    value: ProjectRole.EDITOR,
-    label: "Editor",
-    description: "Can collaborate on project work.",
-  },
-  {
-    value: ProjectRole.VIEWER,
-    label: "Viewer",
-    description: "Can view project work.",
-  },
-  {
-    value: ProjectRole.OWNER,
-    label: "Owner",
-    description: "Full project ownership.",
-  },
-] as const;

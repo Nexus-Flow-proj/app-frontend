@@ -21,10 +21,16 @@ import {
 interface RoleRowProps {
   role: ProjectRoleDefinition;
   onEdit: (role: ProjectRoleDefinition) => void;
-  onDelete: (roleId: string) => void;
+  onDelete: (role: ProjectRoleDefinition) => void;
+  isDeleting?: boolean;
 }
 
-export function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
+export function RoleRow({
+  role,
+  onEdit,
+  onDelete,
+  isDeleting = false,
+}: RoleRowProps) {
   return (
     <TableRow>
       <TableCell className="min-w-56">
@@ -75,18 +81,21 @@ export function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-fit" align="end">
             <DropdownMenuLabel>Role actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onEdit(role)}>
+            <DropdownMenuItem
+              disabled={role.isSystemRole || isDeleting}
+              onClick={() => onEdit(role)}
+            >
               <Pencil />
               Edit role
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              disabled={role.isSystemRole}
-              onClick={() => onDelete(role.id)}
+              disabled={role.isSystemRole || isDeleting}
+              onClick={() => onDelete(role)}
             >
               <Trash2 />
-              Delete role
+              {isDeleting ? "Deleting..." : "Delete role"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

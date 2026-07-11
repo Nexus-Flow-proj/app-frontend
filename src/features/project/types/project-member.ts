@@ -1,4 +1,4 @@
-import type { ProjectRole } from "@/types";
+import type { ProjectRoleDefinition } from "./roles";
 
 export interface ProjectMemberSummary {
   id: string;
@@ -9,7 +9,9 @@ export interface ProjectMemberSummary {
   lastName: string;
   title: string | null;
   avatarUrl: string | null;
-  roleLabel: ProjectRole;
+  roleId: string;
+  role?: ProjectRoleDefinition | null;
+  roleLabel?: string;
   isAdmin?: boolean;
   joinedAt: string;
 }

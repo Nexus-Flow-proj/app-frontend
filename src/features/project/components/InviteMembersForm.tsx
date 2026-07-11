@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailPlus } from "lucide-react";
@@ -11,13 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormInput } from "@/components/shared/FormInput";
-import { ProjectRole } from "@/types";
-import { PROJECT_ROLE_OPTIONS } from "../constants";
-import { useInviteMember } from "../hooks";
-import {
-  inviteMemberSchema,
-  type InviteMemberFormValues,
-} from "../validation";
+import { useInviteMember, useProjectRoles } from "../hooks";
+import { inviteMemberSchema, type InviteMemberFormValues } from "../validation";
 
 interface InviteMembersFormProps {
   projectId: string;
@@ -25,19 +21,35 @@ interface InviteMembersFormProps {
 
 export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
   const { mutate: inviteMember, isPending } = useInviteMember();
+  const { data: roles = [], isLoading: isLoadingRoles } =
+    useProjectRoles(projectId);
+  const defaultRole = useMemo(
+    () => roles.find((role) => role.level < 100) ?? roles[0],
+    [roles],
+  );
   const {
     register,
     control,
     handleSubmit,
     reset,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<InviteMemberFormValues>({
     resolver: zodResolver(inviteMemberSchema),
     defaultValues: {
       email: "",
-      roleLabel: ProjectRole.EDITOR,
+      roleId: "",
     },
   });
+
+  useEffect(() => {
+    const selectedRoleId = getValues("roleId");
+
+    if (!selectedRoleId && defaultRole) {
+      setValue("roleId", defaultRole.id);
+    }
+  }, [defaultRole, getValues, setValue]);
 
   return (
     <form
@@ -47,10 +59,10 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
           {
             projectId,
             email: values.email,
-            roleLabel: values.roleLabel,
+            roleId: values.roleId,
           },
           {
-            onSuccess: () => reset({ email: "", roleLabel: values.roleLabel }),
+            onSuccess: () => reset({ email: "", roleId: values.roleId }),
           },
         );
       })}
@@ -70,7 +82,7 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
         />
 
         <Controller
-          name="roleLabel"
+          name="roleId"
           control={control}
           render={({ field }) => (
             <div className="space-y-1.5">
@@ -83,31 +95,36 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
               <Select
                 value={field.value}
                 onValueChange={field.onChange}
-                disabled={isPending}
+                disabled={isPending || isLoadingRoles || roles.length === 0}
               >
                 <SelectTrigger
                   id="invite-role"
                   className="h-9 w-full bg-background text-xs font-semibold"
-                  aria-invalid={!!errors.roleLabel}
+                  aria-invalid={!!errors.roleId}
                 >
-                  <SelectValue placeholder="Choose role" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingRoles ? "Loading roles..." : "Choose role"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {PROJECT_ROLE_OPTIONS.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      <span className="grid gap-0.5">
-                        <span>{role.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {role.description}
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      <span className="grid p-0.5 gap-0.5">
+                        <span>{role.name}</span>
+                        <span className="text-xs  text-muted-foreground">
+                          Level {role.level}
+                          {role.description ? ` - ${role.description}` : ""}
                         </span>
                       </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.roleLabel?.message && (
+              {errors.roleId?.message && (
                 <p className="text-xs text-destructive">
-                  {errors.roleLabel.message}
+                  {errors.roleId.message}
                 </p>
               )}
             </div>
@@ -117,6 +134,7 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
 
       <Button
         type="submit"
+        disabled={isLoadingRoles || roles.length === 0}
         isLoading={isPending}
         className="justify-self-start text-xs font-bold"
       >

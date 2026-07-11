@@ -1,9 +1,8 @@
-import { ProjectRole } from "@/types";
 import type { User } from "@/types/models/user";
 import type { ProjectMemberSummary } from "../types";
 
-export function isProjectOwner(member?: ProjectMemberSummary | null) {
-  return member?.roleLabel === ProjectRole.OWNER || member?.isAdmin === true;
+export function isProjectAdmin(member?: ProjectMemberSummary | null) {
+  return member?.isAdmin === true || (member?.role?.level ?? 0) >= 100;
 }
 
 export function findProjectMemberForUser(

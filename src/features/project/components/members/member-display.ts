@@ -1,5 +1,5 @@
 import type { ProjectMemberSummary } from "../../types";
-import { isProjectOwner } from "../../utils/roles";
+import { isProjectAdmin } from "../../utils/roles";
 
 export function getProjectMemberName(member: ProjectMemberSummary) {
   return (
@@ -10,8 +10,8 @@ export function getProjectMemberName(member: ProjectMemberSummary) {
 
 export function sortProjectMembers(members: ProjectMemberSummary[]) {
   return [...members].sort((a, b) => {
-    if (isProjectOwner(a) && !isProjectOwner(b)) return -1;
-    if (!isProjectOwner(a) && isProjectOwner(b)) return 1;
+    if (isProjectAdmin(a) && !isProjectAdmin(b)) return -1;
+    if (!isProjectAdmin(a) && isProjectAdmin(b)) return 1;
     return getProjectMemberName(a).localeCompare(getProjectMemberName(b));
   });
 }

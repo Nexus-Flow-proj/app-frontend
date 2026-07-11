@@ -10,8 +10,14 @@ export const ROLE_LEVELS = [
   { value: 40, label: "Member" },
   { value: 60, label: "Team Lead" },
   { value: 80, label: "Project Manager" },
-  { value: 100, label: "Owner/Admin" },
+  { value: 100, label: "Reserved System" },
 ] as const;
+
+export const CUSTOM_ROLE_LEVEL_MIN = 1;
+export const CUSTOM_ROLE_LEVEL_MAX = 99;
+export const CUSTOM_ROLE_LEVELS = ROLE_LEVELS.filter(
+  (roleLevel) => roleLevel.value <= CUSTOM_ROLE_LEVEL_MAX,
+);
 
 export const EMPTY_ROLE_PERMISSIONS: RolePermissions = {
   project: {
@@ -227,7 +233,7 @@ export const ROLE_PERMISSION_GROUPS: Array<{
 export const ROLE_PRESETS: RolePreset[] = [
   {
     id: "owner-admin",
-    name: "Owner/Admin",
+    name: "Full Access",
     description: "Full control over project settings, people, work, and AI.",
     level: 100,
     permissions: FULL_PERMISSIONS,

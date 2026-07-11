@@ -41,6 +41,11 @@ export interface RolePermissions {
     moveTasks: boolean;
     manageColumns: boolean;
   };
+  roles: {
+    create: boolean;
+    update: boolean;
+    delete: boolean;
+  };
 }
 
 export interface RolePreset {

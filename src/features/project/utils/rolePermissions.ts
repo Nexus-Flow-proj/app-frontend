@@ -21,8 +21,10 @@ export function hasPermission(
     string,
   ];
 
+  const permissionGroup = role.permissions[groupKey];
+
   return Boolean(
-    role.permissions[groupKey][
+    permissionGroup?.[
       permissionKey as keyof (typeof role.permissions)[typeof groupKey]
     ],
   );
@@ -57,7 +59,23 @@ export function canManageProjectSettings(
 }
 
 export function canManageRoles(role: Pick<ProjectRoleDefinition, "permissions">) {
-  return hasPermission(role, "project.updateSettings");
+  return (
+    hasPermission(role, "roles.create") ||
+    hasPermission(role, "roles.update") ||
+    hasPermission(role, "roles.delete")
+  );
+}
+
+export function canCreateRoles(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "roles.create");
+}
+
+export function canUpdateRoles(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "roles.update");
+}
+
+export function canDeleteRoles(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "roles.delete");
 }
 
 export function canReadProject(role: Pick<ProjectRoleDefinition, "permissions">) {
@@ -89,7 +107,7 @@ export function countEnabledPermissions(permissions: RolePermissions) {
       total +
       group.permissions.filter(
         (permission) =>
-          permissions[group.key][
+          permissions[group.key]?.[
             permission.key as keyof (typeof permissions)[typeof group.key]
           ],
       ).length,
@@ -108,7 +126,7 @@ export function summarizePermissions(permissions: RolePermissions) {
   const enabledGroups = ROLE_PERMISSION_GROUPS.filter((group) =>
     group.permissions.some(
       (permission) =>
-        permissions[group.key][
+        permissions[group.key]?.[
           permission.key as keyof (typeof permissions)[typeof group.key]
         ],
     ),

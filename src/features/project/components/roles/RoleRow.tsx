@@ -23,6 +23,8 @@ interface RoleRowProps {
   onEdit: (role: ProjectRoleDefinition) => void;
   onDelete: (role: ProjectRoleDefinition) => void;
   isDeleting?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 export function RoleRow({
@@ -30,6 +32,8 @@ export function RoleRow({
   onEdit,
   onDelete,
   isDeleting = false,
+  canUpdate = true,
+  canDelete = true,
 }: RoleRowProps) {
   return (
     <TableRow>
@@ -82,7 +86,7 @@ export function RoleRow({
           <DropdownMenuContent className="w-fit" align="end">
             <DropdownMenuLabel>Role actions</DropdownMenuLabel>
             <DropdownMenuItem
-              disabled={role.isSystemRole || isDeleting}
+              disabled={role.isSystemRole || isDeleting || !canUpdate}
               onClick={() => onEdit(role)}
             >
               <Pencil />
@@ -91,7 +95,7 @@ export function RoleRow({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              disabled={role.isSystemRole || isDeleting}
+              disabled={role.isSystemRole || isDeleting || !canDelete}
               onClick={() => onDelete(role)}
             >
               <Trash2 />

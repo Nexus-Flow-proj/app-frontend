@@ -32,6 +32,9 @@ interface RoleListProps {
   isError?: boolean;
   isCreating?: boolean;
   deletingRoleId?: string | null;
+  canCreate?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
   onCreate: () => void;
   onEdit: (role: ProjectRoleDefinition) => void;
   onDelete: (role: ProjectRoleDefinition) => void;
@@ -43,6 +46,9 @@ export function RoleList({
   isError = false,
   isCreating = false,
   deletingRoleId,
+  canCreate = true,
+  canUpdate = true,
+  canDelete = true,
   onCreate,
   onEdit,
   onDelete,
@@ -55,7 +61,7 @@ export function RoleList({
           Manage the roles available for assignment to project members.
         </CardDescription>
         <CardAction>
-          <Button onClick={onCreate} disabled={isLoading || isCreating}>
+          <Button onClick={onCreate} disabled={isLoading || isCreating || !canCreate}>
             <Plus />
             {isCreating ? "Creating..." : "Create role"}
           </Button>
@@ -112,6 +118,8 @@ export function RoleList({
                     key={role.id}
                     role={role}
                     isDeleting={deletingRoleId === role.id}
+                    canUpdate={canUpdate}
+                    canDelete={canDelete}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />

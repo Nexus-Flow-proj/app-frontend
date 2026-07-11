@@ -49,6 +49,11 @@ export const EMPTY_ROLE_PERMISSIONS: RolePermissions = {
     moveTasks: false,
     manageColumns: false,
   },
+  roles: {
+    create: false,
+    update: false,
+    delete: false,
+  },
 };
 
 const FULL_PERMISSIONS: RolePermissions = {
@@ -80,6 +85,11 @@ const FULL_PERMISSIONS: RolePermissions = {
     read: true,
     moveTasks: true,
     manageColumns: true,
+  },
+  roles: {
+    create: true,
+    update: true,
+    delete: true,
   },
 };
 
@@ -228,6 +238,29 @@ export const ROLE_PERMISSION_GROUPS: Array<{
       },
     ],
   },
+  {
+    key: "roles",
+    label: "Roles",
+    description: "Role creation and permission model controls.",
+    permissions: [
+      {
+        key: "create",
+        label: "Create roles",
+        description: "Create custom project roles.",
+      },
+      {
+        key: "update",
+        label: "Update roles",
+        description: "Edit custom role details and permissions.",
+      },
+      {
+        key: "delete",
+        label: "Delete roles",
+        description: "Delete custom roles when they are not assigned.",
+        dangerous: true,
+      },
+    ],
+  },
 ];
 
 export const ROLE_PRESETS: RolePreset[] = [
@@ -271,6 +304,7 @@ export const ROLE_PRESETS: RolePreset[] = [
         generateWithAi: false,
       },
       board: { read: true, moveTasks: true, manageColumns: false },
+      roles: { create: false, update: false, delete: false },
     },
   },
   {
@@ -296,6 +330,7 @@ export const ROLE_PRESETS: RolePreset[] = [
         generateWithAi: false,
       },
       board: { read: true, moveTasks: true, manageColumns: false },
+      roles: { create: false, update: false, delete: false },
     },
   },
   {

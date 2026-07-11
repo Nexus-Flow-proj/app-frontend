@@ -6,6 +6,7 @@ import { AuthGuard } from "./AuthGuard";
 import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
 import { ProjectPermissionGuard } from "./ProjectPermissionGuard";
+import { RoleManagementGuard } from "./RoleManagementGuard";
 import DashboardLayout from "@/features/dashboard/layout";
 import AuthLayout from "@/features/auth/layout";
 
@@ -126,7 +127,6 @@ const router = createBrowserRouter([
                 element: <WithSuspense Component={ProjectPages.Overview} />,
               },
               {
-                // Permission-protected pages
                 element: <AdminGuard />,
                 children: [
                   {
@@ -135,6 +135,11 @@ const router = createBrowserRouter([
                       <WithSuspense Component={ProjectPages.Settings} />
                     ),
                   },
+                ],
+              },
+              {
+                element: <RoleManagementGuard />,
+                children: [
                   {
                     path: "roles",
                     element: <WithSuspense Component={ProjectPages.Roles} />,

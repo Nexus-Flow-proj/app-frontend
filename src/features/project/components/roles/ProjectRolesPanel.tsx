@@ -20,6 +20,7 @@ import {
 import {
   useCreateProjectRole,
   useDeleteProjectRole,
+  useProjectAccess,
   useProjectRoles,
   useUpdateProjectRole,
 } from "../../hooks";
@@ -56,6 +57,7 @@ function buildUpdateRoleDto(role: ProjectRoleDefinition): UpdateProjectRoleDto {
 }
 
 export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
+  const { can } = useProjectAccess(projectId);
   const {
     data: roles = [],
     isLoading: isLoadingRoles,
@@ -76,9 +78,14 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
 
   const sortedRoles = useMemo(() => sortRolesByLevel(roles), [roles]);
   const isSavingRole = isCreatingRole || isUpdatingRole;
+  const canCreateRole = can("roles.create");
+  const canUpdateRole = can("roles.update");
+  const canDeleteRole = can("roles.delete");
 
   function openEditor(role: ProjectRoleDefinition) {
-    if (role.isSystemRole) {
+    const isCreate = role.id.startsWith("new-");
+
+    if (role.isSystemRole || (!isCreate && !canUpdateRole)) {
       return;
     }
 
@@ -87,6 +94,10 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
   }
 
   function handleCreateRole() {
+    if (!canCreateRole) {
+      return;
+    }
+
     openEditor({
       id: `new-${Date.now()}`,
       name: "Custom role",
@@ -99,6 +110,10 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
   }
 
   function handleDuplicatePreset(preset: RolePreset) {
+    if (!canCreateRole) {
+      return;
+    }
+
     if (preset.level > CUSTOM_ROLE_LEVEL_MAX) {
       toast.error("Reserved system roles cannot be duplicated.");
       return;
@@ -164,7 +179,7 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
   }
 
   function handleDeleteRole(role: ProjectRoleDefinition) {
-    if (role.isSystemRole) {
+    if (role.isSystemRole || !canDeleteRole) {
       return;
     }
 
@@ -208,6 +223,9 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
             isError={isRolesError}
             isCreating={isCreatingRole}
             deletingRoleId={isDeletingRole ? rolePendingDelete?.id : null}
+            canCreate={canCreateRole}
+            canUpdate={canUpdateRole}
+            canDelete={canDeleteRole}
             onCreate={handleCreateRole}
             onEdit={openEditor}
             onDelete={handleDeleteRole}
@@ -217,7 +235,10 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
         <TabsContent value="presets">
           <Card className="rounded-lg">
             <CardContent className="pt-0">
-              <RolePresetSelector onDuplicatePreset={handleDuplicatePreset} />
+              <RolePresetSelector
+                canDuplicate={canCreateRole}
+                onDuplicatePreset={handleDuplicatePreset}
+              />
             </CardContent>
           </Card>
         </TabsContent>

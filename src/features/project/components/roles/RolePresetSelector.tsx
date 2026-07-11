@@ -17,10 +17,12 @@ import type { RolePreset } from "../../types";
 import { summarizePermissions } from "../../utils/rolePermissions";
 
 interface RolePresetSelectorProps {
+  canDuplicate?: boolean;
   onDuplicatePreset: (preset: RolePreset) => void;
 }
 
 export function RolePresetSelector({
+  canDuplicate = true,
   onDuplicatePreset,
 }: RolePresetSelectorProps) {
   return (
@@ -46,7 +48,7 @@ export function RolePresetSelector({
               <Button
                 variant="outline"
                 className="w-fit"
-                disabled={isReservedPreset}
+                disabled={isReservedPreset || !canDuplicate}
                 onClick={() => onDuplicatePreset(preset)}
               >
                 <CopyPlus />

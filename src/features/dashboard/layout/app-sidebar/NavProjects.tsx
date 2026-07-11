@@ -195,7 +195,10 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
                     </DropdownMenuItem>
-                    {(canOpenWorkshop || canManageMembers || canManageSettings) && (
+                    {(canOpenWorkshop ||
+                      canManageMembers ||
+                      canManageSettings ||
+                      canManageProjectRoles) && (
                       <>
                         {canOpenWorkshop && (
                           <DropdownMenuItem
@@ -224,6 +227,14 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           >
                             <Settings2Icon className="text-muted-foreground" />
                             <span>Settings</span>
+                          </DropdownMenuItem>
+                        )}
+                        {canManageProjectRoles && (
+                          <DropdownMenuItem
+                            onClick={() => navigate(rolesPath)}
+                          >
+                            <ShieldCheckIcon className="text-muted-foreground" />
+                            <span>Manage roles</span>
                           </DropdownMenuItem>
                         )}
                       </>

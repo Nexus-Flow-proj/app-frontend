@@ -35,6 +35,11 @@ const rolePermissionsSchema = z.object({
     moveTasks: z.boolean(),
     manageColumns: z.boolean(),
   }),
+  roles: z.object({
+    create: z.boolean(),
+    update: z.boolean(),
+    delete: z.boolean(),
+  }),
 });
 
 export const createProjectRoleSchema = z.object({

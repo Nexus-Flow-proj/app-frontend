@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboardUiStore } from "../store/dashboardUiStore";
 import { RecentActivity } from "./RecentActivity";
@@ -54,13 +53,16 @@ export function DashboardDrawer({
 
         <div className="mt-6">
           {activeDrawer === "activity" && (
-            <RecentActivity items={recentActivity} />
+            <RecentActivity items={recentActivity} truncate={false} />
           )}
           {activeDrawer === "projects" && (
-            <RecentProjects projects={recentProjects} />
+            <RecentProjects projects={recentProjects} truncate={false} />
           )}
           {activeDrawer === "deadlines" && (
-            <UpcomingDeadlines deadlines={upcomingDeadlines} />
+            <UpcomingDeadlines
+              deadlines={upcomingDeadlines}
+              truncate={false}
+            />
           )}
         </div>
       </SheetContent>

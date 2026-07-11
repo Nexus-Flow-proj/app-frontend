@@ -54,6 +54,10 @@ export function TaskProgressChart() {
           </p>
         ) : isLoading || !data ? (
           <Skeleton className="h-48 w-full rounded-xl" />
+        ) : data.points.every((p) => p.completed === 0) ? (
+          <p className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+            No completed tasks in this period yet.
+          </p>
         ) : (
           <>
             <TaskProgressBars points={data.points} />

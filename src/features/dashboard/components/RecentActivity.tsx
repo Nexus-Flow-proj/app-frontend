@@ -7,9 +7,9 @@ import { formatRelativeTime } from "../utils/format";
 interface RecentActivityProps {
   items: RecentActivityItem[];
   onViewAll?: () => void;
+  truncate?: boolean;
 }
 
-// Fixed accent dots to visually separate feed entries - not theme-dependent.
 const DOT_COLORS = [
   "bg-emerald-500",
   "bg-sky-500",
@@ -17,7 +17,13 @@ const DOT_COLORS = [
   "bg-amber-500",
 ];
 
-export function RecentActivity({ items, onViewAll }: RecentActivityProps) {
+export function RecentActivity({
+  items,
+  onViewAll,
+  truncate = true,
+}: RecentActivityProps) {
+  const textClass = truncate ? "truncate" : "";
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -30,35 +36,44 @@ export function RecentActivity({ items, onViewAll }: RecentActivityProps) {
       </CardHeader>
 
       <CardContent>
-        <ul className="space-y-4">
-          {items.map((item, index) => (
-            <li key={item.id} className="flex items-start gap-3">
-              <span
-                className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                  DOT_COLORS[index % DOT_COLORS.length]
-                }`}
-              />
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
-                <AvatarFallback className="text-xs">
-                  {item.actor.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-foreground">
-                  <span className="font-medium">{item.actor.name}</span>{" "}
-                  {item.message}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {item.projectName}
-                </p>
-              </div>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {formatRelativeTime(item.createdAt)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No recent activity yet.
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {items.map((item, index) => (
+              <li key={item.id} className="flex items-start gap-3">
+                <span
+                  className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                    DOT_COLORS[index % DOT_COLORS.length]
+                  }`}
+                />
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
+                  <AvatarFallback className="text-xs">
+                    {item.actor.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-sm text-foreground ${textClass}`}
+                    title={truncate ? `${item.actor.name} ${item.message}` : undefined}
+                  >
+                    <span className="font-medium">{item.actor.name}</span>{" "}
+                    {item.message}
+                  </p>
+                  <p className={`text-xs text-muted-foreground ${textClass}`}>
+                    {item.projectName}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {formatRelativeTime(item.createdAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   );

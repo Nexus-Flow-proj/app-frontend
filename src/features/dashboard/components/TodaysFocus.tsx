@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -37,6 +36,10 @@ export function TodaysFocus() {
               <Skeleton key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
+        ) : items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No focus items for today.
+          </p>
         ) : (
           <>
             <Progress value={progress} className="h-1.5" />

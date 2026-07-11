@@ -8,6 +8,8 @@ import { formatDueLabel, priorityStyles } from "../utils/format";
 interface UpcomingDeadlinesProps {
   deadlines: UpcomingDeadline[];
   onViewAll?: () => void;
+  /** false inside the drawer, where there's room to show the full text */
+  truncate?: boolean;
 }
 
 const FALLBACK_ICONS = [FileText, Landmark, ImageIcon, ListChecks];
@@ -15,7 +17,10 @@ const FALLBACK_ICONS = [FileText, Landmark, ImageIcon, ListChecks];
 export function UpcomingDeadlines({
   deadlines,
   onViewAll,
+  truncate = true,
 }: UpcomingDeadlinesProps) {
+  const textClass = truncate ? "truncate" : "";
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -50,10 +55,13 @@ export function UpcomingDeadlines({
                       <Icon className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm text-foreground">
+                      <p
+                        className={`text-sm text-foreground ${textClass}`}
+                        title={truncate ? deadline.title : undefined}
+                      >
                         {deadline.title}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className={`text-xs text-muted-foreground ${textClass}`}>
                         {deadline.projectName}
                       </p>
                     </div>

@@ -3,7 +3,6 @@ import { Clock } from "lucide-react";
 import { formatRelativeTime } from "../utils/format";
 
 interface DashboardUpdatedLabelProps {
-  /** ms timestamp, e.g. react-query's `dataUpdatedAt` */
   updatedAt: number;
 }
 

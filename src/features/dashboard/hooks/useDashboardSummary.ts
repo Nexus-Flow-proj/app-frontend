@@ -1,11 +1,12 @@
-
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getDashboardSummary } from "../api/dashboard.api";
 import type { DashboardSummary } from "../types";
 
+export const DASHBOARD_SUMMARY_QUERY_KEY = ["dashboard-summary"];
+
 export function useDashboardSummary() {
   const query = useApiQuery<DashboardSummary>(
-    ["dashboard-summary"],
+    DASHBOARD_SUMMARY_QUERY_KEY,
     () => getDashboardSummary(),
     { staleTime: 60_000 },
   );

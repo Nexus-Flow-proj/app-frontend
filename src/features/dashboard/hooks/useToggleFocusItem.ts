@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { toggleFocusItem } from "../api/dashboard.api";
 import { TODAYS_FOCUS_QUERY_KEY } from "./useTodaysFocus";
+import { DASHBOARD_SUMMARY_QUERY_KEY } from "./useDashboardSummary";
 import type { ApiResponse } from "@/types";
 import type { FocusItem, TodaysFocusData } from "../types";
 
@@ -55,6 +56,11 @@ export function useToggleFocusItem() {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: TODAYS_FOCUS_QUERY_KEY });
+      // Toggling a focus item changes the "Completed" count shown in
+      // StatsGrid (dashboard-summary owns that number), so it needs to be
+      // refetched too - otherwise it silently goes stale until the user
+      // manually hits refresh.
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY });
     },
   });
 }

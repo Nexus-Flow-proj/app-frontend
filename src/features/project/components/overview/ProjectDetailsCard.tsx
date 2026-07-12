@@ -11,14 +11,14 @@ import { ProjectDetailRow } from "./ProjectDetailRow";
 
 interface ProjectDetailsCardProps {
   project: ProjectDetails;
-  ownerName: string;
+  adminName: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export function ProjectDetailsCard({
   project,
-  ownerName,
+  adminName,
   createdAt,
   updatedAt,
 }: ProjectDetailsCardProps) {
@@ -29,7 +29,7 @@ export function ProjectDetailsCard({
         <CardDescription>Source data from the project record.</CardDescription>
       </CardHeader>
       <CardContent className="divide-y">
-        <ProjectDetailRow label="Owner" value={ownerName} />
+        <ProjectDetailRow label="Project admin" value={adminName} />
         <ProjectDetailRow label="Status" value={project.status} />
         <ProjectDetailRow
           label="Deadline"

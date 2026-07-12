@@ -64,6 +64,18 @@ function Button({
     isLoading?: boolean;
   }) {
   const Comp = asChild ? Slot.Root : "button";
+  const content = (
+    <>
+      {isLoading && (
+        <LoaderCircle
+          data-slot="button-loading-icon"
+          className="size-4 animate-spin"
+          aria-hidden="true"
+        />
+      )}
+      {children}
+    </>
+  );
 
   return (
     <Comp
@@ -75,16 +87,7 @@ function Button({
       disabled={!asChild ? disabled || isLoading : undefined}
       {...props}
     >
-      <>
-        {isLoading && (
-          <LoaderCircle
-            data-slot="button-loading-icon"
-            className="size-4 animate-spin"
-            aria-hidden="true"
-          />
-        )}
-        {children}
-      </>
+      {asChild && !isLoading ? children : content}
     </Comp>
   );
 }

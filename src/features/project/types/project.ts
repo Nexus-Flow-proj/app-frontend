@@ -1,4 +1,5 @@
 import type { ProjectStatus } from "@/types";
+import type { ProjectMemberSummary } from "./project-member";
 
 export interface ProjectListItem {
   id: string;
@@ -9,6 +10,7 @@ export interface ProjectListItem {
   adminId?: string;
   memberCount: number;
   color?: string | null;
+  currentMember?: ProjectMemberSummary | null;
   created_at?: string;
   updated_at?: string;
 }

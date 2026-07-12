@@ -1,12 +1,5 @@
-import { Outlet } from "react-router";
+import { ProjectPermissionGuard } from "./ProjectPermissionGuard";
 
 export function MemberGuard() {
-  // const { isAdmin, isMember } = useProjectStore();
-
-  // // Both admins and members can access member routes
-  // if (!isAdmin() && !isMember()) {
-  //   return <Navigate to="/dashboard" replace />;
-  // }
-
-  return <Outlet />;
+  return <ProjectPermissionGuard permissions={["project.read"]} />;
 }

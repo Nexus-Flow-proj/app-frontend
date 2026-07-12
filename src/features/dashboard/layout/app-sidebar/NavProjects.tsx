@@ -1,12 +1,16 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   ChevronRightIcon,
+  FolderKanbanIcon,
+  KanbanIcon,
+  MailCheckIcon,
   MoreHorizontalIcon,
   PlusIcon,
   Settings2Icon,
-  Wand2Icon,
-  KanbanIcon,
+  ShieldCheckIcon,
   StickyNoteIcon,
+  UsersRoundIcon,
+  Wand2Icon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,31 +38,35 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-// import { useAuthStore, useProjectStore } from "@/store";
-// import { UserRole } from "@/types/enums";
 import { ROUTES } from "@/constants";
 import { formatInitials } from "@/lib/format/text";
 import { useProjectStore } from "@/store";
-import type { Project } from "@/types";
+import type { ProjectListItem } from "@/features/project/types";
+import {
+  canChangeMemberRoles,
+  canInviteMembers,
+  canManageProjectSettings,
+  canManageRoles,
+  canReadBoard,
+  canReadWorkshop,
+  canRemoveMembers,
+} from "@/features/project/utils/rolePermissions";
 
 interface NavProjectsProps {
-  projects: Project[];
+  projects: ProjectListItem[];
   isLoading?: boolean;
 }
 
 export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const setActiveProject = useProjectStore((s) => s.setActiveProject);
-  // const isAdmin = useProjectStore((s) => s.isAdmin());
-  // const userRole = useAuthStore((s) => s.user?.role);
-  // const canAdmin = isAdmin || userRole === UserRole.ADMIN;
-  const canAdmin = true;
 
-  const openProject = (project: Project, to: string) => {
+  function openProject(project: ProjectListItem, to: string) {
     setActiveProject(project);
     navigate(to);
-  };
+  }
 
   if (isLoading) {
     return (
@@ -102,6 +110,31 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
         {projects.map((project) => {
           const projectColor = project.color ?? "#2563eb";
+          const currentRole = project.currentMember?.role ?? null;
+          const canOpenBoard = currentRole ? canReadBoard(currentRole) : false;
+          const canOpenWorkshop = currentRole
+            ? canReadWorkshop(currentRole)
+            : false;
+          const canManageSettings = currentRole
+            ? canManageProjectSettings(currentRole)
+            : false;
+          const canManageMembers = currentRole
+            ? canInviteMembers(currentRole) ||
+              canRemoveMembers(currentRole) ||
+              canChangeMemberRoles(currentRole)
+            : false;
+          const canManageProjectRoles = currentRole
+            ? canManageRoles(currentRole)
+            : false;
+          const hasSettingsAccess =
+            canManageSettings || canManageMembers || canManageProjectRoles;
+          const settingsPath = ROUTES.PROJECT_SETTINGS(project.id);
+          const invitesPath = ROUTES.PROJECT_INVITES(project.id);
+          const rolesPath = ROUTES.PROJECT_ROLES(project.id);
+          const isSettingsActive =
+            pathname === settingsPath ||
+            pathname === invitesPath ||
+            pathname === rolesPath;
 
           return (
             <Collapsible
@@ -156,14 +189,16 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     side={isMobile ? "bottom" : "right"}
                     align={isMobile ? "end" : "start"}
                   >
-                    <DropdownMenuItem
-                      onClick={() =>
-                        openProject(project, ROUTES.BOARDS(project.id))
-                      }
-                    >
-                      <KanbanIcon className="text-muted-foreground" />
-                      <span>Team Board</span>
-                    </DropdownMenuItem>
+                    {canOpenBoard && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          openProject(project, ROUTES.BOARDS(project.id))
+                        }
+                      >
+                        <KanbanIcon className="text-muted-foreground" />
+                        <span>Team Board</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() =>
                         openProject(project, ROUTES.MY_WORKSPACE(project.id))
@@ -172,28 +207,51 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
                     </DropdownMenuItem>
-                    {canAdmin && (
+                    {(canOpenWorkshop ||
+                      canManageMembers ||
+                      canManageSettings ||
+                      canManageProjectRoles) && (
                       <>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            openProject(project, ROUTES.WORKSHOP(project.id))
-                          }
-                        >
-                          <Wand2Icon className="text-muted-foreground" />
-                          <span>Main Workshop</span>
-                        </DropdownMenuItem>
+                        {canOpenWorkshop && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              openProject(project, ROUTES.WORKSHOP(project.id))
+                            }
+                          >
+                            <Wand2Icon className="text-muted-foreground" />
+                            <span>Main Workshop</span>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() =>
-                            openProject(
-                              project,
-                              ROUTES.PROJECT_SETTINGS(project.id),
-                            )
-                          }
-                        >
-                          <Settings2Icon className="text-muted-foreground" />
-                          <span>Settings</span>
-                        </DropdownMenuItem>
+                        {canManageMembers && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              openProject(
+                                project,
+                                ROUTES.PROJECT_MEMBERS(project.id),
+                              )
+                            }
+                          >
+                            <UsersRoundIcon className="text-muted-foreground" />
+                            <span>Members</span>
+                          </DropdownMenuItem>
+                        )}
+                        {canManageSettings && (
+                          <DropdownMenuItem
+                            onClick={() => openProject(project, settingsPath)}
+                          >
+                            <Settings2Icon className="text-muted-foreground" />
+                            <span>Settings</span>
+                          </DropdownMenuItem>
+                        )}
+                        {canManageProjectRoles && (
+                          <DropdownMenuItem
+                            onClick={() => openProject(project, rolesPath)}
+                          >
+                            <ShieldCheckIcon className="text-muted-foreground" />
+                            <span>Manage roles</span>
+                          </DropdownMenuItem>
+                        )}
                       </>
                     )}
                   </DropdownMenuContent>
@@ -201,7 +259,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {canAdmin && (
+                    {canOpenWorkshop && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <button
@@ -216,19 +274,21 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     )}
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <button
-                          onClick={() =>
-                            openProject(project, ROUTES.BOARDS(project.id))
-                          }
-                          className="w-full text-left"
-                        >
-                          <KanbanIcon className="size-3.5" />
-                          <span>Team Board</span>
-                        </button>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
+                    {canOpenBoard && (
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild>
+                          <button
+                            onClick={() =>
+                              openProject(project, ROUTES.BOARDS(project.id))
+                            }
+                            className="w-full text-left"
+                          >
+                            <KanbanIcon className="size-3.5" />
+                            <span>Team Board</span>
+                          </button>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )}
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
                         <button
@@ -245,23 +305,118 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         </button>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
-                    {canAdmin && (
+                    {canManageMembers && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <button
                             onClick={() =>
                               openProject(
                                 project,
-                                ROUTES.PROJECT_SETTINGS(project.id),
+                                ROUTES.PROJECT_MEMBERS(project.id),
                               )
                             }
                             className="w-full text-left"
                           >
-                            <Settings2Icon className="size-3.5" />
-                            <span>Settings</span>
+                            <UsersRoundIcon className="size-3.5" />
+                            <span>Members</span>
                           </button>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
+                    )}
+                    {hasSettingsAccess && (
+                      <Collapsible
+                        key={`${project.id}-settings-${isSettingsActive ? "active" : "idle"}`}
+                        asChild
+                        defaultOpen={isSettingsActive}
+                        className="group/settings-collapsible"
+                      >
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton asChild>
+                            <div>
+                              <Settings2Icon className="size-3.5" />
+                              <button
+                                type="button"
+                                onClick={() => openProject(project, settingsPath)}
+                                className="min-w-0 flex-1 truncate text-left"
+                              >
+                                <span>Settings</span>
+                              </button>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="transparent"
+                                  size="icon-xs"
+                                  className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-sm text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                  aria-label={`Toggle ${project.name} settings navigation`}
+                                >
+                                  <ChevronRightIcon className="size-3.5 transition-transform group-data-[state=open]/settings-collapsible:rotate-90" />
+                                </Button>
+                              </CollapsibleTrigger>
+                            </div>
+                          </SidebarMenuSubButton>
+                          <CollapsibleContent>
+                            <SidebarMenuSub className="mx-2 mt-1 gap-0.5 py-0">
+                              {canManageSettings && (
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    size="sm"
+                                    isActive={pathname === settingsPath}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        openProject(project, settingsPath)
+                                      }
+                                      className="w-full text-left"
+                                    >
+                                      <FolderKanbanIcon className="size-3.5" />
+                                      <span>Update details</span>
+                                    </button>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              )}
+                              {canManageMembers && (
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    size="sm"
+                                    isActive={pathname === invitesPath}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        openProject(project, invitesPath)
+                                      }
+                                      className="w-full text-left"
+                                    >
+                                      <MailCheckIcon className="size-3.5" />
+                                      <span>Invites</span>
+                                    </button>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              )}
+                              {canManageProjectRoles && (
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    size="sm"
+                                    isActive={pathname === rolesPath}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        openProject(project, rolesPath)
+                                      }
+                                      className="w-full text-left"
+                                    >
+                                      <ShieldCheckIcon className="size-3.5" />
+                                      <span>Manage roles</span>
+                                    </button>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              )}
+                            </SidebarMenuSub>
+                          </CollapsibleContent>
+                        </SidebarMenuSubItem>
+                      </Collapsible>
                     )}
                   </SidebarMenuSub>
                 </CollapsibleContent>

@@ -22,7 +22,10 @@ import {
 } from "../cache/task-detail.cache";
 import { mapBoardMember } from "../mappers";
 
-type TaskUpdatePatch = UpdateTaskDto & Partial<TaskUpdatedData>;
+type TaskUpdatePatch = Partial<TaskUpdatedData> & {
+    assigneeId?: string | null;
+    boardColumnId?: string;
+};
 
 export function useUpdateTask(
     projectId: string,

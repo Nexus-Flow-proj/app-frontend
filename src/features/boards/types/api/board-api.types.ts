@@ -138,6 +138,7 @@ export interface CreateBoardColumnDto {
 }
 export interface UpdateBoardColumnDto {
     name?: string;
+    sortOrder?: number;
     color?: string;
 }
 // export interface ReorderBoardColumnItemDto {

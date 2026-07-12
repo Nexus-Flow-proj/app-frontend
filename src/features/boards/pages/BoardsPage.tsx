@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { Plus } from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import {
 import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
 import { BoardFilters } from "../components/Topbar/BoardFilters";
 import { BoardSearchBar } from "../components/Topbar/BoardSearchBar";
+import { Button } from "@/components/ui/button";
 import {
   useUrlFilters,
   useSetUrlFilters,
@@ -24,16 +25,26 @@ import {
   useActiveFilterCount,
 } from "../hooks/useBoardFilters";
 import { useBoardDnd } from "../hooks/useBoardDnd";
-import type { Task, TaskDetail } from "../types";
-import {
-  CURRENT_USER,
-  MOCK_BOARD,
-  MOCK_MEMBERS,
-  MOCK_TASK_DETAIL,
-} from "../data/mock-data";
+import { useBoardState as useRemoteBoardState } from "../hooks/useBoardState";
+import { useCreateBoardColumn } from "../hooks/useCreateBoardColumn";
+import { useCreateComment } from "../hooks/useCreateComment";
+import { useCreateSubtask } from "../hooks/useCreateSubtask";
+import { useCreateTask } from "../hooks/useCreateTask";
+import { useDeleteBoardColumn } from "../hooks/useDeleteBoardColumn";
+import { useDeleteSubtask } from "../hooks/useDeleteSubtask";
+import { useDeleteTask } from "../hooks/useDeleteTask";
+import { useTask } from "../hooks/useTask";
+import { useUpdateBoardColumn } from "../hooks/useUpdateBoardColumn";
+import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
+import { useUpdateTask } from "../hooks/useUpdateTask";
+import type { BoardMember, Task } from "../types";
+import { TaskStatus, TaskType } from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
+import { useAuthStore } from "@/store/authStore";
+import { useProjectMembers } from "@/features/project/hooks";
+import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
@@ -55,23 +66,46 @@ const boardCollisionStrategy: CollisionDetection = (args) => {
     : closestCorners(args);
 };
 
-function createEmptyTaskDetail(task: Task): TaskDetail {
+function mapProjectMemberToBoardMember(member: ProjectMemberSummary): BoardMember {
+  const name = `${member.firstName} ${member.lastName}`.trim() || member.email;
+
   return {
-    ...task,
-    subtasks: [],
-    comments: [],
-    activityLog: [],
+    id: member.userId,
+    name,
+    avatarUrl: member.avatarUrl ?? undefined,
+    avatar: member.avatarUrl ?? undefined,
+    isActive: member.isOnline,
+  };
+}
+
+function mapUserToBoardMember(user: NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>): BoardMember {
+  const name =
+    user.name ||
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+    user.email;
+
+  return {
+    id: user.id,
+    name,
+    avatarUrl: user.avatarUrl ?? user.avatar,
+    avatar: user.avatar ?? user.avatarUrl,
+    isActive: true,
   };
 }
 
 function BoardsPage() {
   const { id: projectId } = useParams<{ id: string }>();
+  const resolvedProjectId = projectId ?? "";
+  const currentUser = useAuthStore((state) => state.user);
   const filters = useUrlFilters();
   const setFilters = useSetUrlFilters();
   const resetFilters = useResetUrlFilters();
   const activeCount = useActiveFilterCount();
+  const remoteBoard = useRemoteBoardState(resolvedProjectId);
+  const projectMembersQuery = useProjectMembers(resolvedProjectId);
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
   const [addTaskColumnId, setAddTaskColumnId] = useState<string | null>(null);
   const isAddTaskOpen = addTaskColumnId !== null;
 
@@ -83,19 +117,45 @@ function BoardsPage() {
   const setDrawerTask = useKanbanStore((state) => state.setDrawerTask);
   const setDrawerLoading = useKanbanStore((state) => state.setDrawerLoading);
   const closeTaskDrawer = useKanbanStore((state) => state.closeTaskDrawer);
-  const addColumn = useKanbanStore((state) => state.addColumn);
-  const addTask = useKanbanStore((state) => state.addTask);
-  const updateTask = useKanbanStore((state) => state.updateTask);
-  const updateTaskAssignee = useKanbanStore(
-    (state) => state.updateTaskAssignee,
-  );
   const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
-  const toggleSubtask = useKanbanStore((state) => state.toggleSubtask);
-  const addSubtask = useKanbanStore((state) => state.addSubtask);
-  const deleteSubtask = useKanbanStore((state) => state.deleteSubtask);
-  const addComment = useKanbanStore((state) => state.addComment);
+  const activeTaskId = drawer.activeTaskId ?? "";
+  const taskDetailQuery = useTask(activeTaskId);
+  const createColumnMutation = useCreateBoardColumn(resolvedProjectId);
+  const updateColumnMutation = useUpdateBoardColumn(
+    resolvedProjectId,
+    editingColumnId ?? "",
+  );
+  const deleteColumnMutation = useDeleteBoardColumn(resolvedProjectId);
+  const createTaskMutation = useCreateTask(resolvedProjectId);
+  const updateTaskMutation = useUpdateTask(resolvedProjectId, activeTaskId);
+  const deleteTaskMutation = useDeleteTask(resolvedProjectId);
+  const createSubtaskMutation = useCreateSubtask(activeTaskId);
+  const updateSubtaskMutation = useUpdateSubtask(activeTaskId);
+  const deleteSubtaskMutation = useDeleteSubtask(activeTaskId);
+  const createCommentMutation = useCreateComment(activeTaskId);
 
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+  const editingColumn = editingColumnId
+    ? boardState.columns[editingColumnId]
+    : null;
+  const members = useMemo(
+    () => (projectMembersQuery.data ?? []).map(mapProjectMemberToBoardMember),
+    [projectMembersQuery.data],
+  );
+  const currentBoardUser = useMemo<BoardMember>(() => {
+    if (currentUser) {
+      return mapUserToBoardMember(currentUser);
+    }
+
+    return (
+      members[0] ?? {
+        id: "current-user",
+        name: "Current user",
+        isActive: true,
+      }
+    );
+  }, [currentUser, members]);
+
   const boardDnd = useBoardDnd({
     boardState,
     setBoardState,
@@ -111,49 +171,92 @@ function BoardsPage() {
   });
 
   useEffect(() => {
-    initializeBoard(MOCK_BOARD, projectId);
-  }, [initializeBoard, projectId]);
+    if (!remoteBoard.boardState || !projectId) return;
+    initializeBoard(remoteBoard.boardState, projectId);
+  }, [initializeBoard, projectId, remoteBoard.boardState]);
 
-  const openDrawerWithMockDetail = useCallback(
+  useEffect(() => {
+    if (!drawer.isOpen || !drawer.activeTaskId) return;
+    setDrawerLoading(taskDetailQuery.isLoading);
+  }, [
+    drawer.activeTaskId,
+    drawer.isOpen,
+    setDrawerLoading,
+    taskDetailQuery.isLoading,
+  ]);
+
+  useEffect(() => {
+    if (!taskDetailQuery.data) return;
+    setDrawerTask(taskDetailQuery.data);
+    setDrawerLoading(false);
+  }, [setDrawerLoading, setDrawerTask, taskDetailQuery.data]);
+
+  const openDrawerWithBackendDetail = useCallback(
     (task: Task) => {
       openTaskDrawer(task);
-      window.setTimeout(() => {
-        setDrawerTask(MOCK_TASK_DETAIL[task.id] ?? createEmptyTaskDetail(task));
-        setDrawerLoading(false);
-      }, 250);
     },
-    [openTaskDrawer, setDrawerLoading, setDrawerTask],
+    [openTaskDrawer],
   );
 
-  const handleAddColumn = useCallback(
+  const handleColumnSubmit = useCallback(
     (data: { name: string; color: string }) => {
-      addColumn(data.name, data.color);
+      if (editingColumnId) {
+        updateColumnMutation.mutate(
+          {
+            name: data.name,
+            color: data.color,
+          },
+          {
+            onSuccess: () => {
+              setEditingColumnId(null);
+            },
+          },
+        );
+        return;
+      }
+
+      createColumnMutation.mutate(
+        {
+          name: data.name,
+          color: data.color,
+        },
+        {
+          onSuccess: () => {
+            setIsAddColumnOpen(false);
+          },
+        },
+      );
     },
-    [addColumn],
+    [createColumnMutation, editingColumnId, updateColumnMutation],
   );
 
   const handleAddTask = useCallback(
     (data: NewTaskFormData) => {
-      const assignee = data.assigneeId
-        ? (MOCK_MEMBERS.find((member) => member.id === data.assigneeId) ??
-          CURRENT_USER)
-        : CURRENT_USER;
-      const task = addTask(data.columnId, {
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        assignee,
-        dueDate: data.dueDate,
-        tags: data.tags,
+      createTaskMutation.mutate({
+        columnId: data.columnId,
+        dto: {
+          title: data.title,
+          description: data.description || undefined,
+          deadline: data.dueDate ?? undefined,
+          label: data.tags[0],
+          type: TaskType.FEATURE,
+          status: TaskStatus.TODO,
+          priority: data.priority,
+        },
       });
-
-      if (task) {
-        openTaskDrawer(task);
-        setDrawerTask(createEmptyTaskDetail(task));
-        setDrawerLoading(false);
-      }
     },
-    [addTask, openTaskDrawer, setDrawerLoading, setDrawerTask],
+    [createTaskMutation],
+  );
+
+  const handleDeleteTask = useCallback(
+    (taskId: string) => {
+      deleteTaskMutation.mutate(taskId, {
+        onSuccess: () => {
+          closeTaskDrawer();
+        },
+      });
+    },
+    [closeTaskDrawer, deleteTaskMutation],
   );
 
   return (
@@ -169,7 +272,7 @@ function BoardsPage() {
             />
             <BoardFilters
               filters={filters}
-              members={MOCK_MEMBERS}
+              members={members}
               onChangePriority={(priorities) => setFilters({ priorities })}
               onChangeAssignee={(assigneeIds) => setFilters({ assigneeIds })}
               onChangeDueDate={(dueDateRange) => setFilters({ dueDateRange })}
@@ -181,13 +284,14 @@ function BoardsPage() {
             />
             <div className="w-px h-5 bg-border" />
 
-            <button
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+            <Button
+              size="sm"
+              className="gap-1.5"
               onClick={() => setIsAddColumnOpen(true)}
             >
               <Plus className="size-3.5" />
               Add column
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -201,14 +305,18 @@ function BoardsPage() {
         <KanbanBoard
           boardState={boardState}
           onAddColumn={() => setIsAddColumnOpen(true)}
+          isLoading={remoteBoard.isLoading}
         >
           {boardState.columnOrder.map((columnId) => (
             <KanbanBoardColumn
               key={columnId}
               columnId={columnId}
               boardState={boardState}
-              onCardClick={openDrawerWithMockDetail}
+              currentUserId={currentBoardUser.id}
+              onCardClick={openDrawerWithBackendDetail}
               onAddTask={setAddTaskColumnId}
+              onRenameColumn={setEditingColumnId}
+              onDeleteColumn={(id) => deleteColumnMutation.mutate(id)}
             />
           ))}
         </KanbanBoard>
@@ -220,17 +328,36 @@ function BoardsPage() {
         </DragOverlay>
       </DndContext>
 
-      <AddColumnDialog
-        isOpen={isAddColumnOpen}
-        onClose={() => setIsAddColumnOpen(false)}
-        onSubmit={handleAddColumn}
-      />
+      {(isAddColumnOpen || editingColumnId) && (
+        <AddColumnDialog
+          key={editingColumn?.id ?? "new-column"}
+          isOpen
+          onClose={() => {
+            setIsAddColumnOpen(false);
+            setEditingColumnId(null);
+          }}
+          onSubmit={handleColumnSubmit}
+          initialData={
+            editingColumn
+              ? {
+                  name: editingColumn.name,
+                  color: editingColumn.color ?? "var(--primary)",
+                }
+              : null
+          }
+          title={editingColumn ? "Rename column" : "New column"}
+          submitLabel={editingColumn ? "Save changes" : "Add column"}
+          isSubmitting={
+            createColumnMutation.isPending || updateColumnMutation.isPending
+          }
+        />
+      )}
 
       <AddTaskDialog
         isOpen={isAddTaskOpen}
         columnId={addTaskColumnId}
         columns={columns}
-        members={MOCK_MEMBERS}
+        members={members}
         onClose={() => setAddTaskColumnId(null)}
         onSubmit={handleAddTask}
       />
@@ -238,32 +365,43 @@ function BoardsPage() {
       <TaskDetailDrawer
         task={drawer.activeTask}
         columns={columns}
-        members={MOCK_MEMBERS}
-        currentUser={CURRENT_USER}
+        members={members}
+        currentUser={currentBoardUser}
         isOpen={drawer.isOpen}
         isLoading={drawer.isLoading}
         isSubmittingComment={drawer.isSubmittingComment}
+        isDeletingTask={deleteTaskMutation.isPending}
         onClose={closeTaskDrawer}
-        onUpdatePriority={(taskId, priority) =>
-          updateTask(taskId, { priority })
+        onUpdatePriority={(_taskId, priority) =>
+          updateTaskMutation.mutate({ priority })
         }
-        onUpdateAssignee={(taskId, assigneeId) =>
-          updateTaskAssignee(
-            taskId,
-            assigneeId
-              ? (MOCK_MEMBERS.find((member) => member.id === assigneeId) ??
-                  null)
-              : null,
-          )
+        onUpdateAssignee={(_taskId, assigneeId) =>
+          updateTaskMutation.mutate({ assigneeId })
         }
-        onUpdateDueDate={(taskId, date) =>
-          updateTask(taskId, { dueDate: date })
+        onUpdateDueDate={(_taskId, date) =>
+          updateTaskMutation.mutate({ deadline: date ?? undefined })
         }
         onMoveToColumn={moveTaskToColumn}
-        onToggleSubtask={toggleSubtask}
-        onAddSubtask={addSubtask}
-        onDeleteSubtask={deleteSubtask}
-        onAddComment={(content) => addComment(content, CURRENT_USER)}
+        onToggleSubtask={(subtaskId, completed) =>
+          updateSubtaskMutation.mutate({
+            subtaskId,
+            dto: { isCompleted: completed },
+          })
+        }
+        onAddSubtask={(title) =>
+          createSubtaskMutation.mutate({
+            title,
+          })
+        }
+        onDeleteSubtask={(subtaskId) =>
+          deleteSubtaskMutation.mutate(subtaskId)
+        }
+        onAddComment={(content) =>
+          createCommentMutation.mutate({
+            body: content,
+          })
+        }
+        onDeleteTask={handleDeleteTask}
       />
     </div>
   );

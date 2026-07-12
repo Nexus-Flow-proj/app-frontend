@@ -29,7 +29,9 @@ interface TaskDetailDrawerProps {
   onAddSubtask: (title: string) => void;
   onDeleteSubtask: (subtaskId: string) => void;
   onAddComment: (content: string) => void;
+  onDeleteTask?: (taskId: string) => void;
   isSubmittingComment?: boolean;
+  isDeletingTask?: boolean;
 }
 
 export function TaskDetailDrawer({
@@ -48,7 +50,9 @@ export function TaskDetailDrawer({
   onAddSubtask,
   onDeleteSubtask,
   onAddComment,
+  onDeleteTask,
   isSubmittingComment,
+  isDeletingTask,
 }: TaskDetailDrawerProps) {
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -60,7 +64,12 @@ export function TaskDetailDrawer({
           <DrawerSkeleton />
         ) : (
           <>
-            <TaskDetailHeader task={task} columns={columns} />
+            <TaskDetailHeader
+              task={task}
+              columns={columns}
+              onDeleteTask={onDeleteTask}
+              isDeleting={isDeletingTask}
+            />
 
             <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-5 custom-scrollbar">
               {task.description && (

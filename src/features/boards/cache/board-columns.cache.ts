@@ -56,7 +56,7 @@ export async function updateColumnInCache(
 ) {
     await qc.cancelQueries({ queryKey: getColumnsKey(projectId) });
 
-    const previousColumns: BoardColumn[] = qc.getQueryData<BoardColumn[]>(
+    const previousColumns = qc.getQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
     );
 

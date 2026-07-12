@@ -70,7 +70,7 @@ export function addCommentToCache(
             return {
                 ...old,
                 comments: [...old.comments, newComment],
-                commentsCount: old.commentsCount + 1,
+                commentsCount: (old.commentsCount ?? 0) + 1,
             };
         },
     );
@@ -96,7 +96,7 @@ export async function removeCommentFromCache(
                 comments: old.comments.filter(
                     (comment) => comment.id !== commentId,
                 ),
-                commentsCount: Math.max(old.commentsCount - 1, 0),
+                commentsCount: Math.max((old.commentsCount ?? 0) - 1, 0),
             };
         },
     );
@@ -140,9 +140,9 @@ export function addSubtaskToCache(
             return {
                 ...old,
                 subtasks: [...old.subtasks, newSubtask],
-                subtasksCount: old.subtasksCount + 1,
+                subtasksCount: (old.subtasksCount ?? 0) + 1,
                 completedSubtasksCount:
-                    old.completedSubtasksCount +
+                    (old.completedSubtasksCount ?? 0) +
                     Number(newSubtask.completed)
             };
         },
@@ -175,13 +175,13 @@ export async function removeSubtaskFromCache(
                     (subtask) => subtask.id !== subtaskId,
                 ),
 
-                subtasksCount: Math.max(old.subtasksCount - 1, 0),
+                subtasksCount: Math.max((old.subtasksCount ?? 0) - 1, 0),
                 completedSubtasksCount: deletedSubtask?.completed
                     ? Math.max(
-                        old.completedSubtasksCount - 1,
+                        (old.completedSubtasksCount ?? 0) - 1,
                         0,
                     )
-                    : old.completedSubtasksCount,
+                    : (old.completedSubtasksCount ?? 0),
             };
         },
     );
@@ -200,7 +200,9 @@ export function updateSubtaskInCache(
             if (!old) return old;
             const previous = old.subtasks.find(subtask => subtask.id === updatedSubtask.id)
 
-            let completed = old.completedSubtasksCount;
+            if (!previous) return old;
+
+            let completed = old.completedSubtasksCount ?? 0;
 
             if (!previous.completed && updatedSubtask.completed)
                 completed++;

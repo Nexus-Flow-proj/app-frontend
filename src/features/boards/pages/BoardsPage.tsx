@@ -30,13 +30,21 @@ import { useCreateBoardColumn } from "../hooks/useCreateBoardColumn";
 import { useCreateComment } from "../hooks/useCreateComment";
 import { useCreateSubtask } from "../hooks/useCreateSubtask";
 import { useCreateTask } from "../hooks/useCreateTask";
+import { useCreateTimeLog } from "../hooks/useCreateTimeLog";
 import { useDeleteBoardColumn } from "../hooks/useDeleteBoardColumn";
+import { useDeleteComment } from "../hooks/useDeleteComment";
 import { useDeleteSubtask } from "../hooks/useDeleteSubtask";
 import { useDeleteTask } from "../hooks/useDeleteTask";
+import { useDeleteTimeLog } from "../hooks/useDeleteTimeLog";
 import { useTask } from "../hooks/useTask";
-import { useUpdateBoardColumn } from "../hooks/useUpdateBoardColumn";
+import { useTimeLogs } from "../hooks/useTimeLogs";
+import {
+  useUpdateBoardColumn,
+  useUpdateBoardColumnById,
+} from "../hooks/useUpdateBoardColumn";
 import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
-import { useUpdateTask } from "../hooks/useUpdateTask";
+import { useUpdateComment } from "../hooks/useUpdateComment";
+import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
 import type { BoardMember, Task } from "../types";
 import { TaskStatus, TaskType } from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
@@ -120,19 +128,21 @@ function BoardsPage() {
   const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
   const activeTaskId = drawer.activeTaskId ?? "";
   const taskDetailQuery = useTask(activeTaskId);
+  const timeLogsQuery = useTimeLogs(activeTaskId);
   const createColumnMutation = useCreateBoardColumn(resolvedProjectId);
   const updateColumnMutation = useUpdateBoardColumn(
     resolvedProjectId,
     editingColumnId ?? "",
   );
+  const updateColumnByIdMutation = useUpdateBoardColumnById(resolvedProjectId);
   const deleteColumnMutation = useDeleteBoardColumn(resolvedProjectId);
   const createTaskMutation = useCreateTask(resolvedProjectId);
   const updateTaskMutation = useUpdateTask(resolvedProjectId, activeTaskId);
+  const updateTaskByIdMutation = useUpdateTaskById(resolvedProjectId);
   const deleteTaskMutation = useDeleteTask(resolvedProjectId);
   const createSubtaskMutation = useCreateSubtask(activeTaskId);
   const updateSubtaskMutation = useUpdateSubtask(activeTaskId);
   const deleteSubtaskMutation = useDeleteSubtask(activeTaskId);
-  const createCommentMutation = useCreateComment(activeTaskId);
 
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
   const editingColumn = editingColumnId
@@ -155,19 +165,47 @@ function BoardsPage() {
       }
     );
   }, [currentUser, members]);
+  const createCommentMutation = useCreateComment(
+    activeTaskId,
+    currentBoardUser,
+  );
+  const updateCommentMutation = useUpdateComment(
+    activeTaskId,
+    currentBoardUser,
+  );
+  const deleteCommentMutation = useDeleteComment(activeTaskId);
+  const createTimeLogMutation = useCreateTimeLog(
+    activeTaskId,
+    currentBoardUser,
+  );
+  const deleteTimeLogMutation = useDeleteTimeLog(activeTaskId);
 
   const boardDnd = useBoardDnd({
     boardState,
     setBoardState,
-    onMoveTask: (taskId, sourceColId, targetColId, newPositionFloat) =>
-      console.log("move task", {
+    onMoveTask: (taskId, sourceColId, targetColId, newPositionFloat) => {
+      updateTaskByIdMutation.mutate({
         taskId,
-        sourceColId,
-        targetColId,
-        newPositionFloat,
-      }),
-    onMoveColumn: (columnId, newPositionFloat) =>
-      console.log("move column", { columnId, newPositionFloat }),
+        dto: {
+          columnOrder: newPositionFloat,
+          ...(sourceColId !== targetColId
+            ? { boardColumnId: targetColId }
+            : {}),
+        },
+      });
+    },
+    onMoveColumn: (columnId, newPositionFloat) => {
+      const column = boardState.columns[columnId];
+      if (!column) return;
+
+      updateColumnByIdMutation.mutate({
+        columnId,
+        dto: {
+          name: column.name,
+          sortOrder: newPositionFloat,
+        },
+      });
+    },
   });
 
   useEffect(() => {
@@ -232,16 +270,19 @@ function BoardsPage() {
 
   const handleAddTask = useCallback(
     (data: NewTaskFormData) => {
+      const label = data.tags[0]?.trim() || undefined;
+
       createTaskMutation.mutate({
         columnId: data.columnId,
         dto: {
           title: data.title,
           description: data.description || undefined,
           deadline: data.dueDate ?? undefined,
-          label: data.tags[0],
+          label,
           type: TaskType.FEATURE,
           status: TaskStatus.TODO,
           priority: data.priority,
+          assigneeId: data.assigneeId ?? undefined,
         },
       });
     },
@@ -257,6 +298,33 @@ function BoardsPage() {
       });
     },
     [closeTaskDrawer, deleteTaskMutation],
+  );
+
+  const handleMoveTaskToColumn = useCallback(
+    (taskId: string, targetColumnId: string) => {
+      const sourceColumnId = Object.entries(boardState.tasks).find(([, tasks]) =>
+        tasks.some((task) => task.id === taskId),
+      )?.[0];
+
+      if (!sourceColumnId || sourceColumnId === targetColumnId) return;
+
+      const targetTasks = boardState.tasks[targetColumnId] ?? [];
+      const newColumnOrder =
+        targetTasks.reduce(
+          (max, task) => Math.max(max, task.columnOrder ?? 0),
+          0,
+        ) + 1;
+
+      moveTaskToColumn(taskId, targetColumnId);
+      updateTaskByIdMutation.mutate({
+        taskId,
+        dto: {
+          boardColumnId: targetColumnId,
+          columnOrder: newColumnOrder,
+        },
+      });
+    },
+    [boardState.tasks, moveTaskToColumn, updateTaskByIdMutation],
   );
 
   return (
@@ -366,12 +434,24 @@ function BoardsPage() {
         task={drawer.activeTask}
         columns={columns}
         members={members}
+        timeLogs={timeLogsQuery.data?.timeLogs ?? []}
         currentUser={currentBoardUser}
         isOpen={drawer.isOpen}
         isLoading={drawer.isLoading}
+        isLoadingTimeLogs={timeLogsQuery.isLoading}
         isSubmittingComment={drawer.isSubmittingComment}
         isDeletingTask={deleteTaskMutation.isPending}
+        isUpdatingTask={updateTaskMutation.isPending}
         onClose={closeTaskDrawer}
+        onUpdateTitle={(_taskId, title) =>
+          updateTaskMutation.mutate({ title })
+        }
+        onUpdateDescription={(_taskId, description) =>
+          updateTaskMutation.mutate({ description })
+        }
+        onUpdateLabel={(_taskId, label) =>
+          updateTaskMutation.mutate({ label })
+        }
         onUpdatePriority={(_taskId, priority) =>
           updateTaskMutation.mutate({ priority })
         }
@@ -381,7 +461,7 @@ function BoardsPage() {
         onUpdateDueDate={(_taskId, date) =>
           updateTaskMutation.mutate({ deadline: date ?? undefined })
         }
-        onMoveToColumn={moveTaskToColumn}
+        onMoveToColumn={handleMoveTaskToColumn}
         onToggleSubtask={(subtaskId, completed) =>
           updateSubtaskMutation.mutate({
             subtaskId,
@@ -401,6 +481,19 @@ function BoardsPage() {
             body: content,
           })
         }
+        onUpdateComment={(commentId, content) =>
+          updateCommentMutation.mutate({
+            commentId,
+            dto: { body: content },
+          })
+        }
+        onDeleteComment={(commentId) => deleteCommentMutation.mutate(commentId)}
+        isUpdatingComment={updateCommentMutation.isPending}
+        isDeletingComment={deleteCommentMutation.isPending}
+        onAddTimeLog={(data) => createTimeLogMutation.mutate(data)}
+        onDeleteTimeLog={(timeLogId) => deleteTimeLogMutation.mutate(timeLogId)}
+        isSubmittingTimeLog={createTimeLogMutation.isPending}
+        isDeletingTimeLog={deleteTimeLogMutation.isPending}
         onDeleteTask={handleDeleteTask}
       />
     </div>

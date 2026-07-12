@@ -43,8 +43,8 @@ function KanbanBoardColumn({
   onCardClick,
   currentUserId,
   onAddTask,
-  onRenameColumn = (id) => console.log("rename", id),
-  onDeleteColumn = (id) => console.log("delete", id),
+  onRenameColumn = () => {},
+  onDeleteColumn = () => {},
   isOver = false,
 }: KanbanBoardColumnProps) {
   const column = boardState.columns[columnId];

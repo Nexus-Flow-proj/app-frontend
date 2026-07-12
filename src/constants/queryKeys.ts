@@ -57,6 +57,10 @@ export const QUERY_KEYS = {
   },
   dashboard: {
     all: ["dashboard"] as const,
+    summary: () => [...QUERY_KEYS.dashboard.all, "summary"] as const,
+    taskProgress: (range: string) =>
+      [...QUERY_KEYS.dashboard.all, "task-progress", range] as const,
+    todaysFocus: () => [...QUERY_KEYS.dashboard.all, "todays-focus"] as const,
     analytics: () => [...QUERY_KEYS.dashboard.all, "analytics"] as const,
     activity: () => [...QUERY_KEYS.dashboard.all, "activity"] as const,
     deadlines: () => [...QUERY_KEYS.dashboard.all, "deadlines"] as const,

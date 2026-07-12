@@ -3,6 +3,7 @@ import {
   ChevronRightIcon,
   FolderKanbanIcon,
   KanbanIcon,
+  LayoutDashboardIcon,
   MailCheckIcon,
   MoreHorizontalIcon,
   PlusIcon,
@@ -20,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -72,12 +74,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <div className="px-2 space-y-1">
+        <div className="space-y-1 px-2">
           {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-8 rounded-md bg-sidebar-accent/40 animate-pulse"
-            />
+            <Skeleton key={i} className="h-8 rounded-md" />
           ))}
         </div>
       </SidebarGroup>
@@ -128,6 +127,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
             : false;
           const hasSettingsAccess =
             canManageSettings || canManageMembers || canManageProjectRoles;
+          const overviewPath = ROUTES.PROJECT_OVERVIEW(project.id);
           const settingsPath = ROUTES.PROJECT_SETTINGS(project.id);
           const invitesPath = ROUTES.PROJECT_INVITES(project.id);
           const rolesPath = ROUTES.PROJECT_ROLES(project.id);
@@ -146,13 +146,13 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                 <SidebarMenuButton asChild tooltip={project.name}>
                   <div>
                     <span
-                      className="flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white leading-none"
+                      className="flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold leading-none text-white"
                       style={{ backgroundColor: projectColor }}
                     >
                       {formatInitials(project.name).charAt(0)}
                     </span>
                     <Link
-                      to={ROUTES.PROJECT_OVERVIEW(project.id)}
+                      to={overviewPath}
                       onClick={() => setActiveProject(project)}
                       className="min-w-0 flex-1 truncate"
                     >
@@ -189,6 +189,12 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     side={isMobile ? "bottom" : "right"}
                     align={isMobile ? "end" : "start"}
                   >
+                    <DropdownMenuItem
+                      onClick={() => openProject(project, overviewPath)}
+                    >
+                      <LayoutDashboardIcon className="text-muted-foreground" />
+                      <span>Overview</span>
+                    </DropdownMenuItem>
                     {canOpenBoard && (
                       <DropdownMenuItem
                         onClick={() =>
@@ -207,21 +213,18 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
                     </DropdownMenuItem>
-                    {(canOpenWorkshop ||
-                      canManageMembers ||
-                      canManageSettings ||
-                      canManageProjectRoles) && (
+                    {canOpenWorkshop && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          openProject(project, ROUTES.WORKSHOP(project.id))
+                        }
+                      >
+                        <Wand2Icon className="text-muted-foreground" />
+                        <span>Main Workshop</span>
+                      </DropdownMenuItem>
+                    )}
+                    {hasSettingsAccess && (
                       <>
-                        {canOpenWorkshop && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              openProject(project, ROUTES.WORKSHOP(project.id))
-                            }
-                          >
-                            <Wand2Icon className="text-muted-foreground" />
-                            <span>Main Workshop</span>
-                          </DropdownMenuItem>
-                        )}
                         <DropdownMenuSeparator />
                         {canManageMembers && (
                           <DropdownMenuItem
@@ -259,67 +262,81 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === overviewPath}
+                      >
+                        <Link
+                          to={overviewPath}
+                          onClick={() => setActiveProject(project)}
+                        >
+                          <LayoutDashboardIcon className="size-3.5" />
+                          <span>Overview</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                     {canOpenWorkshop && (
                       <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              openProject(project, ROUTES.WORKSHOP(project.id))
-                            }
-                            className="w-full text-left"
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === ROUTES.WORKSHOP(project.id)}
+                        >
+                          <Link
+                            to={ROUTES.WORKSHOP(project.id)}
+                            onClick={() => setActiveProject(project)}
                           >
                             <Wand2Icon className="size-3.5" />
                             <span>Workshop</span>
-                          </button>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     )}
                     {canOpenBoard && (
                       <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              openProject(project, ROUTES.BOARDS(project.id))
-                            }
-                            className="w-full text-left"
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === ROUTES.BOARDS(project.id)}
+                        >
+                          <Link
+                            to={ROUTES.BOARDS(project.id)}
+                            onClick={() => setActiveProject(project)}
                           >
                             <KanbanIcon className="size-3.5" />
                             <span>Team Board</span>
-                          </button>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     )}
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton asChild>
-                        <button
-                          onClick={() =>
-                            openProject(
-                              project,
-                              ROUTES.MY_WORKSPACE(project.id),
-                            )
-                          }
-                          className="w-full text-left"
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === ROUTES.MY_WORKSPACE(project.id)}
+                      >
+                        <Link
+                          to={ROUTES.MY_WORKSPACE(project.id)}
+                          onClick={() => setActiveProject(project)}
                         >
                           <StickyNoteIcon className="size-3.5" />
                           <span>My Workspace</span>
-                        </button>
+                        </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     {canManageMembers && (
                       <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              openProject(
-                                project,
-                                ROUTES.PROJECT_MEMBERS(project.id),
-                              )
-                            }
-                            className="w-full text-left"
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={
+                            pathname === ROUTES.PROJECT_MEMBERS(project.id)
+                          }
+                        >
+                          <Link
+                            to={ROUTES.PROJECT_MEMBERS(project.id)}
+                            onClick={() => setActiveProject(project)}
                           >
                             <UsersRoundIcon className="size-3.5" />
                             <span>Members</span>
-                          </button>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     )}
@@ -334,13 +351,13 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           <SidebarMenuSubButton asChild>
                             <div>
                               <Settings2Icon className="size-3.5" />
-                              <button
-                                type="button"
-                                onClick={() => openProject(project, settingsPath)}
-                                className="min-w-0 flex-1 truncate text-left"
+                              <Link
+                                to={settingsPath}
+                                onClick={() => setActiveProject(project)}
+                                className="min-w-0 flex-1 truncate"
                               >
-                                <span>Settings</span>
-                              </button>
+                                Settings
+                              </Link>
                               <CollapsibleTrigger asChild>
                                 <Button
                                   type="button"
@@ -363,15 +380,13 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                                     size="sm"
                                     isActive={pathname === settingsPath}
                                   >
-                                    <button
-                                      onClick={() =>
-                                        openProject(project, settingsPath)
-                                      }
-                                      className="w-full text-left"
+                                    <Link
+                                      to={settingsPath}
+                                      onClick={() => setActiveProject(project)}
                                     >
                                       <FolderKanbanIcon className="size-3.5" />
                                       <span>Update details</span>
-                                    </button>
+                                    </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
                               )}
@@ -382,15 +397,13 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                                     size="sm"
                                     isActive={pathname === invitesPath}
                                   >
-                                    <button
-                                      onClick={() =>
-                                        openProject(project, invitesPath)
-                                      }
-                                      className="w-full text-left"
+                                    <Link
+                                      to={invitesPath}
+                                      onClick={() => setActiveProject(project)}
                                     >
                                       <MailCheckIcon className="size-3.5" />
                                       <span>Invites</span>
-                                    </button>
+                                    </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
                               )}
@@ -401,15 +414,13 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                                     size="sm"
                                     isActive={pathname === rolesPath}
                                   >
-                                    <button
-                                      onClick={() =>
-                                        openProject(project, rolesPath)
-                                      }
-                                      className="w-full text-left"
+                                    <Link
+                                      to={rolesPath}
+                                      onClick={() => setActiveProject(project)}
                                     >
                                       <ShieldCheckIcon className="size-3.5" />
                                       <span>Manage roles</span>
-                                    </button>
+                                    </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
                               )}

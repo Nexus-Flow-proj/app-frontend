@@ -1,9 +1,13 @@
+import { useState } from "react";
 import {
   ArrowRight,
   Calendar,
+  Check,
   ChartNoAxesColumnDecreasing,
+  Pencil,
   Tag,
   User,
+  X,
 } from "lucide-react";
 import {
   Select,
@@ -23,6 +27,7 @@ import type {
 } from "../../types";
 import { MetaRow } from "./MetaRow";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskPriority } from "../../types/enums";
 
@@ -34,6 +39,7 @@ interface TaskMetaSectionProps {
   onUpdatePriority: (taskId: string, priority: Priority) => void;
   onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
   onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
+  onUpdateLabel: (taskId: string, label: string) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
 }
 
@@ -44,6 +50,12 @@ const PRIORITIES: Priority[] = [
   TaskPriority.LOW,
 ];
 
+interface LabelDraft {
+  taskId: string;
+  sourceLabel: string;
+  value: string;
+}
+
 export function TaskMetaSection({
   task,
   columns,
@@ -51,9 +63,44 @@ export function TaskMetaSection({
   onUpdatePriority,
   onUpdateAssignee,
   onUpdateDueDate,
+  onUpdateLabel,
   onMoveToColumn,
   className,
 }: TaskMetaSectionProps) {
+  const currentLabel = task.tags?.[0] ?? "";
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [labelDraft, setLabelDraft] = useState<LabelDraft | null>(null);
+  const label =
+    labelDraft?.taskId === task.id && labelDraft.sourceLabel === currentLabel
+      ? labelDraft.value
+      : currentLabel;
+
+  const submitLabel = () => {
+    const trimmedLabel = label.trim();
+    if (trimmedLabel === currentLabel) {
+      setIsEditingLabel(false);
+      setLabelDraft(null);
+      return;
+    }
+    onUpdateLabel(task.id, trimmedLabel);
+    setIsEditingLabel(false);
+    setLabelDraft(null);
+  };
+
+  const startEditingLabel = () => {
+    setLabelDraft({
+      taskId: task.id,
+      sourceLabel: currentLabel,
+      value: currentLabel,
+    });
+    setIsEditingLabel(true);
+  };
+
+  const cancelEditingLabel = () => {
+    setIsEditingLabel(false);
+    setLabelDraft(null);
+  };
+
   return (
     <div className={cn("space-y-2", className)}>
       <MetaRow icon={ChartNoAxesColumnDecreasing} label="Priority">
@@ -146,23 +193,87 @@ export function TaskMetaSection({
         </Select>
       </MetaRow>
 
-      {!!task.tags?.length && (
-        <MetaRow icon={Tag} label="Tags">
-          <div className="flex flex-wrap gap-1.5">
-            {task.tags.map((tag) => (
+      <MetaRow icon={Tag} label="Label">
+        {isEditingLabel ? (
+          <div className="flex items-center gap-1.5">
+            <Input
+              value={label}
+              onChange={(event) =>
+                setLabelDraft({
+                  taskId: task.id,
+                  sourceLabel: currentLabel,
+                  value: event.target.value,
+                })
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submitLabel();
+                }
+
+                if (event.key === "Escape") {
+                  cancelEditingLabel();
+                }
+              }}
+              placeholder="Add label"
+              className="h-8 text-xs"
+              autoFocus
+            />
+            <Button
+              type="button"
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={submitLabel}
+            >
+              <Check className="size-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={cancelEditingLabel}
+            >
+              <X className="size-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex min-w-0 items-center gap-1.5">
+            {currentLabel ? (
               <Badge
-                key={tag}
                 variant="secondary"
                 size="sm"
                 shape="pill"
-                className="font-normal"
+                className="max-w-44 truncate font-normal"
               >
-                {tag}
+                {currentLabel}
               </Badge>
-            ))}
+            ) : (
+              <span className="text-xs text-muted-foreground">No label</span>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="ml-auto size-7 shrink-0 text-muted-foreground"
+              onClick={startEditingLabel}
+            >
+              <Pencil className="size-3.5" />
+            </Button>
+            {currentLabel && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                onClick={() => onUpdateLabel(task.id, "")}
+              >
+                <X className="size-3.5" />
+              </Button>
+            )}
           </div>
-        </MetaRow>
-      )}
+        )}
+      </MetaRow>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCard } from "./DashboardCard";
 import type { DashboardStat, DashboardStatIcon } from "../types";
 
 const ICONS: Record<DashboardStatIcon, LucideIcon> = {
@@ -32,7 +32,7 @@ interface StatsGridProps {
 
 export function StatsGrid({ stats }: StatsGridProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
         <StatCard key={stat.id} stat={stat} />
       ))}
@@ -49,26 +49,30 @@ function StatCard({ stat }: { stat: DashboardStat }) {
       : "text-emerald-600 dark:text-emerald-400";
 
   return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{stat.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {stat.value}
-            </p>
-          </div>
-          <div className={`rounded-xl p-2.5 ${ICON_STYLES[stat.icon]}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-        </div>
-        {stat.trend.direction !== "neutral" && (
-          <p className={`mt-3 flex items-center gap-1 text-xs ${trendColor}`}>
-            <TrendIcon className="h-3.5 w-3.5" />
-            {stat.trend.label}
+    <DashboardCard className="h-full justify-start" contentClassName="h-full">
+      <div className="flex h-full items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-muted-foreground">
+            {stat.label}
           </p>
-        )}
-      </CardContent>
-    </Card>
+          <p className="mt-1 text-5xl py-2 font-semibold leading-none tracking-tight text-foreground">
+            {stat.value}
+          </p>
+          {stat.trend.direction !== "neutral" && (
+            <p
+              className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${trendColor}`}
+            >
+              <TrendIcon className="size-3.5" />
+              {stat.trend.label}
+            </p>
+          )}
+        </div>
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${ICON_STYLES[stat.icon]}`}
+        >
+          <Icon className="size-5" />
+        </span>
+      </div>
+    </DashboardCard>
   );
 }

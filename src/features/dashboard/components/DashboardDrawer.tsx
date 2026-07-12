@@ -1,5 +1,11 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useDashboardUiStore } from "../store/dashboardUiStore";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useDashboardUiStore } from "../../../store/dashboardUiStore";
 import { RecentActivity } from "./RecentActivity";
 import { RecentProjects } from "./RecentProjects";
 import { UpcomingDeadlines } from "./UpcomingDeadlines";
@@ -16,9 +22,9 @@ interface DashboardDrawerProps {
 }
 
 const DRAWER_TITLES: Record<string, string> = {
-  activity: "Recent Activity",
-  projects: "Recent Projects",
-  deadlines: "Upcoming Deadlines",
+  activity: "Recent activity",
+  projects: "Recent projects",
+  deadlines: "Upcoming deadlines",
 };
 
 /**
@@ -38,31 +44,44 @@ export function DashboardDrawer({
 }: DashboardDrawerProps) {
   const activeDrawer = useDashboardUiStore((s) => s.activeDrawer);
   const closeDrawer = useDashboardUiStore((s) => s.closeDrawer);
+  const itemCount =
+    activeDrawer === "activity"
+      ? recentActivity.length
+      : activeDrawer === "projects"
+        ? recentProjects.length
+        : activeDrawer === "deadlines"
+          ? upcomingDeadlines.length
+          : 0;
 
   return (
     <Sheet
       open={activeDrawer !== null}
       onOpenChange={(open) => !open && closeDrawer()}
     >
-      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-        <SheetHeader className="sr-only">
-          <SheetTitle>
+      <SheetContent className="w-full gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <SheetHeader className="border-b px-5 py-5">
+          <SheetTitle className="text-lg font-semibold">
             {activeDrawer ? DRAWER_TITLES[activeDrawer] : "Details"}
           </SheetTitle>
+          <SheetDescription>
+            {itemCount} {itemCount === 1 ? "item" : "items"} from your dashboard
+            summary
+          </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
           {activeDrawer === "activity" && (
-            <RecentActivity items={recentActivity} truncate={false} />
+            <RecentActivity
+              items={recentActivity}
+              truncate={false}
+              variant="sheet"
+            />
           )}
           {activeDrawer === "projects" && (
             <RecentProjects projects={recentProjects} truncate={false} />
           )}
           {activeDrawer === "deadlines" && (
-            <UpcomingDeadlines
-              deadlines={upcomingDeadlines}
-              truncate={false}
-            />
+            <UpcomingDeadlines deadlines={upcomingDeadlines} truncate={false} />
           )}
         </div>
       </SheetContent>

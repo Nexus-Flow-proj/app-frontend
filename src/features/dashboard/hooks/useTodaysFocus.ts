@@ -1,13 +1,14 @@
 import { useApiQuery } from "@/hooks/useApiQuery";
-import { getTodaysFocus } from "../api/dashboard.api";
+import { QUERY_KEYS } from "@/constants";
+import { dashboardService } from "../services";
 import type { TodaysFocusData } from "../types";
 
-export const TODAYS_FOCUS_QUERY_KEY = ["todays-focus"];
+export const TODAYS_FOCUS_QUERY_KEY = QUERY_KEYS.dashboard.todaysFocus();
 
 export function useTodaysFocus() {
   const query = useApiQuery<TodaysFocusData>(
     TODAYS_FOCUS_QUERY_KEY,
-    () => getTodaysFocus(),
+    () => dashboardService.getTodaysFocus(),
     { staleTime: 30_000 },
   );
 

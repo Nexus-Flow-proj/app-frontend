@@ -1,6 +1,5 @@
-
 import { create } from "zustand";
-import type { TaskProgressRange } from "../types";
+import type { TaskProgressRange } from "../features/dashboard/types";
 
 export type DashboardDrawerType = "activity" | "projects" | "deadlines" | null;
 

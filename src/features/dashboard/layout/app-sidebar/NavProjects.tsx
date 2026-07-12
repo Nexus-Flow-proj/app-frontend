@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import {
   ChevronRightIcon,
+  LayoutDashboardIcon,
   MoreHorizontalIcon,
   PlusIcon,
   Settings2Icon,
@@ -15,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   SidebarGroup,
   SidebarGroupAction,
@@ -34,8 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-// import { useAuthStore, useProjectStore } from "@/store";
-// import { UserRole } from "@/types/enums";
+import { useProjectStore } from "@/store";
 import { ROUTES } from "@/constants";
 import { formatInitials } from "@/lib/format/text";
 import type { Project } from "@/types";
@@ -48,10 +48,7 @@ interface NavProjectsProps {
 export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  // const isAdmin = useProjectStore((s) => s.isAdmin());
-  // const userRole = useAuthStore((s) => s.user?.role);
-  // const canAdmin = isAdmin || userRole === UserRole.ADMIN;
-  const canAdmin = true;
+  const setActiveProject = useProjectStore((s) => s.setActiveProject);
 
   const openProject = (project: Project, to: string) => {
     setActiveProject(project);
@@ -62,12 +59,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <div className="px-2 space-y-1">
+        <div className="space-y-1 px-2">
           {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-8 rounded-md bg-sidebar-accent/40 animate-pulse"
-            />
+            <Skeleton key={i} className="h-8 rounded-md" />
           ))}
         </div>
       </SidebarGroup>
@@ -108,34 +102,20 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
               className="group/project-collapsible"
             >
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={project.name}>
-                  <div>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={project.name}>
                     <span
                       className="flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white leading-none"
                       style={{ backgroundColor: projectColor }}
                     >
                       {formatInitials(project.name).charAt(0)}
                     </span>
-                    <Link
-                      to={ROUTES.PROJECT_OVERVIEW(project.id)}
-                      onClick={() => setActiveProject(project)}
-                      className="min-w-0 flex-1 truncate"
-                    >
+                    <span className="min-w-0 flex-1 truncate">
                       {project.name}
-                    </Link>
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="transparent"
-                        size="icon-xs"
-                        className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-sm text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        aria-label={`Toggle ${project.name} navigation`}
-                      >
-                        <ChevronRightIcon className="size-3.5 transition-transform group-data-[state=open]/project-collapsible:rotate-90" />
-                      </Button>
-                    </CollapsibleTrigger>
-                  </div>
-                </SidebarMenuButton>
+                    </span>
+                    <ChevronRightIcon className="ml-auto size-3.5 transition-transform group-data-[state=open]/project-collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -170,97 +150,86 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       <StickyNoteIcon className="text-muted-foreground" />
                       <span>My Workspace</span>
                     </DropdownMenuItem>
-                    {canAdmin && (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            openProject(project, ROUTES.WORKSHOP(project.id))
-                          }
-                        >
-                          <Wand2Icon className="text-muted-foreground" />
-                          <span>Main Workshop</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() =>
-                            openProject(
-                              project,
-                              ROUTES.PROJECT_SETTINGS(project.id),
-                            )
-                          }
-                        >
-                          <Settings2Icon className="text-muted-foreground" />
-                          <span>Settings</span>
-                        </DropdownMenuItem>
-                      </>
-                    )}
+                    <DropdownMenuItem
+                      onClick={() =>
+                        openProject(project, ROUTES.WORKSHOP(project.id))
+                      }
+                    >
+                      <Wand2Icon className="text-muted-foreground" />
+                      <span>Main Workshop</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        openProject(
+                          project,
+                          ROUTES.PROJECT_SETTINGS(project.id),
+                        )
+                      }
+                    >
+                      <Settings2Icon className="text-muted-foreground" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {canAdmin && (
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              openProject(project, ROUTES.WORKSHOP(project.id))
-                            }
-                            className="w-full text-left"
-                          >
-                            <Wand2Icon className="size-3.5" />
-                            <span>Workshop</span>
-                          </button>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    )}
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <button
-                          onClick={() =>
-                            openProject(project, ROUTES.BOARDS(project.id))
-                          }
-                          className="w-full text-left"
+                        <Link
+                          to={ROUTES.PROJECT_OVERVIEW(project.id)}
+                          onClick={() => setActiveProject(project)}
+                        >
+                          <LayoutDashboardIcon className="size-3.5" />
+                          <span>Overview</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <Link
+                          to={ROUTES.WORKSHOP(project.id)}
+                          onClick={() => setActiveProject(project)}
+                        >
+                          <Wand2Icon className="size-3.5" />
+                          <span>Workshop</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <Link
+                          to={ROUTES.BOARDS(project.id)}
+                          onClick={() => setActiveProject(project)}
                         >
                           <KanbanIcon className="size-3.5" />
                           <span>Team Board</span>
-                        </button>
+                        </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton asChild>
-                        <button
-                          onClick={() =>
-                            openProject(
-                              project,
-                              ROUTES.MY_WORKSPACE(project.id),
-                            )
-                          }
-                          className="w-full text-left"
+                        <Link
+                          to={ROUTES.MY_WORKSPACE(project.id)}
+                          onClick={() => setActiveProject(project)}
                         >
                           <StickyNoteIcon className="size-3.5" />
                           <span>My Workspace</span>
-                        </button>
+                        </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
-                    {canAdmin && (
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild>
-                          <button
-                            onClick={() =>
-                              openProject(
-                                project,
-                                ROUTES.PROJECT_SETTINGS(project.id),
-                              )
-                            }
-                            className="w-full text-left"
-                          >
-                            <Settings2Icon className="size-3.5" />
-                            <span>Settings</span>
-                          </button>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    )}
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <Link
+                          to={ROUTES.PROJECT_SETTINGS(project.id)}
+                          onClick={() => setActiveProject(project)}
+                        >
+                          <Settings2Icon className="size-3.5" />
+                          <span>Settings</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

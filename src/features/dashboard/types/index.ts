@@ -107,18 +107,3 @@ export interface TaskProgressData {
  * the whole dashboard.
  */
 export type TodaysFocusData = FocusItem[];
-
-/**
- * @deprecated Kept only because the mock data file is still shaped this way
- * internally. The three interfaces above (DashboardSummary, TaskProgressData,
- * TodaysFocusData) are what the hooks and API layer actually use now - do
- * not fetch or pass this combined shape around anymore.
- */
-export interface DashboardData {
-  stats: DashboardStat[];
-  taskProgress: TaskProgressData;
-  upcomingDeadlines: UpcomingDeadline[];
-  todaysFocus: FocusItem[];
-  recentActivity: RecentActivityItem[];
-  recentProjects: RecentProjectSummary[];
-}

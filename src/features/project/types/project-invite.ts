@@ -29,6 +29,7 @@ export interface ProjectInviteDetails {
   email: string;
   projectName: string;
   roleId?: string;
+  roleName?: string;
   role?: ProjectRoleDefinition | null;
   roleLabel?: string;
   status?: InviteStatus;
@@ -44,6 +45,7 @@ export interface ProjectInviteListItem {
   projectId?: string;
   email: string;
   roleId?: string;
+  roleName?: string;
   role?: ProjectRoleDefinition | null;
   roleLabel?: string;
   status: InviteStatus;

@@ -15,6 +15,13 @@ export const authService = {
   me: () =>
     api.get<ApiResponse<AuthResponseData>>("/auth/me").then((r) => r.data),
 
+  optionalMe: () =>
+    api
+      .get<ApiResponse<AuthResponseData>>("/auth/me", {
+        validateStatus: (status) => status < 500,
+      })
+      .then((r) => (r.status === 200 ? r.data.data : null)),
+
   login: (dto: LoginDto) =>
     api
       .post<ApiResponse<AuthResponseData>>("/auth/login", dto)

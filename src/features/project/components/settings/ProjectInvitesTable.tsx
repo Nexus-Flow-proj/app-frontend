@@ -32,7 +32,7 @@ function formatOptionalDate(value?: string | null) {
 }
 
 function getInviteRoleName(invite: ProjectInviteListItem) {
-  return invite.role?.name ?? invite.roleLabel ?? "Project role";
+  return invite.role?.name ?? invite.roleName ?? invite.roleLabel ?? "Project role";
 }
 
 export function ProjectInvitesTable({

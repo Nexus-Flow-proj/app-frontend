@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, Clock, LogIn } from "lucide-react";
 import {
   Card,
@@ -12,6 +14,8 @@ import Loading from "@/components/shared/loading/Loading";
 import { dateformat } from "@/lib/format/date";
 import { useAuthStore } from "@/store";
 import { InviteStatus } from "@/types";
+import { QUERY_KEYS } from "@/constants";
+import { authService } from "@/features/auth/services";
 import {
   useAcceptProjectInvitation,
   useDeclineProjectInvitation,
@@ -27,7 +31,15 @@ import {
 
 export default function ProjectInvitationPage() {
   const { token = "" } = useParams<{ token: string }>();
-  const user = useAuthStore((state) => state.user);
+  const storedUser = useAuthStore((state) => state.user);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const { data: optionalAuthUser } = useQuery({
+    queryKey: QUERY_KEYS.auth.me,
+    queryFn: authService.optionalMe,
+    enabled: !storedUser,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
   const {
     data: invitation,
     isLoading,
@@ -36,6 +48,13 @@ export default function ProjectInvitationPage() {
   const { mutate: acceptInvitation, isPending } = useAcceptProjectInvitation();
   const { mutate: declineInvitation, isPending: isDeclining } =
     useDeclineProjectInvitation();
+  const user = storedUser ?? optionalAuthUser?.user ?? null;
+
+  useEffect(() => {
+    if (!storedUser && optionalAuthUser?.user) {
+      setAuth(optionalAuthUser.user);
+    }
+  }, [optionalAuthUser?.user, setAuth, storedUser]);
 
   if (isLoading) {
     return <Loading fullPage text="Loading invitation..." />;
@@ -76,13 +95,11 @@ export default function ProjectInvitationPage() {
     invitation.project?.name ?? invitation.projectName ?? "Project invitation";
   const projectColor = invitation.project?.color ?? "#2563eb";
   const projectDescription = invitation.project?.description;
-  const inviterName =
-    invitation.invitedBy?.name ||
-    [invitation.invitedBy?.firstName, invitation.invitedBy?.lastName]
-      .filter(Boolean)
-      .join(" ") ||
-    invitation.invitedBy?.email ||
-    "A project admin";
+  const roleName =
+    invitation.role?.name ??
+    invitation.roleName ??
+    invitation.roleLabel ??
+    "Project role";
 
   return (
     <InvitationLayout>
@@ -111,9 +128,8 @@ export default function ProjectInvitationPage() {
             <InvitationDetail label="Invited email" value={invitation.email} />
             <InvitationDetail
               label="Assigned role"
-              value={invitation.role?.name ?? invitation.roleLabel ?? "Project role"}
+              value={roleName}
             />
-            <InvitationDetail label="Invited by" value={inviterName} />
             {invitation.expiresAt && (
               <InvitationDetail
                 label="Expires"

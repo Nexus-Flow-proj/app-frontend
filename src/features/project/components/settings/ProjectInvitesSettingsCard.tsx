@@ -78,6 +78,10 @@ function isPaginationMeta(value: unknown): value is PaginationMeta {
   );
 }
 
+function isEmptyInvitesResponse(statusCode?: number) {
+  return statusCode === 404;
+}
+
 export function ProjectInvitesSettingsCard({
   project,
 }: ProjectInvitesSettingsCardProps) {
@@ -93,6 +97,9 @@ export function ProjectInvitesSettingsCard({
   const metaValue = invitesQuery.data?.meta ?? getNestedMeta(responseData);
   const meta = isPaginationMeta(metaValue) ? metaValue : undefined;
   const isBusy = cancelInvite.isPending;
+  const shouldShowLoadError =
+    invitesQuery.isError &&
+    !isEmptyInvitesResponse(invitesQuery.error?.statusCode);
 
   return (
     <Card className="rounded-lg">
@@ -117,7 +124,7 @@ export function ProjectInvitesSettingsCard({
         </CardAction>
       </CardHeader>
       <CardContent className="grid gap-4">
-        {invitesQuery.isError ? (
+        {shouldShowLoadError ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             Could not load project invites. Try refreshing the table.
           </div>

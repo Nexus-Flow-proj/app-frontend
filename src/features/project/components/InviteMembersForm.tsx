@@ -67,7 +67,7 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
         );
       })}
     >
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
         <FormInput
           id="invite-email"
           type="email"
@@ -84,51 +84,50 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
         <Controller
           name="roleId"
           control={control}
-          render={({ field }) => (
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="invite-role"
-                className="text-xs font-bold text-foreground"
-              >
-                Role<span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isPending || isLoadingRoles || roles.length === 0}
-              >
-                <SelectTrigger
-                  id="invite-role"
-                  className="h-9 w-full bg-background text-xs font-semibold"
-                  aria-invalid={!!errors.roleId}
+          render={({ field }) => {
+            const placeholder = isLoadingRoles ? "Loading roles..." : "Choose role";
+
+            return (
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="invite-role"
+                  className="text-xs font-bold text-foreground"
                 >
-                  <SelectValue
-                    placeholder={
-                      isLoadingRoles ? "Loading roles..." : "Choose role"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      <span className="grid p-0.5 gap-0.5">
-                        <span>{role.name}</span>
-                        <span className="text-xs  text-muted-foreground">
-                          Level {role.level}
-                          {role.description ? ` - ${role.description}` : ""}
-                        </span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.roleId?.message && (
-                <p className="text-xs text-destructive">
-                  {errors.roleId.message}
-                </p>
-              )}
-            </div>
-          )}
+                  Role<span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending || isLoadingRoles || roles.length === 0}
+                >
+                  <SelectTrigger
+                    id="invite-role"
+                    className="h-9 w-full min-w-0 bg-background px-3 text-left text-xs font-semibold [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate"
+                    aria-invalid={!!errors.roleId}
+                  >
+                    <SelectValue placeholder={placeholder} />
+                  </SelectTrigger>
+                  <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                    {roles.map((role) => (
+                      <SelectItem
+                        key={role.id}
+                        value={role.id}
+                        textValue={role.name}
+                        className="min-w-0 py-2 text-xs font-semibold"
+                      >
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.roleId?.message && (
+                  <p className="text-xs text-destructive">
+                    {errors.roleId.message}
+                  </p>
+                )}
+              </div>
+            );
+          }}
         />
       </div>
 

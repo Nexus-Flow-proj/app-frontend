@@ -12,7 +12,16 @@ export const dashboardService = {
   getSummary: (): Promise<ApiResponse<DashboardSummary>> =>
     api
       .get<ApiResponse<DashboardSummary>>("/dashboard/summary")
-      .then((response) => response.data),
+      .then((response) => {
+        if (import.meta.env.DEV) {
+          console.groupCollapsed("[Dashboard] GET /dashboard/summary");
+          console.log("Full response:", response.data);
+          console.log("Recent projects:", response.data.data.recentProjects);
+          console.groupEnd();
+        }
+
+        return response.data;
+      }),
 
   getTaskProgress: (
     range: TaskProgressRange,

@@ -12,6 +12,21 @@ interface RecentProjectsProps {
   truncate?: boolean;
 }
 
+function getProjectRoleLabel(project: RecentProjectSummary) {
+  if (typeof project.role === "object" && project.role?.name) {
+    return project.role.name;
+  }
+
+  return (
+    project.roleName ??
+    project.currentMember?.role?.name ??
+    project.currentMember?.roleLabel ??
+    project.roleLabel ??
+    (typeof project.role === "string" ? project.role : null) ??
+    "Project role"
+  );
+}
+
 export function RecentProjects({
   projects,
   onViewAll,
@@ -35,7 +50,7 @@ export function RecentProjects({
       ) : (
         <ul className="space-y-3">
           {projects.map((project) => {
-            const isAdminRole = project.role.toLowerCase().includes("admin");
+            const roleLabel = getProjectRoleLabel(project);
 
             return (
               <li key={project.id}>
@@ -58,9 +73,7 @@ export function RecentProjects({
                         {project.name}
                       </p>
                     </div>
-                    <Badge variant={isAdminRole ? "default" : "secondary"}>
-                      {isAdminRole ? "Admin" : project.role}
-                    </Badge>
+                    <Badge variant="secondary">{roleLabel}</Badge>
                   </div>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div

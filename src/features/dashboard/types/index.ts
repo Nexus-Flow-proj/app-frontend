@@ -1,4 +1,8 @@
 import { TaskPriority } from "@/types/enums";
+import type {
+  ProjectMemberSummary,
+  ProjectRoleDefinition,
+} from "@/features/project/types";
 import type { User } from "@/types/models/user";
 
 /**
@@ -71,7 +75,11 @@ export interface RecentActivityItem {
 export interface RecentProjectSummary {
   id: string;
   name: string;
-  role: string;
+  role?: string | ProjectRoleDefinition | null;
+  roleLabel?: string | null;
+  roleName?: string | null;
+  currentMember?: ProjectMemberSummary | null;
+  isAdmin?: boolean;
   progress: number; // 0-100
   color: string;
 }

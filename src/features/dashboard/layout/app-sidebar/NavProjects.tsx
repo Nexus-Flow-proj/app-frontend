@@ -3,7 +3,6 @@ import {
   ChevronRightIcon,
   FolderKanbanIcon,
   KanbanIcon,
-  LayoutDashboardIcon,
   MailCheckIcon,
   MoreHorizontalIcon,
   PlusIcon,
@@ -189,12 +188,6 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                     side={isMobile ? "bottom" : "right"}
                     align={isMobile ? "end" : "start"}
                   >
-                    <DropdownMenuItem
-                      onClick={() => openProject(project, overviewPath)}
-                    >
-                      <LayoutDashboardIcon className="text-muted-foreground" />
-                      <span>Overview</span>
-                    </DropdownMenuItem>
                     {canOpenBoard && (
                       <DropdownMenuItem
                         onClick={() =>
@@ -262,20 +255,6 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        asChild
-                        isActive={pathname === overviewPath}
-                      >
-                        <Link
-                          to={overviewPath}
-                          onClick={() => setActiveProject(project)}
-                        >
-                          <LayoutDashboardIcon className="size-3.5" />
-                          <span>Overview</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
                     {canOpenWorkshop && (
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton

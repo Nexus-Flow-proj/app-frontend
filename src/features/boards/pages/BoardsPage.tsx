@@ -465,7 +465,7 @@ function BoardsPage() {
         onToggleSubtask={(subtaskId, completed) =>
           updateSubtaskMutation.mutate({
             subtaskId,
-            dto: { isCompleted: completed },
+            dto: { completed },
           })
         }
         onAddSubtask={(title) =>

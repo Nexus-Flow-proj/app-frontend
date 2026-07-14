@@ -199,7 +199,7 @@ export interface CreateSubtaskDto {
 export interface UpdateSubtaskDto {
     title?: string;
 
-    isCompleted?: boolean;
+    completed?: boolean;
 }
 
 

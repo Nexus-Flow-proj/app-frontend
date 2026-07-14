@@ -1,4 +1,4 @@
-import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
+import { CanvasObjectType } from "@/types/enums";
 import { NODE_SIZE } from "../constants";
 import type { CanvasObject } from "../types";
 import type { WorkshopObjectKind } from "../types/workshopKinds";
@@ -9,12 +9,12 @@ const uid = (prefix: string) => `${prefix}-${++localId}`;
 export function createObject(
   kind: WorkshopObjectKind,
   position: Coordinates,
+  featureId?: string,
 ): CanvasObject {
-  // SectionFrame
-  if (kind === "Project" || kind === "Phase") {
+  if (kind === "Feature") {
     const { w, h } = NODE_SIZE.SECTION_FRAME;
     return {
-      id: uid(kind.toLowerCase()),
+      id: uid("feature"),
       type: CanvasObjectType.SECTION_FRAME,
       x: position.x - w / 2,
       y: position.y - h / 2,
@@ -24,10 +24,9 @@ export function createObject(
       zIndex: 0,
       data: {
         kind,
-        title: kind === "Project" ? "New project" : "New phase",
-        description: "Describe this planning area.",
-        backgroundColor: kind === "Project" ? "#F0EAFF" : "#EFF6FF",
-        borderColor: kind === "Project" ? "#C4AFF7" : "#BFDBFE",
+        title: "New feature",
+        backgroundColor: "#F5F3FF",
+        borderColor: "#C4B5FD",
       },
     };
   }
@@ -45,8 +44,8 @@ export function createObject(
       zIndex: 3,
       data: {
         kind,
-        content: "Add a workshop note.",
-        color: "#FEF08A",
+        content: "Capture an idea, question, or reminder…",
+        color: "#FEF3C7",
         fontSize: 13,
       },
     };
@@ -63,12 +62,10 @@ export function createObject(
     rotation: 0,
     zIndex: 2,
     data: {
-      taskId: uid("t"),
+      featureId,
       kind,
-      title: `New ${kind.toLowerCase()}`,
-      description: "Add context, owner, and timing.",
-      status: TaskStatus.BACKLOG,
-      priority: kind === "Risk" ? TaskPriority.URGENT : TaskPriority.MEDIUM,
+      title: "New task",
+      description: "Describe the work required for this task.",
     },
   };
 }

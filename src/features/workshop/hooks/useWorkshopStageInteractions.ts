@@ -8,6 +8,11 @@ import {
 import { TOOL_TO_KIND } from "../constants/toolToKind";
 import { useWorkshopStore } from "../store/workshopStore";
 import { createObject } from "../utils/workshopObjectFactory";
+import {
+  getContainingFeature,
+  getNextTaskPosition,
+} from "../utils/featureContainment";
+import { toast } from "sonner";
 
 interface UseWorkshopStageInteractionsParams {
   stageRef: RefObject<Konva.Stage | null>;
@@ -18,6 +23,7 @@ export function useWorkshopStageInteractions({
 }: UseWorkshopStageInteractionsParams) {
   const viewport = useWorkshopStore((s) => s.viewport);
   const activeTool = useWorkshopStore((s) => s.activeTool);
+  const isEditing = useWorkshopStore((s) => s.isEditing);
   const setViewport = useWorkshopStore((s) => s.setViewport);
   const selectObject = useWorkshopStore((s) => s.selectObject);
   const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
@@ -71,26 +77,23 @@ export function useWorkshopStageInteractions({
   );
 
   // main click behavior - This runs when the user clicks on the stage (canvas).
-  // It handles select empty canvas - cancel connect - add new task - add new sticky - add new section frame
+  // It handles selection, connection cancellation, and feature/task creation.
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      // Only handle clicks on empty canvas, not clicks on nodes (If user clicks a task card, the target is the task node, not the stage)
-      if (e.target !== stageRef.current) return;
-
       // If user clicks empty canvas while select tool is active, clear selection
       if (activeTool === "select") {
-        selectObject(null);
+        if (e.target === stageRef.current) selectObject(null);
         return;
       }
 
       // If user clicks empty canvas while connecting, cancel connection
       if (activeTool === "connect") {
-        cancelConnect();
+        if (e.target === stageRef.current) cancelConnect();
         return;
       }
 
       const kind = TOOL_TO_KIND[activeTool];
-      if (!kind) return;
+      if (!isEditing || !kind) return;
 
       // Gets mouse position
       const stage = stageRef.current;
@@ -99,8 +102,29 @@ export function useWorkshopStageInteractions({
 
       const canvasX = (pointer.x - stage.x()) / stage.scaleX();
       const canvasY = (pointer.y - stage.y()) / stage.scaleY();
+      const point = { x: canvasX, y: canvasY };
 
-      const newObj = createObject(kind, { x: canvasX, y: canvasY });
+      if (kind !== "Task" && e.target !== stageRef.current) return;
+
+      const objects = useWorkshopStore.getState().objects;
+      const containingFeature = getContainingFeature(objects, point);
+      if (kind === "Task" && !containingFeature) {
+        toast.info("Tasks must be placed inside a feature.");
+        return;
+      }
+
+      let newObj = createObject(kind, point, containingFeature?.id);
+      if (kind === "Task" && containingFeature) {
+        newObj = {
+          ...newObj,
+          ...getNextTaskPosition(
+            newObj,
+            containingFeature,
+            objects,
+            point,
+          ),
+        };
+      }
       addObject(newObj);
       openObjectDetails(newObj.id);
     },
@@ -108,6 +132,7 @@ export function useWorkshopStageInteractions({
       activeTool,
       addObject,
       cancelConnect,
+      isEditing,
       openObjectDetails,
       selectObject,
       stageRef,
@@ -134,6 +159,7 @@ export function useWorkshopStageInteractions({
   return {
     viewport,
     activeTool,
+    isEditing,
     cursorClass,
     handleWheel,
     handleStageDragEnd,

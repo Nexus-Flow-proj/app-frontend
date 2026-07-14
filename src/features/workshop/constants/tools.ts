@@ -1,8 +1,8 @@
 import type { WorkshopTool } from "../types";
 import {
-  Frame,
   GitBranch,
   Hand,
+  Layers3,
   MousePointer2,
   SquareDashedMousePointer,
   StickyNote,
@@ -42,9 +42,9 @@ export const TOOLS: ToolDef[] = [
   },
   {
     tool: "section",
-    icon: Frame,
-    label: "Add section",
-    shortcut: "S",
+    icon: Layers3,
+    label: "Add feature",
+    shortcut: "F",
   },
   {
     tool: "connect",

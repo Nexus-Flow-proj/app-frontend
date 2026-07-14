@@ -4,8 +4,8 @@ import type Konva from "konva";
 import { ConnectorLayer } from "./ConnectorLayer";
 import { MiniMap } from "./MiniMap";
 import { SectionFrameNode } from "./SectionFrameNode";
-import { StickyNoteNode } from "./StickyNoteNode";
 import { TaskCardNode } from "./TaskCardNode";
+import { StickyNoteNode } from "./StickyNoteNode";
 import GridPattern from "./GridPattern";
 import { useWorkshopStageInteractions } from "../../hooks/useWorkshopStageInteractions";
 import { useWorkshopStore } from "../../store/workshopStore";
@@ -19,6 +19,7 @@ interface WorkshopStageProps {
 export function WorkshopStage({ width, height }: WorkshopStageProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const objects = useWorkshopStore((s) => s.objects);
+  const isEditing = useWorkshopStore((s) => s.isEditing);
 
   const {
     viewport,
@@ -39,7 +40,7 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
 
   return (
     <div
-      className={`relative h-full w-full overflow-hidden bg-slate-50 ${cursorClass}`}
+      className={`relative h-full w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.08),_transparent_32%),linear-gradient(to_bottom_right,#f8fafc,#f1f5f9)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.12),_transparent_32%),linear-gradient(to_bottom_right,#111827,#0f172a)] ${cursorClass}`}
     >
       <Stage
         ref={stageRef}
@@ -68,7 +69,7 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
         </Layer>
 
         {/* Renders connectors. */}
-        <Layer listening={false}>
+        <Layer listening={isEditing}>
           <ConnectorLayer />
         </Layer>
 
@@ -76,6 +77,9 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
           {tasksObj.map((obj) => (
             <TaskCardNode key={obj.id} obj={obj} />
           ))}
+        </Layer>
+
+        <Layer>
           {stickiesObj.map((obj) => (
             <StickyNoteNode key={obj.id} obj={obj} />
           ))}

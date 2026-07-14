@@ -56,8 +56,8 @@ export type WorkshopTool =
   | "select" // default: move + resize + click
   | "pan" // hand tool: pan canvas without selecting
   | "task" // click canvas to place a TaskCard
-  | "sticky" // click canvas to place a StickyNote
-  | "section" // drag canvas to draw a SectionFrame
+  | "sticky" // click canvas to place a canvas-only sticky note
+  | "section" // click canvas to place a Feature frame
   | "connect"; // click a source node then a target to draw an edge
 
 // ─── Undo / redo snapshot ─────────────────────────────────────

@@ -15,6 +15,7 @@ export function useCanvasShortcuts() {
   const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
   const setActiveTool = useWorkshopStore((s) => s.setActiveTool);
   const cancelConnect = useWorkshopStore((s) => s.cancelConnect);
+  const isEditing = useWorkshopStore((s) => s.isEditing);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -24,16 +25,24 @@ export function useCanvasShortcuts() {
 
       const ctrl = e.ctrlKey || e.metaKey;
 
-      if (ctrl && e.key === "z" && !e.shiftKey) {
+      if (isEditing && ctrl && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
       }
-      if (ctrl && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+      if (
+        isEditing &&
+        ctrl &&
+        (e.key === "y" || (e.key === "z" && e.shiftKey))
+      ) {
         e.preventDefault();
         redo();
       }
 
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedObjectId) {
+      if (
+        isEditing &&
+        (e.key === "Delete" || e.key === "Backspace") &&
+        selectedObjectId
+      ) {
         e.preventDefault();
         deleteObject(selectedObjectId);
       }
@@ -45,10 +54,10 @@ export function useCanvasShortcuts() {
           cancelConnect();
         }
         if (e.key === "h") setActiveTool("pan");
-        if (e.key === "t") setActiveTool("task");
-        if (e.key === "n") setActiveTool("sticky");
-        if (e.key === "s") setActiveTool("section");
-        if (e.key === "c") setActiveTool("connect");
+        if (isEditing && e.key === "t") setActiveTool("task");
+        if (isEditing && e.key === "n") setActiveTool("sticky");
+        if (isEditing && e.key === "f") setActiveTool("section");
+        if (isEditing && e.key === "c") setActiveTool("connect");
       }
     };
 
@@ -61,5 +70,6 @@ export function useCanvasShortcuts() {
     selectedObjectId,
     setActiveTool,
     cancelConnect,
+    isEditing,
   ]);
 }

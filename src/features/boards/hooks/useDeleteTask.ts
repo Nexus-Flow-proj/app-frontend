@@ -23,7 +23,7 @@ export function useDeleteTask(projectId: string) {
                 removeTaskDetailCache(queryClient, taskId);
             },
             onError: (_, __, context) => {
-                if (context.previousTaskList) {
+                if (context?.previousTaskList) {
                     rollbackTaskList(
                         queryClient,
                         projectId,
@@ -33,4 +33,4 @@ export function useDeleteTask(projectId: string) {
             },
         }
     )
-} 
+}

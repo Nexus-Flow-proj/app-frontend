@@ -133,7 +133,7 @@ export function RegisterForm() {
 
       <MySeparator text="Or signup with" />
 
-      <GoogleAuthBtn isPending={isPending} pathname="register" />
+      <GoogleAuthBtn isPending={isPending} pathname="signup" />
     </form>
   );
 }

@@ -30,8 +30,8 @@ export const InviteStatus = {
   ACCEPTED: "ACCEPTED",
   REJECTED: "REJECTED",
   EXPIRED: "EXPIRED",
+  REVOKED: "REVOKED",
   CANCELLED: "CANCELLED",
-
 } as const;
 export type InviteStatus = (typeof InviteStatus)[keyof typeof InviteStatus];
 
@@ -43,8 +43,8 @@ export const ProjectStatus = {
 export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus];
 
 export const CanvasType = {
-  MAIN: "MAIN",
-  MINI: "MINI",
+  MAIN: "PROJECT",
+  MINI: "PERSONAL",
 } as const;
 export type CanvasType = (typeof CanvasType)[keyof typeof CanvasType];
 
@@ -72,7 +72,7 @@ export const NotificationType = {
   INVITATION_REJECTED: "INVITATION_REJECTED",
   INVITATION_CANCELLED: "INVITATION_CANCELLED",
 
-  REMOVED_FROM_PROJECT: "REMOVED_FROM_PROJECT"
+  REMOVED_FROM_PROJECT: "REMOVED_FROM_PROJECT",
 } as const;
 
 export type NotificationType =
@@ -83,9 +83,3 @@ export const UserRole = {
   ADMIN: "ADMIN",
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
-
-export const MemberRole = {
-  ADMIN: "ADMIN",
-  MEMBER: "MEMBER",
-} as const;
-export type MemberRole = (typeof MemberRole)[keyof typeof MemberRole];

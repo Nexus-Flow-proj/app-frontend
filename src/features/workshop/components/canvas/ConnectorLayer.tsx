@@ -2,26 +2,31 @@ import { Arrow, Text, Group } from "react-konva";
 import { useConnectorLayer } from "../../hooks/useConnectorLayer";
 
 export function ConnectorLayer() {
-  const { renderedConnections, deleteConnection } = useConnectorLayer();
+  const { renderedConnections, deleteConnection, isEditing } =
+    useConnectorLayer();
 
   return (
     <>
       {renderedConnections.map(({ conn, points, midX, midY }) => {
-        const { color, strokeWidth, dashed, arrowEnd } = conn.style;
+        const { color, strokeWidth, type } = conn.style;
+        const isArrow = type === "ARROW";
+        const isDashed = type === "DASHED";
 
         return (
-          <Group key={conn.id}>
+          <Group
+            key={conn.id}
+            listening={isEditing}
+            onDblClick={() => deleteConnection(conn.id)}
+          >
             <Arrow
               points={points}
               stroke={color}
               strokeWidth={strokeWidth}
-              fill={arrowEnd ? color : "transparent"}
-              dash={dashed ? [6, 4] : undefined}
-              pointerLength={arrowEnd ? 10 : 0}
-              pointerWidth={arrowEnd ? 8 : 0}
-              tension={0.3}
-              onClick={() => deleteConnection(conn.id)}
-              onDblClick={() => deleteConnection(conn.id)}
+              fill={isArrow ? color : "transparent"}
+              dash={isDashed ? [6, 4] : undefined}
+              pointerLength={isArrow ? 10 : 0}
+              pointerWidth={isArrow ? 8 : 0}
+              hitStrokeWidth={16}
             />
             {conn.label && (
               <Text

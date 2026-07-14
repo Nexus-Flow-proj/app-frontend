@@ -1,13 +1,15 @@
 import {
   Calendar,
-  Flag,
   Layers3,
+  ListTodo,
+  MapPin,
   StickyNote,
   Trash2,
-  User,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,39 +24,43 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { TaskPriority, TaskStatus } from "@/types/enums";
-import { PRIORITY_CONFIG, STATUS_CONFIG, STICKY_COLORS } from "../../constants";
 import { useTaskDetailDrawer } from "../../hooks/useTaskDetailDrawer";
-import { CanvasObjectType } from "@/types/enums";
-import type { WorkshopObjectKind } from "../../types";
 
 interface TaskDetailDrawerProps {
   objectId: Nullable<string>;
 }
 
+const NOTE_COLORS = [
+  { value: "#FEF3C7", label: "Warm yellow" },
+  { value: "#FCE7F3", label: "Soft pink" },
+  { value: "#DBEAFE", label: "Calm blue" },
+  { value: "#D1FAE5", label: "Fresh mint" },
+  { value: "#EDE9FE", label: "Light violet" },
+] as const;
+
 export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
   const {
-    obj,
+    object,
     form,
+    isEditing,
     isTask,
-    isSticky,
-    kindOptions,
-    statusCfg,
-    priorityCfg,
+    isNote,
+    parentFeatureTitle,
+    canSave,
     setValue,
     handleSave,
     handleDelete,
     closeObjectDetails,
   } = useTaskDetailDrawer(objectId);
-  const icon = isSticky ? (
-    <StickyNote className="h-4 w-4 text-amber-500" />
-  ) : (
-    <Layers3 className="h-4 w-4 text-primary" />
-  );
+  const Icon = isNote ? StickyNote : isTask ? ListTodo : Layers3;
+  const itemLabel = isNote ? "Sticky note" : isTask ? "Task" : "Feature";
+  const displayTitle = isNote
+    ? form.noteContent.trim().slice(0, 52) || "Canvas note"
+    : form.title || "Workshop item";
 
   return (
     <Sheet
-      open={!!objectId}
+      open={Boolean(objectId)}
       onOpenChange={(open) => !open && closeObjectDetails()}
     >
       <SheetContent
@@ -63,212 +69,145 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
       >
         <SheetHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
-            {icon}
+            <Icon className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {obj?.type === CanvasObjectType.SECTION_FRAME
-                ? "Section"
-                : form.kind}
+              {itemLabel}
             </span>
+            <Badge variant={isEditing ? "default" : "secondary"}>
+              {isEditing ? "Draft" : "Read only"}
+            </Badge>
           </div>
-          <SheetTitle className="mt-1 text-base font-semibold">
-            {isSticky ? "Sticky note" : form.title || "Workshop item"}
+          <SheetTitle className="mt-1 truncate text-base font-semibold">
+            {displayTitle}
           </SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Type
-              </label>
-              <Select
-                value={form.kind}
-                onValueChange={(value) =>
-                  setValue("kind", value as WorkshopObjectKind)
-                }
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {kindOptions.map((kind) => (
-                    <SelectItem key={kind} value={kind}>
-                      {kind}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {isSticky ? (
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Color
-                </label>
-                <div className="flex h-8 items-center gap-1.5">
-                  {STICKY_COLORS.slice(0, 6).map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className="h-5 w-5 rounded-full border border-border ring-offset-background data-[active=true]:ring-2 data-[active=true]:ring-primary"
-                      data-active={form.color === color}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setValue("color", color)}
-                      aria-label={`Use color ${color}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          {!isSticky && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Title
-              </label>
-              <Input
-                value={form.title}
-                onChange={(e) => setValue("title", e.target.value)}
-                placeholder="Item title"
-              />
-            </div>
-          )}
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              {isSticky ? "Note" : "Description"}
-            </label>
-            <Textarea
-              value={form.description}
-              onChange={(e) => setValue("description", e.target.value)}
-              className="min-h-24 resize-none text-sm"
-              placeholder="Add useful planning context"
-            />
-          </div>
-
-          {isTask && (
+          {isNote ? (
             <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Status
-                  </label>
-                  <Select
-                    value={form.status}
-                    onValueChange={(value) =>
-                      setValue("status", value as TaskStatus)
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                        <SelectItem key={key} value={key}>
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ background: cfg.dot }}
-                            />
-                            {cfg.label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <Flag className="h-3 w-3" /> Priority
-                  </label>
-                  <Select
-                    value={form.priority}
-                    onValueChange={(value) =>
-                      setValue("priority", value as TaskPriority)
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
-                        <SelectItem key={key} value={key}>
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ background: cfg.dot }}
-                            />
-                            {cfg.label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="workshop-note-content">Note</Label>
+                <Textarea
+                  id="workshop-note-content"
+                  value={form.noteContent}
+                  onChange={(event) =>
+                    setValue("noteContent", event.target.value)
+                  }
+                  className="min-h-40 resize-none text-sm"
+                  placeholder="Capture an idea or reminder"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="workshop-note-color">Color</Label>
+                <Select
+                  value={form.noteColor}
+                  onValueChange={(value) => setValue("noteColor", value)}
+                  disabled={!isEditing}
+                >
+                  <SelectTrigger id="workshop-note-color" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NOTE_COLORS.map((color) => (
+                      <SelectItem key={color.value} value={color.value}>
+                        {color.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="workshop-item-title">Title</Label>
+                <Input
+                  id="workshop-item-title"
+                  value={form.title}
+                  onChange={(event) => setValue("title", event.target.value)}
+                  placeholder={isTask ? "Task title" : "Feature title"}
+                  disabled={!isEditing}
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <User className="h-3 w-3" /> Assignee
-                  </label>
-                  <Input
-                    value={form.assigneeName}
-                    onChange={(e) => setValue("assigneeName", e.target.value)}
-                    className="h-8 text-xs"
-                    placeholder="Name"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <Calendar className="h-3 w-3" /> Due date
-                  </label>
-                  <input
-                    type="date"
-                    value={form.dueDate}
-                    onChange={(e) => setValue("dueDate", e.target.value)}
-                    className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium"
-                  style={{ background: statusCfg.bg, color: statusCfg.text }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: statusCfg.dot }}
-                  />
-                  {statusCfg.label}
-                </span>
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium"
-                  style={{
-                    background: priorityCfg.bg,
-                    color: priorityCfg.text,
-                  }}
-                >
-                  <Flag className="h-3 w-3" />
-                  {priorityCfg.label}
-                </span>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="workshop-item-description">Description</Label>
+                <Textarea
+                  id="workshop-item-description"
+                  value={form.description}
+                  onChange={(event) =>
+                    setValue("description", event.target.value)
+                  }
+                  className="min-h-28 resize-none text-sm"
+                  placeholder={
+                    isTask
+                      ? "Describe the work required"
+                      : "Describe the feature outcome"
+                  }
+                  disabled={!isEditing}
+                />
               </div>
             </>
           )}
+
+          {isTask ? (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="workshop-task-due-date"
+                  className="flex items-center gap-1.5"
+                >
+                  <Calendar className="h-3.5 w-3.5" /> Due date
+                </Label>
+                <input
+                  id="workshop-task-due-date"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(event) => setValue("dueDate", event.target.value)}
+                  disabled={!isEditing}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+              <div className="flex items-start gap-2 rounded-lg border border-violet-200 bg-violet-50/70 px-3 py-2.5 text-xs text-violet-900 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-100">
+                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <p>
+                  Contained by{" "}
+                  <span className="font-semibold">
+                    {parentFeatureTitle ?? "its canvas feature"}
+                  </span>
+                  . Move the card inside that feature; assignment is automatic.
+                </p>
+              </div>
+            </>
+          ) : null}
+
+          {!isEditing ? (
+            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+              Enable edit mode to change this {itemLabel.toLocaleLowerCase()}.
+              {isNote
+                ? " Sticky notes stay in the Workshop."
+                : " Board-only fields are managed from the Team Board."}
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between border-t border-border px-6 py-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs text-destructive hover:text-destructive"
-            onClick={handleDelete}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Delete
-          </Button>
+          {isEditing ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs text-destructive hover:text-destructive"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </Button>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              Published canvas
+            </span>
+          )}
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -276,11 +215,18 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
               className="h-8 text-xs"
               onClick={closeObjectDetails}
             >
-              Cancel
+              {isEditing ? "Cancel" : "Close"}
             </Button>
-            <Button size="sm" className="h-8 text-xs" onClick={handleSave}>
-              Save
-            </Button>
+            {isEditing ? (
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={handleSave}
+                disabled={!object || !canSave}
+              >
+                Save to draft
+              </Button>
+            ) : null}
           </div>
         </div>
       </SheetContent>

@@ -1,7 +1,11 @@
-import { useParams } from "react-router";
-import { useMockWorkshop } from "./useMockWorkshop";
+import { useNavigate, useParams } from "react-router";
+import { ROUTES } from "@/constants/routing";
+import { useProjectStore } from "@/store/projectStore";
+import { useWorkshopCanvas } from "./useWorkshopCanvas";
+import { usePublishWorkshopPlan } from "./usePublishWorkshopPlan";
 import { useWorkshopStore } from "../store/workshopStore";
 import type { WorkshopObjectKind } from "../types";
+import { toast } from "sonner";
 
 interface StageSize {
   width: number;
@@ -9,10 +13,32 @@ interface StageSize {
 }
 
 export function useWorkshopHeader(stageSize: StageSize) {
-  const { id: projectId } = useParams();
-  const { objects, viewport, addItem, setViewport } = useMockWorkshop();
-  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
-  const isDirty = useWorkshopStore((s) => s.isDirty);
+  const { id: routeProjectId } = useParams<{ id: string }>();
+  const projectId = routeProjectId ?? "";
+  const navigate = useNavigate();
+  const canEdit = useProjectStore(
+    (state) =>
+      state.isAdmin() ||
+      state.hasAllPermissions([
+        "workshop.createNodes",
+        "workshop.updateNodes",
+        "workshop.deleteNodes",
+        "tasks.create",
+        "tasks.update",
+        "tasks.delete",
+        "board.manageColumns",
+      ]),
+  );
+  const { objects, viewport, addItem, setViewport } = useWorkshopCanvas();
+  const openObjectDetails = useWorkshopStore(
+    (state) => state.openObjectDetails,
+  );
+  const isDirty = useWorkshopStore((state) => state.isDirty);
+  const isEditing = useWorkshopStore((state) => state.isEditing);
+  const isPublishing = useWorkshopStore((state) => state.isPublishing);
+  const beginEdit = useWorkshopStore((state) => state.beginEdit);
+  const discardDraft = useWorkshopStore((state) => state.discardDraft);
+  const publishPlan = usePublishWorkshopPlan(projectId);
 
   const canvasPointAtCenter = () => ({
     x: (stageSize.width / 2 - viewport.x) / viewport.scale,
@@ -24,8 +50,13 @@ export function useWorkshopHeader(stageSize: StageSize) {
   };
 
   const handleAddItem = (kind: WorkshopObjectKind) => {
-    const id = addItem(kind, canvasPointAtCenter());
-    openObjectDetails(id);
+    if (!isEditing) return;
+    const item = addItem(kind, canvasPointAtCenter());
+    if (!item) {
+      toast.info("Select a feature before adding a task.");
+      return;
+    }
+    openObjectDetails(item.id);
   };
 
   const handleFitView = () => {
@@ -39,22 +70,25 @@ export function useWorkshopHeader(stageSize: StageSize) {
     }
 
     const bounds = objects.reduce(
-      (acc, obj) => ({
-        minX: Math.min(acc.minX, obj.x),
-        minY: Math.min(acc.minY, obj.y),
-        maxX: Math.max(acc.maxX, obj.x + obj.width),
-        maxY: Math.max(acc.maxY, obj.y + obj.height),
+      (accumulator, object) => ({
+        minX: Math.min(accumulator.minX, object.x),
+        minY: Math.min(accumulator.minY, object.y),
+        maxX: Math.max(accumulator.maxX, object.x + object.width),
+        maxY: Math.max(accumulator.maxY, object.y + object.height),
       }),
       { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
     );
     const padding = 96;
-    const contentW = bounds.maxX - bounds.minX + padding * 2;
-    const contentH = bounds.maxY - bounds.minY + padding * 2;
+    const contentWidth = bounds.maxX - bounds.minX + padding * 2;
+    const contentHeight = bounds.maxY - bounds.minY + padding * 2;
     const scale = Math.min(
       1.15,
       Math.max(
         0.28,
-        Math.min(stageSize.width / contentW, stageSize.height / contentH),
+        Math.min(
+          stageSize.width / contentWidth,
+          stageSize.height / contentHeight,
+        ),
       ),
     );
 
@@ -68,6 +102,13 @@ export function useWorkshopHeader(stageSize: StageSize) {
   return {
     projectId,
     isDirty,
+    isEditing,
+    isPublishing,
+    canEdit,
+    beginEdit,
+    discardDraft,
+    publishPlan: () => publishPlan.mutate(),
+    openBoard: () => projectId && navigate(ROUTES.BOARDS(projectId)),
     handleAddItem,
     handleFitView,
     handleResetView,

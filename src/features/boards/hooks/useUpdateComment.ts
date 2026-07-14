@@ -7,8 +7,12 @@ import { mapComment } from "../mappers/task.mapper";
 
 import type { UpdateCommentDto } from "../types/api/board-api.types";
 import { updateCommentInCache } from "../cache/task-detail.cache";
+import type { BoardMember } from "../types";
 
-export function useUpdateComment(taskId: string) {
+export function useUpdateComment(
+    taskId: string,
+    fallbackAuthor?: BoardMember,
+) {
     const queryClient = useQueryClient();
 
     return useApiMutation(
@@ -22,7 +26,11 @@ export function useUpdateComment(taskId: string) {
 
         {
             onSuccess: (res) => {
-                const updated = mapComment(res.data, taskId);
+                const updated = mapComment(
+                    res.data,
+                    taskId,
+                    fallbackAuthor,
+                );
                 updateCommentInCache(queryClient, taskId, updated);
             },
         }

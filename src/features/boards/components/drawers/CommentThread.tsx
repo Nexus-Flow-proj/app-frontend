@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Send } from "lucide-react";
+import { Check, Pencil, Send, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Comment, BoardMember } from "../../types";
@@ -12,11 +12,16 @@ interface CommentThreadProps {
   comments: Comment[];
   currentUser: BoardMember;
   onAddComment: (content: string) => void;
+  onUpdateComment: (commentId: string, content: string) => void;
+  onDeleteComment: (commentId: string) => void;
   isSubmitting?: boolean;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
 }
 
 function Avatar({ member }: { member: BoardMember }) {
-  const initials = member.name
+  const displayName = member.name || "Unknown user";
+  const initials = displayName
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -26,7 +31,7 @@ function Avatar({ member }: { member: BoardMember }) {
     return (
       <img
         src={member.avatarUrl}
-        alt={member.name}
+        alt={displayName}
         className="size-7 rounded-full object-cover shrink-0"
       />
     );
@@ -42,15 +47,38 @@ export function CommentThread({
   comments,
   currentUser,
   onAddComment,
+  onUpdateComment,
+  onDeleteComment,
   isSubmitting,
+  isUpdating,
+  isDeleting,
 }: CommentThreadProps) {
   const [value, setValue] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const submit = () => {
     const trimmed = value.trim();
     if (!trimmed || isSubmitting) return;
     onAddComment(trimmed);
     setValue("");
+  };
+
+  const startEdit = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditValue(comment.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingCommentId(null);
+    setEditValue("");
+  };
+
+  const submitEdit = (commentId: string) => {
+    const trimmed = editValue.trim();
+    if (!trimmed || isUpdating) return;
+    onUpdateComment(commentId, trimmed);
+    cancelEdit();
   };
 
   return (
@@ -68,26 +96,91 @@ export function CommentThread({
         <p className="text-sm text-muted-foreground italic">No comments yet.</p>
       ) : (
         <div className="space-y-4">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-2.5">
-              <Avatar member={comment.author} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-xs font-semibold text-foreground">
-                    {comment.author.name}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground leading-relaxed bg-muted/50 border border-border rounded-xl rounded-tl-sm px-3 py-2">
-                  {comment.content}
+          {comments.map((comment) => {
+            const canManage = comment.authorId === currentUser.id;
+            const isEditing = editingCommentId === comment.id;
+
+            return (
+              <div key={comment.id} className="flex gap-2.5">
+                <Avatar member={comment.author} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-foreground">
+                      {comment.author.name || "Unknown user"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(comment.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                    {canManage && !isEditing && (
+                      <div className="ml-auto flex items-center gap-0.5">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 text-muted-foreground"
+                          onClick={() => startEdit(comment)}
+                        >
+                          <Pencil className="size-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 text-muted-foreground hover:text-destructive"
+                          disabled={isDeleting}
+                          onClick={() => onDeleteComment(comment.id)}
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            submitEdit(comment.id);
+                          }
+                        }}
+                        rows={2}
+                        className="resize-none text-sm"
+                      />
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={cancelEdit}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          className="size-7"
+                          disabled={!editValue.trim() || isUpdating}
+                          onClick={() => submitEdit(comment.id)}
+                        >
+                          <Check className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground leading-relaxed bg-muted/50 border border-border rounded-xl rounded-tl-sm px-3 py-2">
+                      {comment.content}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

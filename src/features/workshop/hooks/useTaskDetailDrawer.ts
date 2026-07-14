@@ -1,178 +1,149 @@
 import { useState } from "react";
-import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
-import { PRIORITY_CONFIG, STATUS_CONFIG } from "../constants";
+import { CanvasObjectType } from "@/types/enums";
 import { useWorkshopStore } from "../store/workshopStore";
 import type {
   CanvasObject,
   SectionFrameData,
-  SectionFrameKind,
   StickyNoteData,
-  StickyNoteKind,
   TaskCardData,
-  TaskCardKind,
-  WorkshopObjectKind,
 } from "../types";
 
-export type TaskDetailFormState = {
-  kind: WorkshopObjectKind;
+export interface WorkshopDetailFormState {
   title: string;
   description: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  assigneeName: string;
   dueDate: string;
-  color: string;
-};
+  noteContent: string;
+  noteColor: string;
+}
 
-const defaultForm: TaskDetailFormState = {
-  kind: "Task",
+const emptyForm: WorkshopDetailFormState = {
   title: "",
   description: "",
-  status: TaskStatus.BACKLOG,
-  priority: TaskPriority.MEDIUM,
-  assigneeName: "",
   dueDate: "",
-  color: "#FEF08A",
+  noteContent: "",
+  noteColor: "#FEF3C7",
 };
 
-const TASK_KIND_OPTIONS: TaskCardKind[] = [
-  "Task",
-  "Milestone",
-  "Decision",
-  "Risk",
-];
-const STICKY_KIND_OPTIONS: StickyNoteKind[] = ["Note"];
-const SECTION_KIND_OPTIONS: SectionFrameKind[] = ["Project", "Phase"];
+function formFromObject(object: CanvasObject | null): WorkshopDetailFormState {
+  if (!object) return emptyForm;
 
-function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
-  if (!obj) return defaultForm;
-
-  if (obj.type === CanvasObjectType.TASK_CARD) {
-    const data = obj.data as TaskCardData;
+  if (object.type === CanvasObjectType.TASK_CARD) {
+    const data = object.data as TaskCardData;
     return {
-      kind: data.kind ?? "Task",
+      ...emptyForm,
       title: data.title,
       description: data.description ?? "",
-      status: data.status,
-      priority: data.priority,
-      assigneeName: data.assigneeName ?? "",
       dueDate: data.dueDate ?? "",
-      color: defaultForm.color,
     };
   }
 
-  if (obj.type === CanvasObjectType.STICKY_NOTE) {
-    const data = obj.data as StickyNoteData;
+  if (object.type === CanvasObjectType.STICKY_NOTE) {
+    const data = object.data as StickyNoteData;
     return {
-      ...defaultForm,
-      kind: data.kind ?? "Note",
-      title: "Sticky note",
-      description: data.content,
-      color: data.color,
+      ...emptyForm,
+      noteContent: data.content,
+      noteColor: data.color,
     };
   }
 
-  if (obj.type === CanvasObjectType.SECTION_FRAME) {
-    const data = obj.data as SectionFrameData;
-    return {
-      ...defaultForm,
-      kind: data.kind ?? "Phase",
-      title: data.title,
-      description: data.description ?? "",
-      color: data.backgroundColor,
-    };
-  }
-
-  return defaultForm;
+  const data = object.data as SectionFrameData;
+  return {
+    ...emptyForm,
+    title: data.title,
+    description: data.description ?? "",
+  };
 }
 
 export function useTaskDetailDrawer(objectId: Nullable<string>) {
-  const objects = useWorkshopStore((s) => s.objects);
-  const updateObject = useWorkshopStore((s) => s.updateObject);
-  const deleteObject = useWorkshopStore((s) => s.deleteObject);
-  const closeObjectDetails = useWorkshopStore((s) => s.closeObjectDetails);
-  const obj = objectId
+  const objects = useWorkshopStore((state) => state.objects);
+  const isEditing = useWorkshopStore((state) => state.isEditing);
+  const updateObject = useWorkshopStore((state) => state.updateObject);
+  const deleteObject = useWorkshopStore((state) => state.deleteObject);
+  const closeObjectDetails = useWorkshopStore(
+    (state) => state.closeObjectDetails,
+  );
+  const object = objectId
     ? (objects.find((item) => item.id === objectId) ?? null)
     : null;
-
-  const [form, setForm] = useState<TaskDetailFormState>(() =>
-    formFromObject(obj),
+  const [form, setForm] = useState<WorkshopDetailFormState>(() =>
+    formFromObject(object),
   );
+  const isTask = object?.type === CanvasObjectType.TASK_CARD;
+  const isNote = object?.type === CanvasObjectType.STICKY_NOTE;
+  const taskData = isTask ? (object.data as TaskCardData) : null;
+  const parentFeature = taskData?.featureId
+    ? objects.find((item) => item.id === taskData.featureId)
+    : null;
 
-  const setValue = <K extends keyof TaskDetailFormState>(
+  const setValue = <K extends keyof WorkshopDetailFormState>(
     key: K,
-    value: TaskDetailFormState[K],
+    value: WorkshopDetailFormState[K],
   ) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
   const handleSave = () => {
-    if (!obj || !form.title.trim()) return;
+    if (!isEditing || !object) return;
 
-    if (obj.type === CanvasObjectType.TASK_CARD) {
-      updateObject(obj.id, {
+    if (object.type === CanvasObjectType.TASK_CARD && form.title.trim()) {
+      updateObject(object.id, {
         data: {
-          ...(obj.data as TaskCardData),
-          kind: form.kind as TaskCardKind,
+          ...(object.data as TaskCardData),
+          kind: "Task",
           title: form.title.trim(),
           description: form.description.trim() || undefined,
-          status: form.status,
-          priority: form.priority,
-          assigneeName: form.assigneeName.trim() || undefined,
           dueDate: form.dueDate || undefined,
         },
       });
-    }
-
-    if (obj.type === CanvasObjectType.STICKY_NOTE) {
-      updateObject(obj.id, {
+    } else if (
+      object.type === CanvasObjectType.SECTION_FRAME &&
+      form.title.trim()
+    ) {
+      updateObject(object.id, {
         data: {
-          ...(obj.data as StickyNoteData),
-          kind: form.kind as StickyNoteKind,
-          content: form.description.trim() || "Empty note",
-          color: form.color,
-        },
-      });
-    }
-
-    if (obj.type === CanvasObjectType.SECTION_FRAME) {
-      updateObject(obj.id, {
-        data: {
-          ...(obj.data as SectionFrameData),
-          kind: form.kind as SectionFrameKind,
+          ...(object.data as SectionFrameData),
+          kind: "Feature",
           title: form.title.trim(),
           description: form.description.trim() || undefined,
-          backgroundColor: form.color,
         },
       });
+    } else if (
+      object.type === CanvasObjectType.STICKY_NOTE &&
+      form.noteContent.trim()
+    ) {
+      updateObject(object.id, {
+        data: {
+          ...(object.data as StickyNoteData),
+          kind: "Note",
+          content: form.noteContent.trim(),
+          color: form.noteColor,
+        },
+      });
+    } else {
+      return;
     }
 
     closeObjectDetails();
   };
 
   const handleDelete = () => {
-    if (!obj) return;
-    deleteObject(obj.id);
+    if (!isEditing || !object) return;
+    deleteObject(object.id);
     closeObjectDetails();
   };
 
-  const isTask = obj?.type === CanvasObjectType.TASK_CARD;
-  const isSticky = obj?.type === CanvasObjectType.STICKY_NOTE;
-  const kindOptions: WorkshopObjectKind[] =
-    obj?.type === CanvasObjectType.SECTION_FRAME
-      ? SECTION_KIND_OPTIONS
-      : isSticky
-        ? STICKY_KIND_OPTIONS
-        : TASK_KIND_OPTIONS;
-
   return {
-    obj,
+    object,
     form,
+    isEditing,
     isTask,
-    isSticky,
-    kindOptions,
-    statusCfg: STATUS_CONFIG[form.status] ?? STATUS_CONFIG.BACKLOG,
-    priorityCfg: PRIORITY_CONFIG[form.priority] ?? PRIORITY_CONFIG.LOW,
+    isNote,
+    parentFeatureTitle: parentFeature
+      ? (parentFeature.data as SectionFrameData).title
+      : null,
+    canSave: isNote
+      ? Boolean(form.noteContent.trim())
+      : Boolean(form.title.trim()),
     setValue,
     handleSave,
     handleDelete,

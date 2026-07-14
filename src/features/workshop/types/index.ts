@@ -1,5 +1,6 @@
 import type { CanvasObjectType, TaskStatus, CanvasType } from "@/types/enums";
 import type { CanvasObjectData } from "./canvasObjectData";
+import type { User } from "@/types";
 
 export * from "./canvasObjectData";
 export * from "./workshopKinds";
@@ -9,6 +10,7 @@ export * from "./workshopStore";
 export interface Canvas {
   id: string;
   projectId: string;
+  owner: User;
   type: CanvasType;
   objects: CanvasObject[];
   connections: CanvasConnection[];
@@ -40,8 +42,7 @@ export interface CanvasConnection {
 export interface ConnectionStyle {
   color: string;
   strokeWidth: number;
-  dashed: boolean;
-  arrowEnd: boolean;
+  type: "ARROW" | "LINE" | "DASHED";
 }
 
 export interface CanvasViewport {
@@ -55,8 +56,8 @@ export type WorkshopTool =
   | "select" // default: move + resize + click
   | "pan" // hand tool: pan canvas without selecting
   | "task" // click canvas to place a TaskCard
-  | "sticky" // click canvas to place a StickyNote
-  | "section" // drag canvas to draw a SectionFrame
+  | "sticky" // click canvas to place a canvas-only sticky note
+  | "section" // click canvas to place a Feature frame
   | "connect"; // click a source node then a target to draw an edge
 
 // ─── Undo / redo snapshot ─────────────────────────────────────

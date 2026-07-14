@@ -1,71 +1,57 @@
-import { CanvasObjectType } from "@/types";
+import { ListTodo, StickyNote } from "lucide-react";
+import { CanvasObjectType } from "@/types/enums";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import type {
   CanvasObject,
-  SectionFrameData,
   StickyNoteData,
   TaskCardData,
 } from "../../types";
-import { Frame, SquareDashedMousePointer, StickyNote } from "lucide-react";
-import { STATUS_CONFIG } from "../../constants";
-import { cn } from "@/lib/utils";
+import type { DraftChange } from "../../utils/workshopPlan";
+
+interface ObjectListItemProps {
+  obj: CanvasObject;
+  isSelected: boolean;
+  change: DraftChange;
+  onClick: () => void;
+}
 
 function ObjectListItem({
   obj,
   isSelected,
+  change,
   onClick,
-}: {
-  obj: CanvasObject;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  const getTitle = (): string => {
-    if (obj.type === CanvasObjectType.TASK_CARD) {
-      return (obj.data as TaskCardData).title;
-    }
-    if (obj.type === CanvasObjectType.SECTION_FRAME) {
-      return (obj.data as SectionFrameData).title;
-    }
-    return (obj.data as StickyNoteData).content?.slice(0, 40) ?? "Sticky note";
-  };
-
-  const getIcon = () => {
-    if (obj.type === CanvasObjectType.TASK_CARD) {
-      return (
-        <SquareDashedMousePointer className="h-3.5 w-3.5 shrink-0 text-primary" />
-      );
-    }
-    if (obj.type === CanvasObjectType.STICKY_NOTE) {
-      return <StickyNote className="h-3.5 w-3.5 shrink-0 text-amber-500" />;
-    }
-    return <Frame className="h-3.5 w-3.5 shrink-0 text-blue-500" />;
-  };
-
-  const getStatus = () => {
-    if (obj.type !== CanvasObjectType.TASK_CARD) return null;
-    const data = obj.data as TaskCardData;
-    const cfg = STATUS_CONFIG[data.status];
-
-    return cfg ? (
-      <span className="ml-auto text-[10px]" style={{ color: cfg.text }}>
-        {cfg.label}
-      </span>
-    ) : null;
-  };
+}: ObjectListItemProps) {
+  const isNote = obj.type === CanvasObjectType.STICKY_NOTE;
+  const label = isNote
+    ? (obj.data as StickyNoteData).content
+    : (obj.data as TaskCardData).title;
+  const Icon = isNote ? StickyNote : ListTodo;
 
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
+        "h-8 w-full justify-start gap-2 rounded-md pl-8 pr-2 text-xs font-normal",
         isSelected
-          ? "bg-primary/10 text-primary"
-          : "text-foreground hover:bg-accent",
+          ? "bg-primary/10 text-primary hover:bg-primary/15"
+          : "text-muted-foreground hover:bg-accent hover:text-foreground",
       )}
     >
-      {getIcon()}
-      <span className="flex-1 truncate">{getTitle()}</span>
-      {getStatus()}
-    </button>
+      <Icon className="h-3.5 w-3.5 shrink-0" />
+      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+      {change !== "UNCHANGED" ? (
+        <Badge
+          variant={change === "ADDED" ? "default" : "secondary"}
+          className="h-4 px-1.5 text-[9px]"
+        >
+          {change === "ADDED" ? "New" : "Edited"}
+        </Badge>
+      ) : null}
+    </Button>
   );
 }
 

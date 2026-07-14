@@ -97,6 +97,7 @@ function createTaskDetail(task: Task): TaskDetail {
     subtasks: [],
     comments: [],
     activityLog: [],
+    attachments: [],
   };
 }
 
@@ -250,7 +251,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       createdAt: new Date().toISOString(),
       assignee: input.assignee ?? null,
       subtasksCount: 0,
-      completedsubtasksCount: 0,
+      completedSubtasksCount: 0,
       commentsCount: 0,
       attachmentsCount: 0,
       tags: input.tags ?? [],
@@ -367,12 +368,12 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       const subtask = activeTask.subtasks.find((item) => item.id === subtaskId);
       if (!subtask || subtask.completed === completed) return {};
 
-      const completedsubtasksCount = completed
-        ? (activeTask.completedsubtasksCount ?? 0) + 1
-        : Math.max((activeTask.completedsubtasksCount ?? 0) - 1, 0);
+      const completedSubtasksCount = completed
+        ? (activeTask.completedSubtasksCount ?? 0) + 1
+        : Math.max((activeTask.completedSubtasksCount ?? 0) - 1, 0);
       const nextActiveTask: TaskDetail = {
         ...activeTask,
-        completedsubtasksCount,
+        completedSubtasksCount,
         subtasks: activeTask.subtasks.map((item) =>
           item.id === subtaskId ? { ...item, completed } : item,
         ),
@@ -380,7 +381,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
-          completedsubtasksCount,
+          completedSubtasksCount,
         }),
         drawer: {
           ...state.drawer,
@@ -433,21 +434,21 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       if (!deletedSubtask) return {};
 
       const subtasksCount = Math.max((activeTask.subtasksCount ?? 0) - 1, 0);
-      const completedsubtasksCount = deletedSubtask.completed
-        ? Math.max((activeTask.completedsubtasksCount ?? 0) - 1, 0)
-        : activeTask.completedsubtasksCount;
+      const completedSubtasksCount = deletedSubtask.completed
+        ? Math.max((activeTask.completedSubtasksCount ?? 0) - 1, 0)
+        : activeTask.completedSubtasksCount;
 
       return {
         boardState: patchBoardTask(state.boardState, activeTask.id, {
           subtasksCount,
-          completedsubtasksCount,
+          completedSubtasksCount,
         }),
         drawer: {
           ...state.drawer,
           activeTask: {
             ...activeTask,
             subtasksCount,
-            completedsubtasksCount,
+            completedSubtasksCount,
             subtasks: activeTask.subtasks.filter(
               (item) => item.id !== subtaskId,
             ),

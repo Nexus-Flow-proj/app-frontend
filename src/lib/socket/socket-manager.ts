@@ -47,6 +47,21 @@ export class SocketManager {
         this.socket.on(SOCKET_EVENTS.CONNECTION.CONNECT_ERROR, (error) => {
             console.error("❌ Connection Error:", error);
         });
+        // Reconnect Attempt
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_ATTEMPT, attempt => {
+            console.log("Reconnecting...", attempt);
+        });
+        // Reconnected
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT, attempt => {
+            console.log("Reconnected after", attempt, "attempts");
+        });
+        // Reconnect Failed
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_FAILED, () => {
+            console.error("Failed to reconnect.");
+        });
+
+
+
         // Optional: for debugging
         if (import.meta.env.DEV) {
             this.socket.onAny(event => {

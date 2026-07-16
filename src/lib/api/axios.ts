@@ -1,5 +1,4 @@
 import { BASE_URL, CSRF_TOKEN_HEADER } from "@/constants/BackendApisConfig";
-import { navigateToLogin } from "@/router/navigation";
 import { useAuthStore } from "@/store";
 import type { ApiError } from "@/types";
 import axios, {
@@ -14,12 +13,19 @@ import {
   isTokenRefreshing,
   processRefreshQueue,
   setTokenRefreshing,
+  shouldEndSession,
   shouldAttemptRefresh,
   waitForTokenRefresh,
   type RetryableRequestConfig,
 } from "./refresh";
-import { AUTH_REFRESH_PATH } from "./routes";
+import {
+  AUTH_REFRESH_PATH,
+  getRequestPath,
+  isPublicAuthPath,
+  isSessionProbePath,
+} from "./routes";
 import { queryClient } from "../queryClient";
+import { clearSessionCache, isSessionInvalid } from "./session";
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -33,6 +39,15 @@ export const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const method = config.method?.toLowerCase() ?? "get";
+    const path = getRequestPath(config.url);
+
+    if (
+      isSessionInvalid() &&
+      !isPublicAuthPath(path) &&
+      !isSessionProbePath(path)
+    ) {
+      throw new axios.CanceledError("The session is no longer active.");
+    }
 
     if (!SAFE_METHODS.has(method)) {
       const csrf = getCsrfToken();
@@ -48,15 +63,22 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log("success response", response);
     return response;
   },
   async (error: AxiosError<ApiError>) => {
-    console.log(error);
-
     const originalRequest = error.config as RetryableRequestConfig | undefined;
 
     if (!originalRequest) {
+      return Promise.reject(normalizeApiError(error));
+    }
+
+    if (isSessionInvalid()) {
+      return Promise.reject(normalizeApiError(error));
+    }
+
+    if (shouldEndSession(originalRequest, error.response?.status)) {
+      useAuthStore.getState().logout();
+      await clearSessionCache(queryClient);
       return Promise.reject(normalizeApiError(error));
     }
 
@@ -84,11 +106,7 @@ api.interceptors.response.use(
 
       processRefreshQueue(normalizedRefreshError);
       useAuthStore.getState().logout();
-      queryClient.clear();
-
-      if (typeof window !== "undefined") {
-        await navigateToLogin();
-      }
+      await clearSessionCache(queryClient);
 
       return Promise.reject(normalizedRefreshError);
     } finally {

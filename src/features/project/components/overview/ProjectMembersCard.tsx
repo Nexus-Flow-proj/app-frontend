@@ -1,6 +1,8 @@
-import { UsersRoundIcon } from "lucide-react";
+import { ArrowRightIcon, UsersRoundIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -14,12 +16,14 @@ interface ProjectMembersCardProps {
   members: ProjectMemberSummary[];
   adminCount: number;
   isLoading: boolean;
+  onOpenMembers: () => void;
 }
 
 export function ProjectMembersCard({
   members,
   adminCount,
   isLoading,
+  onOpenMembers,
 }: ProjectMembersCardProps) {
   return (
     <Card className="h-full rounded-lg">
@@ -29,6 +33,18 @@ export function ProjectMembersCard({
           {members.length} connected member{members.length === 1 ? "" : "s"} ·{" "}
           {adminCount} admin{adminCount === 1 ? "" : "s"}
         </CardDescription>
+        <CardAction>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onOpenMembers}
+          >
+            <UsersRoundIcon className="size-4" />
+            Members
+            <ArrowRightIcon className="size-4" />
+          </Button>
+        </CardAction>
       </CardHeader>
       <CardContent>
         {isLoading ? (

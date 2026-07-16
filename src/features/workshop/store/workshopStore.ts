@@ -140,8 +140,7 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
               style: {
                 color: "#9063EB",
                 strokeWidth: 2,
-                dashed: false,
-                arrowEnd: true,
+                type: "ARROW",
               },
             },
           ],

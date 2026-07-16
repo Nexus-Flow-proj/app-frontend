@@ -22,6 +22,11 @@ import {
 } from "../cache/task-detail.cache";
 import { mapBoardMember } from "../mappers";
 
+type TaskUpdatePatch = Partial<TaskUpdatedData> & {
+    assigneeId?: string | null;
+    boardColumnId?: string;
+};
+
 export function useUpdateTask(
     projectId: string,
     taskId: string,
@@ -84,6 +89,73 @@ export function useUpdateTask(
         },
     );
 }
+
+interface UpdateTaskByIdVariables {
+    taskId: string;
+    dto: UpdateTaskDto;
+}
+
+export function useUpdateTaskById(projectId: string) {
+    const queryClient = useQueryClient();
+
+    return useApiMutation(
+        ({ taskId, dto }: UpdateTaskByIdVariables) =>
+            taskService.updateTask(taskId, dto),
+
+        {
+            showSuccessToast: false,
+
+            onMutate: async ({ taskId, dto }) => {
+                const previousTaskDetail = await snapshotTaskDetail(
+                    queryClient,
+                    taskId,
+                );
+
+                const { previousTaskList } =
+                    await updateTaskInListCache(
+                        queryClient,
+                        projectId,
+                        taskId,
+                        (task) => updateTaskList(task, dto),
+                    );
+
+                updateTaskDetailCache(
+                    queryClient,
+                    taskId,
+                    (old) => updateTaskDetail(old, dto),
+                );
+
+                return {
+                    previousTaskList,
+                    previousTaskDetail,
+                };
+            },
+
+            onSuccess: (_, { taskId }) => {
+                invalidateTaskList(queryClient, projectId);
+                invalidateTaskDetail(queryClient, taskId);
+            },
+
+            onError: (_, { taskId }, context) => {
+                if (context?.previousTaskList) {
+                    rollbackTaskList(
+                        queryClient,
+                        projectId,
+                        context.previousTaskList,
+                    );
+                }
+
+                if (context?.previousTaskDetail) {
+                    rollbackTaskDetail(
+                        queryClient,
+                        taskId,
+                        context.previousTaskDetail,
+                    );
+                }
+            },
+        },
+    );
+}
 // Keep this helper synchronized with UpdateTaskDto.
 // export function updateTask<T extends Task | TaskDetail>(
 //     task: T,
@@ -124,7 +196,7 @@ export function useUpdateTask(
 // }
 export function updateTaskDetail(
     task: TaskDetail,
-    dto: TaskUpdatedData,
+    dto: TaskUpdatePatch,
 ): TaskDetail {
     return {
         ...task,
@@ -141,13 +213,21 @@ export function updateTaskDetail(
             dto.deadline ?? task.dueDate,
 
         boardColumnId:
-            dto.boardColumn?.id ?? task.boardColumnId,
+            dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
         columnOrder: dto.columnOrder ?? task.columnOrder,
         updatedAt: dto.updated_at ?? task.updatedAt,
         status: dto.status ?? task.status,
         attachmentsCount: task.attachmentsCount,
         source: dto.source ?? task.source,
-        assignee: mapBoardMember(dto.assignee) ?? task.assignee,
+        assignee: dto.assignee === undefined
+            ? task.assignee
+            : dto.assignee
+                ? mapBoardMember(dto.assignee)
+                : null,
+        tags:
+            dto.label !== undefined
+                ? dto.label ? [dto.label] : []
+                : task.tags,
         attachments: dto.attachments ?? task.attachments,
     };
 
@@ -157,7 +237,7 @@ export function updateTaskDetail(
 // Keep this helper synchronized with UpdateTaskDto.
 export function updateTaskList(
     task: Task,
-    dto: TaskUpdatedData,
+    dto: TaskUpdatePatch,
 ): Task {
     return {
         ...task,
@@ -169,13 +249,21 @@ export function updateTaskList(
         dueDate:
             dto.deadline ?? task.dueDate,
         boardColumnId:
-            dto.boardColumn?.id ?? task.boardColumnId,
+            dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
         columnOrder: dto.columnOrder ?? task.columnOrder,
         updatedAt: dto.updated_at ?? task.updatedAt,
         status: dto.status ?? task.status,
         attachmentsCount: task.attachmentsCount,
         source: dto.source ?? task.source,
-        assignee: mapBoardMember(dto.assignee) ?? task.assignee,
+        assignee: dto.assignee === undefined
+            ? task.assignee
+            : dto.assignee
+                ? mapBoardMember(dto.assignee)
+                : null,
+        tags:
+            dto.label !== undefined
+                ? dto.label ? [dto.label] : []
+                : task.tags,
 
     };
 }

@@ -5,15 +5,16 @@ import { Badge } from "@/components/ui/badge";
 interface GoogleAuthBtnProps {
   isPending: boolean;
   text?: string;
+  pathname: string;
 }
 
-function GoogleAuthBtn({ isPending, text }: GoogleAuthBtnProps) {
+function GoogleAuthBtn({ isPending, text, pathname }: GoogleAuthBtnProps) {
   return (
     <Button
       type="button"
       variant="secondary"
       size="lg"
-      onClick={handleGoogleAuth}
+      onClick={() => handleGoogleAuth(pathname)}
       disabled={isPending}
       className="w-full font-bold"
     >

@@ -1,29 +1,24 @@
-import { useAuthStore } from "@/store";
-import { useMe } from "@/features/auth/hooks";
-import Loading from "@/components/shared/loading/Loading";
 import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
-import { getCsrfToken } from "@/lib/api/csrf";
+import Loading from "@/components/shared/loading/Loading";
+import { useMe } from "@/features/auth/hooks";
+import { markSessionActive } from "@/lib/api/session";
+import { useAuthStore } from "@/store";
 
 export function AuthGuard() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("CSRF Token", getCsrfToken());
-
   const setAuth = useAuthStore((s) => s.setAuth);
   const location = useLocation();
-  const { data, isError, isFetching, isPending } = useMe(!isAuthenticated);
-  console.log("useMe Data", data);
+  const { data: session, isError, isFetching, isPending } = useMe(!isAuthenticated);
 
   useEffect(() => {
-    if (!isAuthenticated && data?.user) {
-      console.log("inside useEffect Auth", data.user);
-
-      setAuth(data.user);
+    if (!isAuthenticated && session?.user) {
+      markSessionActive();
+      setAuth(session.user);
     }
-  }, [data?.user, isAuthenticated, setAuth]);
+  }, [session?.user, isAuthenticated, setAuth]);
 
-  if (isAuthenticated || data?.user) {
+  if (isAuthenticated || session?.user) {
     return <Outlet />;
   }
 
@@ -35,5 +30,5 @@ export function AuthGuard() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <Loading fullPage text="Checking your session..." />;
+  return <Navigate to="/login" state={{ from: location }} replace />;
 }

@@ -3,7 +3,7 @@ import type {
   AuthResponseData,
   RefreshResponseData,
 } from "../types/auth-response";
-import type { ApiResponse, InvitePreview } from "@/types";
+import type { ApiResponse } from "@/types";
 import type {
   ForgotPasswordDto,
   LoginDto,
@@ -14,6 +14,13 @@ import type {
 export const authService = {
   me: () =>
     api.get<ApiResponse<AuthResponseData>>("/auth/me").then((r) => r.data),
+
+  optionalMe: () =>
+    api
+      .get<ApiResponse<AuthResponseData>>("/auth/me", {
+        validateStatus: (status) => status < 500,
+      })
+      .then((r) => (r.status === 200 ? r.data.data : null)),
 
   login: (dto: LoginDto) =>
     api
@@ -46,15 +53,5 @@ export const authService = {
   refresh: () =>
     api
       .post<ApiResponse<RefreshResponseData>>("/auth/refresh")
-      .then((r) => r.data),
-
-  getInvite: (token: string) =>
-    api
-      .get<ApiResponse<InvitePreview>>(`/auth/invite/${token}`)
-      .then((r) => r.data),
-
-  acceptInvite: (token: string) =>
-    api
-      .post<ApiResponse<AuthResponseData>>(`/auth/invite/${token}/accept`)
       .then((r) => r.data),
 };

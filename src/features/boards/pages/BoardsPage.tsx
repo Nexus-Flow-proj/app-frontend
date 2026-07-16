@@ -54,6 +54,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useProjectMembers } from "@/features/project/hooks";
 import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
+import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -103,6 +104,7 @@ function mapUserToBoardMember(user: NonNullable<ReturnType<typeof useAuthStore.g
 
 function BoardsPage() {
   const { id: projectId } = useParams<{ id: string }>();
+  useProjectRealTime(projectId);
   const resolvedProjectId = projectId ?? "";
   const currentUser = useAuthStore((state) => state.user);
   const filters = useUrlFilters();
@@ -408,9 +410,9 @@ function BoardsPage() {
           initialData={
             editingColumn
               ? {
-                  name: editingColumn.name,
-                  color: editingColumn.color ?? "var(--primary)",
-                }
+                name: editingColumn.name,
+                color: editingColumn.color ?? "var(--primary)",
+              }
               : null
           }
           title={editingColumn ? "Rename column" : "New column"}

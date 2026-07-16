@@ -100,6 +100,9 @@ export class SocketManager {
         if (this.activeProjectId && this.activeProjectId !== projectId) this.leaveProject(this.activeProjectId);
         this.socket.emit(SOCKET_EVENTS.PROJECT.JOIN, { projectId });
         this.activeProjectId = projectId;
+        if (import.meta.env.DEV) {
+            console.log("✅ Joined project room", projectId);
+        }
     }
     leaveProject(projectId: string) {
         if (!projectId) throw new Error("Project ID is required");

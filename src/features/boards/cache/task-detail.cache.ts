@@ -70,7 +70,7 @@ export function addCommentToCache(
             return {
                 ...old,
                 comments: [...old.comments, newComment],
-                commentsCount: old.commentsCount + 1,
+                commentsCount: (old.commentsCount ?? old.comments.length) + 1,
             };
         },
     );
@@ -96,7 +96,10 @@ export async function removeCommentFromCache(
                 comments: old.comments.filter(
                     (comment) => comment.id !== commentId,
                 ),
-                commentsCount: Math.max(old.commentsCount - 1, 0),
+                commentsCount: Math.max(
+                    (old.commentsCount ?? old.comments.length) - 1,
+                    0,
+                ),
             };
         },
     );
@@ -140,10 +143,11 @@ export function addSubtaskToCache(
             return {
                 ...old,
                 subtasks: [...old.subtasks, newSubtask],
-                subtasksCount: old.subtasksCount + 1,
+                subtasksCount: (old.subtasksCount ?? old.subtasks.length) + 1,
                 completedSubtasksCount:
-                    old.completedSubtasksCount +
-                    Number(newSubtask.completed)
+                    (old.completedSubtasksCount ??
+                        old.subtasks.filter((subtask) => subtask.completed)
+                            .length) + Number(newSubtask.completed),
             };
         },
     );
@@ -175,13 +179,20 @@ export async function removeSubtaskFromCache(
                     (subtask) => subtask.id !== subtaskId,
                 ),
 
-                subtasksCount: Math.max(old.subtasksCount - 1, 0),
+                subtasksCount: Math.max(
+                    (old.subtasksCount ?? old.subtasks.length) - 1,
+                    0,
+                ),
                 completedSubtasksCount: deletedSubtask?.completed
                     ? Math.max(
-                        old.completedSubtasksCount - 1,
+                        (old.completedSubtasksCount ??
+                            old.subtasks.filter((subtask) => subtask.completed)
+                                .length) - 1,
                         0,
                     )
-                    : old.completedSubtasksCount,
+                    : (old.completedSubtasksCount ??
+                        old.subtasks.filter((subtask) => subtask.completed)
+                            .length),
             };
         },
     );
@@ -198,15 +209,23 @@ export function updateSubtaskInCache(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
-            const previous = old.subtasks.find(subtask => subtask.id === updatedSubtask.id)
+            const previous = old.subtasks.find(
+                (subtask) => subtask.id === updatedSubtask.id,
+            );
 
-            let completed = old.completedSubtasksCount;
+            if (!previous) return old;
 
-            if (!previous.completed && updatedSubtask.completed)
+            let completed = old.completedSubtasksCount ?? old.subtasks.filter(
+                (subtask) => subtask.completed,
+            ).length;
+
+            if (!previous.completed && updatedSubtask.completed) {
                 completed++;
+            }
 
-            if (previous.completed && !updatedSubtask.completed)
+            if (previous.completed && !updatedSubtask.completed) {
                 completed--;
+            }
 
             return {
                 ...old,

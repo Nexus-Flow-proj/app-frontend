@@ -5,6 +5,8 @@ import { GuestGuard } from "./GuestGuard";
 import { AuthGuard } from "./AuthGuard";
 import { AdminGuard } from "./AdminGuard";
 import { MemberGuard } from "./MemberGuard";
+import { ProjectPermissionGuard } from "./ProjectPermissionGuard";
+import { RoleManagementGuard } from "./RoleManagementGuard";
 import DashboardLayout from "@/features/dashboard/layout";
 import AuthLayout from "@/features/auth/layout";
 
@@ -18,7 +20,6 @@ const AuthPages = {
     () => import("@/features/auth/pages/ForgotPasswordPage"),
   ),
   ResetPassword: lazy(() => import("@/features/auth/pages/ResetPasswordPage")),
-  InviteAccept: lazy(() => import("@/features/auth/pages/InviteAcceptPage")),
   NotFound: lazy(() => import("@/features/auth/pages/NotFound")),
 };
 
@@ -31,7 +32,13 @@ const DashboardPages = {
 const ProjectPages = {
   Overview: lazy(() => import("@/features/project/pages/ProjectOverviewPage")),
   Create: lazy(() => import("@/features/project/pages/CreateProjectPage")),
+  Invitation: lazy(
+    () => import("@/features/project/pages/ProjectInvitationPage"),
+  ),
+  Members: lazy(() => import("@/features/project/pages/ProjectMembersPage")),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
+  Invites: lazy(() => import("@/features/project/pages/ProjectInvitesPage")),
+  Roles: lazy(() => import("@/features/project/pages/ProjectRolesPage")),
 };
 
 // ** Workshop Pages
@@ -88,11 +95,11 @@ const router = createBrowserRouter([
         path: "reset-password",
         element: <WithSuspense Component={AuthPages.ResetPassword} />,
       },
-      {
-        path: "invite/:token",
-        element: <WithSuspense Component={AuthPages.InviteAccept} />,
-      },
     ],
+  },
+  {
+    path: "project/invitation/:token",
+    element: <WithSuspense Component={ProjectPages.Invitation} />,
   },
 
   // ── Auth-required routes
@@ -120,12 +127,49 @@ const router = createBrowserRouter([
                 element: <WithSuspense Component={ProjectPages.Overview} />,
               },
               {
-                // Admin-only pages
                 element: <AdminGuard />,
                 children: [
                   {
                     path: "settings",
                     element: <WithSuspense Component={ProjectPages.Settings} />,
+                  },
+                ],
+              },
+              {
+                element: <RoleManagementGuard />,
+                children: [
+                  {
+                    path: "roles",
+                    element: <WithSuspense Component={ProjectPages.Roles} />,
+                  },
+                ],
+              },
+              {
+                element: (
+                  <ProjectPermissionGuard
+                    permissions={[
+                      "members.invite",
+                      "members.remove",
+                      "members.changeRoles",
+                    ]}
+                    mode="any"
+                  />
+                ),
+                children: [
+                  {
+                    path: "members",
+                    element: <WithSuspense Component={ProjectPages.Members} />,
+                  },
+                ],
+              },
+              {
+                element: (
+                  <ProjectPermissionGuard permissions={["members.invite"]} />
+                ),
+                children: [
+                  {
+                    path: "settings/invites",
+                    element: <WithSuspense Component={ProjectPages.Invites} />,
                   },
                 ],
               },
@@ -135,12 +179,17 @@ const router = createBrowserRouter([
       },
       // Member routes render without the dashboard shell.
       {
-        element: <MemberGuard />,
+        element: <ProjectPermissionGuard permissions={["board.read"]} />,
         children: [
           {
             path: "/projects/:id/boards",
             element: <WithSuspense Component={BoardPages.TeamBoard} />,
           },
+        ],
+      },
+      {
+        element: <MemberGuard />,
+        children: [
           {
             path: "/projects/:id/my-workspace",
             element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
@@ -148,7 +197,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        element: <AdminGuard />,
+        element: <ProjectPermissionGuard permissions={["workshop.read"]} />,
         children: [
           {
             path: "/projects/:id/workshop",

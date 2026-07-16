@@ -1,5 +1,5 @@
 import { BASE_URL } from "@/constants";
 
-export function handleGoogleAuth() {
-  window.location.href = `${BASE_URL}/auth/google`;
+export function handleGoogleAuth(pathname: string) {
+  window.location.href = `${BASE_URL}/auth/google/${pathname}`;
 }

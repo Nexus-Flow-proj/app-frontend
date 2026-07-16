@@ -12,8 +12,12 @@ export function buildBoardState(
     const tasksMap: BoardState["tasks"] = {};
     const columnOrder: string[] = [];
 
+    const orderedColumns = [...columns].sort(
+        (a, b) => a.sortOrder - b.sortOrder,
+    );
+
     // Build column lookup
-    for (const column of columns) {
+    for (const column of orderedColumns) {
         columnsMap[column.id] = column;
         tasksMap[column.id] = [];
         columnOrder.push(column.id);

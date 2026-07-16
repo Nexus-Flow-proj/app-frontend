@@ -56,18 +56,23 @@ export async function updateColumnInCache(
 ) {
     await qc.cancelQueries({ queryKey: getColumnsKey(projectId) });
 
-    const previousColumns: BoardColumn[] = qc.getQueryData<BoardColumn[]>(
+    const previousColumns: BoardColumn[] | undefined = qc.getQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
     );
 
     qc.setQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
-        (old = []) =>
-            old.map((column) =>
+        (old = []) => {
+            const nextColumns = old.map((column) =>
                 column.id === columnId
                     ? { ...column, ...dto }
                     : column,
-            ),
+            );
+
+            return dto.sortOrder === undefined
+                ? nextColumns
+                : nextColumns.sort((a, b) => a.sortOrder - b.sortOrder);
+        },
     );
 
     return { previousColumns };
@@ -83,7 +88,7 @@ export function replaceColumnInCache(
         (old = []) =>
             old.map((col) =>
                 col.id === column.id ? column : col,
-            ),
+            ).sort((a, b) => a.sortOrder - b.sortOrder),
     );
 }
 

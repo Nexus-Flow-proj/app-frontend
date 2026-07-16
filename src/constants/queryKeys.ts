@@ -50,8 +50,6 @@ export const QUERY_KEYS = {
   notifications: {
     all: ["notifications"] as const,
     list: () => [...QUERY_KEYS.notifications.all, "list"] as const,
-    unreadCount: () =>
-      [...QUERY_KEYS.notifications.all, "unreadCount"] as const,
   },
   dashboard: {
     all: ["dashboard"] as const,

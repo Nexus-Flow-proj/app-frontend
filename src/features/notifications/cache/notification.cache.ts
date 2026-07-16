@@ -3,14 +3,14 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants";
 
 import type { NotificationListResponse } from "../types";
-import type { ApiResponse, Notification } from "@/types";
+import type { Notification } from "@/types";
 
 // ─────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────
 
 type InfiniteNotificationsData = InfiniteData<
-    ApiResponse<NotificationListResponse>,
+    NotificationListResponse,
     number
 >;
 
@@ -32,10 +32,7 @@ function mapPages(
 ): InfiniteNotificationsData {
     return {
         ...old,
-        pages: old.pages.map((page) => ({
-            ...page,
-            data: fn(page.data),
-        })),
+        pages: old.pages.map((page) => fn(page)),
     };
 }
 
@@ -55,14 +52,11 @@ export function addNotificationToCache(
             // Prepend to the first page so it appears at the top
             const [firstPage, ...rest] = old.pages;
 
-            const updatedFirstPage: ApiResponse<NotificationListResponse> = {
+            const updatedFirstPage: NotificationListResponse = {
                 ...firstPage,
-                data: {
-                    ...firstPage.data,
-                    notifications: [notification, ...firstPage.data.notifications],
-                    unreadCount: (firstPage.data.unreadCount ?? 0) + 1,
-                    total: firstPage.data.total + 1,
-                },
+                notifications: [notification, ...firstPage.notifications],
+                unreadCount: (firstPage.unreadCount ?? 0) + 1,
+                total: firstPage.total + 1,
             };
 
             return {
@@ -111,24 +105,26 @@ export function removeNotificationFromCache(
         (old) => {
             if (!old) return old;
 
-            let wasUnread = false;
-
             const updated = mapPages(old, (page) => {
-                const filtered = page.notifications.filter((n) => {
-                    if (n.id === notificationId) {
-                        wasUnread = !n.isRead;
-                        return false;
-                    }
-                    return true;
-                });
+                const removedNotification = page.notifications.find(
+                    n => n.id === notificationId,
+                );
+
+                const filtered = page.notifications.filter(
+                    n => n.id !== notificationId,
+                );
 
                 return {
                     ...page,
                     notifications: filtered,
-                    total: page.total - (filtered.length < page.notifications.length ? 1 : 0),
-                    unreadCount: wasUnread
-                        ? Math.max(0, (page.unreadCount ?? 0) - 1)
-                        : page.unreadCount,
+                    total:
+                        removedNotification
+                            ? page.total - 1
+                            : page.total,
+                    unreadCount:
+                        removedNotification && !removedNotification.isRead
+                            ? Math.max(page.unreadCount - 1, 0)
+                            : page.unreadCount,
                 };
             });
 

@@ -23,3 +23,4 @@ export type {
   RolePreset,
   UpdateProjectRoleDto,
 } from "./roles";
+export type { ProjectActivityListResponse } from "./project-activity";

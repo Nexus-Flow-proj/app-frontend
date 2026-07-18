@@ -9,6 +9,7 @@ import {
     rollbackTaskDetail,
     // invalidateTaskDetail,
 } from "../cache/task-detail.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useDeleteComment(taskId: string) {
     const queryClient = useQueryClient();
@@ -17,12 +18,16 @@ export function useDeleteComment(taskId: string) {
         (commentId: string) =>
             taskService.deleteComment(commentId),
         {
+            showSuccessToast: false,
+
             onMutate: async (commentId) => {
-                return removeCommentFromCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await removeCommentFromCache(
                     queryClient,
                     taskId,
                     commentId,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError: (_, __, context) => {
@@ -38,6 +43,9 @@ export function useDeleteComment(taskId: string) {
             // onSettled: () => {
             //     invalidateTaskDetail(queryClient, taskId);
             // },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
+            },
         }
     );
 }

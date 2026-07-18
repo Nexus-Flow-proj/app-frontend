@@ -76,6 +76,22 @@ export function addCommentToCache(
     );
 }
 
+export async function addOptimisticCommentToCache(
+    qc: QueryClient,
+    taskId: string,
+    newComment: Comment,
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+
+    addCommentToCache(qc, taskId, newComment);
+
+    return { previousTask };
+}
+
 export async function removeCommentFromCache(
     qc: QueryClient,
     taskId: string,
@@ -111,6 +127,7 @@ export function updateCommentInCache(
     qc: QueryClient,
     taskId: string,
     updatedComment: Comment,
+    targetCommentId = updatedComment.id,
 ) {
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
@@ -120,13 +137,48 @@ export function updateCommentInCache(
             return {
                 ...old,
                 comments: old.comments.map((comment) =>
-                    comment.id === updatedComment.id
+                    comment.id === targetCommentId
                         ? updatedComment
                         : comment,
                 ),
             };
         },
     );
+}
+
+export async function updateCommentInCacheOptimistically(
+    qc: QueryClient,
+    taskId: string,
+    commentId: string,
+    content: string,
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+
+    qc.setQueryData<TaskDetail>(
+        getDetailKey(taskId),
+        (old) => {
+            if (!old) return old;
+
+            return {
+                ...old,
+                comments: old.comments.map((comment) =>
+                    comment.id === commentId
+                        ? {
+                            ...comment,
+                            content,
+                            updatedAt: new Date().toISOString(),
+                        }
+                        : comment,
+                ),
+            };
+        },
+    );
+
+    return { previousTask };
 }
 
 // ── Subtasks ────────────────────────────────────────────────────────
@@ -151,6 +203,22 @@ export function addSubtaskToCache(
             };
         },
     );
+}
+
+export async function addOptimisticSubtaskToCache(
+    qc: QueryClient,
+    taskId: string,
+    newSubtask: Subtask,
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+
+    addSubtaskToCache(qc, taskId, newSubtask);
+
+    return { previousTask };
 }
 
 export async function removeSubtaskFromCache(
@@ -204,13 +272,14 @@ export function updateSubtaskInCache(
     qc: QueryClient,
     taskId: string,
     updatedSubtask: Subtask,
+    targetSubtaskId = updatedSubtask.id,
 ) {
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
             const previous = old.subtasks.find(
-                (subtask) => subtask.id === updatedSubtask.id,
+                (subtask) => subtask.id === targetSubtaskId,
             );
 
             if (!previous) return old;
@@ -230,7 +299,7 @@ export function updateSubtaskInCache(
             return {
                 ...old,
                 subtasks: old.subtasks.map((subtask) =>
-                    subtask.id === updatedSubtask.id
+                    subtask.id === targetSubtaskId
                         ? updatedSubtask
                         : subtask,
                 ),
@@ -238,4 +307,60 @@ export function updateSubtaskInCache(
             };
         },
     );
+}
+
+export async function updateSubtaskInCacheOptimistically(
+    qc: QueryClient,
+    taskId: string,
+    subtaskId: string,
+    patch: Partial<Pick<Subtask, "title" | "completed">>,
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+
+    qc.setQueryData<TaskDetail>(
+        getDetailKey(taskId),
+        (old) => {
+            if (!old) return old;
+
+            const previousSubtask = old.subtasks.find(
+                (subtask) => subtask.id === subtaskId,
+            );
+
+            if (!previousSubtask) return old;
+
+            const nextCompleted =
+                patch.completed ?? previousSubtask.completed;
+            let completedSubtasksCount =
+                old.completedSubtasksCount ??
+                old.subtasks.filter((subtask) => subtask.completed).length;
+
+            if (!previousSubtask.completed && nextCompleted) {
+                completedSubtasksCount++;
+            }
+
+            if (previousSubtask.completed && !nextCompleted) {
+                completedSubtasksCount--;
+            }
+
+            return {
+                ...old,
+                subtasks: old.subtasks.map((subtask) =>
+                    subtask.id === subtaskId
+                        ? {
+                            ...subtask,
+                            ...patch,
+                            updatedAt: new Date().toISOString(),
+                        }
+                        : subtask,
+                ),
+                completedSubtasksCount,
+            };
+        },
+    );
+
+    return { previousTask };
 }

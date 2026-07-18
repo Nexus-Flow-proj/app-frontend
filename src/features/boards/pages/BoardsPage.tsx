@@ -54,6 +54,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useProjectMembers } from "@/features/project/hooks";
 import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
+import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -119,6 +120,7 @@ function BoardsPage() {
 
   const boardState = useKanbanStore((state) => state.boardState);
   const drawer = useKanbanStore((state) => state.drawer);
+  const syncStatus = useKanbanStore((state) => state.sync.status);
   const initializeBoard = useKanbanStore((state) => state.initializeBoard);
   const setBoardState = useKanbanStore((state) => state.setBoardState);
   const openTaskDrawer = useKanbanStore((state) => state.openTaskDrawer);
@@ -253,17 +255,11 @@ function BoardsPage() {
         return;
       }
 
-      createColumnMutation.mutate(
-        {
-          name: data.name,
-          color: data.color,
-        },
-        {
-          onSuccess: () => {
-            setIsAddColumnOpen(false);
-          },
-        },
-      );
+      createColumnMutation.mutate({
+        name: data.name,
+        color: data.color,
+      });
+      setIsAddColumnOpen(false);
     },
     [createColumnMutation, editingColumnId, updateColumnMutation],
   );
@@ -332,6 +328,7 @@ function BoardsPage() {
       <header className="border-b border-border shrink-0">
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
           <BoardInfo />
+          <BoardSyncIndicator status={syncStatus} />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
             <BoardSearchBar

@@ -66,7 +66,8 @@ export function addCommentToCache(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
-
+            const existed = old.comments.some(comment => comment.id === newComment.id)
+            if (existed) return;
             return {
                 ...old,
                 comments: [...old.comments, newComment],
@@ -140,6 +141,8 @@ export function addSubtaskToCache(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
+            const existed = old.subtasks.some(subtask => subtask.id === newSubtask.id)
+            if (existed) return;
             return {
                 ...old,
                 subtasks: [...old.subtasks, newSubtask],

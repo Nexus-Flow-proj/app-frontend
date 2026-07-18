@@ -18,5 +18,6 @@ export function useTimeLogs(taskId: string) {
             };
         },
         enabled: !!taskId,
+        staleTime: 1000 * 30,
     });
 }

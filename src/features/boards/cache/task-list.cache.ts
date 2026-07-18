@@ -18,7 +18,8 @@ export function addTaskToListCache(
     qc.setQueryData<TaskList>(
         getListKey(projectId),
         (old) => {
-            if (!old) return;
+            const existed = old.tasks.some(task => task.id === newTask.id)
+            if (!old || existed) return;
             return {
                 ...old,
                 tasks: [...old.tasks, newTask],

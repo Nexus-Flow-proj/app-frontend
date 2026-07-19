@@ -8,6 +8,10 @@ function getDetailKey(taskId: string) {
     return QUERY_KEYS.tasks.detail(taskId);
 }
 
+function isOptimisticId(id: string) {
+    return id.startsWith("temp-");
+}
+
 // ── Task Detail ─────────────────────────────────────────────────────
 
 export async function snapshotTaskDetail(
@@ -66,8 +70,25 @@ export function addCommentToCache(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
-            const existed = old.comments.some(comment => comment.id === newComment.id)
-            if (existed) return;
+            const existed = old.comments.some(comment => comment.id === newComment.id);
+            if (existed) return old;
+            const optimisticComment = old.comments.find(
+                (comment) =>
+                    isOptimisticId(comment.id) &&
+                    comment.content === newComment.content,
+            );
+
+            if (optimisticComment) {
+                return {
+                    ...old,
+                    comments: old.comments.map((comment) =>
+                        comment.id === optimisticComment.id
+                            ? newComment
+                            : comment,
+                    ),
+                };
+            }
+
             return {
                 ...old,
                 comments: [...old.comments, newComment],
@@ -193,8 +214,33 @@ export function addSubtaskToCache(
         getDetailKey(taskId),
         (old) => {
             if (!old) return old;
-            const existed = old.subtasks.some(subtask => subtask.id === newSubtask.id)
-            if (existed) return;
+            const existed = old.subtasks.some(subtask => subtask.id === newSubtask.id);
+            if (existed) return old;
+            const optimisticSubtask = old.subtasks.find(
+                (subtask) =>
+                    isOptimisticId(subtask.id) &&
+                    subtask.title === newSubtask.title,
+            );
+
+            if (optimisticSubtask) {
+                const completedSubtasksCount =
+                    old.completedSubtasksCount ??
+                    old.subtasks.filter((subtask) => subtask.completed).length;
+
+                return {
+                    ...old,
+                    subtasks: old.subtasks.map((subtask) =>
+                        subtask.id === optimisticSubtask.id
+                            ? newSubtask
+                            : subtask,
+                    ),
+                    completedSubtasksCount:
+                        completedSubtasksCount -
+                        Number(optimisticSubtask.completed) +
+                        Number(newSubtask.completed),
+                };
+            }
+
             return {
                 ...old,
                 subtasks: [...old.subtasks, newSubtask],

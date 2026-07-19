@@ -12,6 +12,21 @@ function getColumnsKey(projectId: string) {
     return QUERY_KEYS.boards.columns(projectId);
 }
 
+function isOptimisticId(id: string) {
+    return id.startsWith("temp-");
+}
+
+function isMatchingOptimisticColumn(
+    existingColumn: BoardColumn,
+    newColumn: BoardColumn,
+) {
+    return (
+        isOptimisticId(existingColumn.id) &&
+        existingColumn.name === newColumn.name &&
+        existingColumn.projectId === newColumn.projectId
+    );
+}
+
 // ── Add ──────────────────────────────────────────────────────────────
 
 export function addColumnToCache(
@@ -24,7 +39,24 @@ export function addColumnToCache(
         (old = []) => {
             const existed = old.some(c => c.id === column.id);
             if (existed) return old;
-            return [...old, column]
+            const optimisticColumn = old.find((existingColumn) =>
+                isMatchingOptimisticColumn(existingColumn, column),
+            );
+
+            if (optimisticColumn) {
+                return old
+                    .map((existingColumn) =>
+                        existingColumn.id === optimisticColumn.id
+                            ? {
+                                ...column,
+                                sortOrder: optimisticColumn.sortOrder,
+                            }
+                            : existingColumn,
+                    )
+                    .sort((a, b) => a.sortOrder - b.sortOrder);
+            }
+
+            return [...old, column].sort((a, b) => a.sortOrder - b.sortOrder);
         },
     );
 }

@@ -20,6 +20,18 @@ function sortTasksByBoardPosition(tasks: Task[]) {
     });
 }
 
+function isOptimisticId(id: string) {
+    return id.startsWith("temp-");
+}
+
+function isMatchingOptimisticTask(task: Task, newTask: Task) {
+    return (
+        isOptimisticId(task.id) &&
+        task.title === newTask.title &&
+        task.boardColumnId === newTask.boardColumnId
+    );
+}
+
 // ── Add ──────────────────────────────────────────────────────────────
 
 export function addTaskToListCache(
@@ -28,9 +40,31 @@ export function addTaskToListCache(
   newTask: Task,
 ) {
   qc.setQueryData<TaskList>(getListKey(projectId), (old) => {
-    if (!old) return;
+    if (!old) return old;
     const existed = old.tasks.some((task) => task.id === newTask.id);
     if (existed) return old;
+    const optimisticTask = old.tasks.find((task) =>
+      isMatchingOptimisticTask(task, newTask),
+    );
+
+    if (optimisticTask) {
+      return {
+        ...old,
+        tasks: sortTasksByBoardPosition(
+          old.tasks.map((task) =>
+            task.id === optimisticTask.id
+              ? {
+                  ...newTask,
+                  boardColumnId:
+                    optimisticTask.boardColumnId ?? newTask.boardColumnId,
+                  columnOrder: optimisticTask.columnOrder,
+                }
+              : task,
+          ),
+        ),
+      };
+    }
+
     return {
       ...old,
       tasks: sortTasksByBoardPosition([...old.tasks, newTask]),

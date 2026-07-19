@@ -22,8 +22,8 @@ export class SocketManager {
     initialize() {
         if (this.isInitialized) return;
         this.registerInternalListeners();
-        this.connect();
         this.isInitialized = true;
+        this.connect();
         if (import.meta.env.DEV) {
             console.log("✅ SocketManager initialized (listeners ready)");
         }
@@ -34,7 +34,7 @@ export class SocketManager {
         this.socket.on(SOCKET_EVENTS.CONNECTION.CONNECT, () => {
             console.log("✅ Connected | ID:", this.socket.id);
             if (this.activeProjectId) {
-                this.joinProject(this.activeProjectId);
+                // this.joinProject(this.activeProjectId);
             }
         });
 
@@ -47,6 +47,21 @@ export class SocketManager {
         this.socket.on(SOCKET_EVENTS.CONNECTION.CONNECT_ERROR, (error) => {
             console.error("❌ Connection Error:", error);
         });
+        // Reconnect Attempt
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_ATTEMPT, attempt => {
+            console.log("Reconnecting...", attempt);
+        });
+        // Reconnected
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT, attempt => {
+            console.log("Reconnected after", attempt, "attempts");
+        });
+        // Reconnect Failed
+        this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_FAILED, () => {
+            console.error("Failed to reconnect.");
+        });
+
+
+
         // Optional: for debugging
         if (import.meta.env.DEV) {
             this.socket.onAny(event => {
@@ -60,7 +75,7 @@ export class SocketManager {
     connect() {
         if (!this.isInitialized)
             throw new Error("You must call initialize() first")
-        if (this.socket.connected) return;
+        if (this.socket.connected || this.socket.active) return;
         this.socket.connect();
     }
     disconnect() {
@@ -71,6 +86,7 @@ export class SocketManager {
         if (!this.isInitialized) return;
         this.disconnect();
         this.socket.removeAllListeners();
+        this.socket.io.removeAllListeners();
         this.isInitialized = false;
         this.activeProjectId = null;
         if (import.meta.env.DEV) {
@@ -84,6 +100,9 @@ export class SocketManager {
         if (this.activeProjectId && this.activeProjectId !== projectId) this.leaveProject(this.activeProjectId);
         this.socket.emit(SOCKET_EVENTS.PROJECT.JOIN, { projectId });
         this.activeProjectId = projectId;
+        if (import.meta.env.DEV) {
+            console.log("✅ Joined project room", projectId);
+        }
     }
     leaveProject(projectId: string) {
         if (!projectId) throw new Error("Project ID is required");

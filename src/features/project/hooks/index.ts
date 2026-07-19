@@ -5,6 +5,7 @@ export { useCreateProjectRole } from "./useCreateProjectRole";
 export { useCreateProject } from "./useCreateProject";
 export { useDeleteProjectRole } from "./useDeleteProjectRole";
 export { useDeclineProjectInvitation } from "./useDeclineProjectInvitation";
+export { useInfiniteProjectActivity } from "./useInfiniteProjectActivity";
 export { useInviteMember } from "./useInviteMember";
 export { useProject } from "./useProject";
 export { useProjectAccess } from "./useProjectAccess";

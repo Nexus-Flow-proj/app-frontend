@@ -13,6 +13,8 @@ export const QUERY_KEYS = {
       [...QUERY_KEYS.projects.all, "invites", id] as const,
     invitation: (token: string) =>
       [...QUERY_KEYS.projects.all, "invitation", token] as const,
+    activity: (projectId: string) =>
+      [...QUERY_KEYS.projects.all, "activity", projectId] as const,
   },
   tasks: {
     all: ["tasks"] as const,
@@ -52,8 +54,6 @@ export const QUERY_KEYS = {
   notifications: {
     all: ["notifications"] as const,
     list: () => [...QUERY_KEYS.notifications.all, "list"] as const,
-    unreadCount: () =>
-      [...QUERY_KEYS.notifications.all, "unreadCount"] as const,
   },
   dashboard: {
     all: ["dashboard"] as const,

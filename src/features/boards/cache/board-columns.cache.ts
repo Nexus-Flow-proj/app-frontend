@@ -21,7 +21,11 @@ export function addColumnToCache(
 ) {
     qc.setQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
-        (old = []) => [...old, column],
+        (old = []) => {
+            const existed = old.some(c => c.id === column.id);
+            if (existed) return old;
+            return [...old, column]
+        },
     );
 }
 

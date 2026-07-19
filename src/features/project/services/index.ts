@@ -4,6 +4,7 @@ import type {
   CreateProjectDto,
   BulkUpdateProjectMemberRolesDto,
   CreateProjectRoleDto,
+  ProjectActivityListResponse,
   ProjectDetails,
   ProjectInviteDetails,
   ProjectInviteListItem,
@@ -155,6 +156,14 @@ export const projectService = {
     api
       .post<ApiResponse<ProjectInviteDetails>>(
         `/projects/invites/${inviteToken}/decline`,
+      )
+      .then((r) => r.data),
+
+  getProjectActivity: (projectId: string, page: number, limit: number) =>
+    api
+      .get<ApiResponse<ProjectActivityListResponse>>(
+        `/projects/${projectId}/activity-logs`,
+        { params: { page, limit } },
       )
       .then((r) => r.data),
 };

@@ -8,7 +8,7 @@ const socketManager: SocketManager = SocketManager.getInstance();
  * and automatically leaves it during cleanup or
  * when the project changes.
  */
-export const useProjectRealTime = (projectId: string) => {
+export const useProjectRealTime = (projectId?: string) => {
     useEffect(() => {
         if (!projectId) return;
         socketManager.joinProject(projectId);

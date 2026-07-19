@@ -8,8 +8,9 @@ export const SOCKET_EVENTS = {
         CONNECT_ERROR: "connect_error",
         CONNECT_TIMEOUT: "connect_timeout",
         RECONNECT: "reconnect",
-        RECONNECT_ERROR: "reconnect_error",
+        RECONNECT_ATTEMPT: "reconnect_attempt",
         RECONNECT_FAILED: "reconnect_failed",
+        // RECONNECT_ERROR: "reconnect_error",
     },
 
     // Client → Server
@@ -22,7 +23,6 @@ export const SOCKET_EVENTS = {
     TASK: {
         CREATED: 'task:created',
         UPDATED: 'task:updated',
-        MOVED: 'task:moved',
         DELETED: 'task:deleted',
     },
 

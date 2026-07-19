@@ -6,18 +6,23 @@ import {
     rollbackTaskList,
 } from "../cache/task-list.cache";
 import { removeTaskDetailCache } from "../cache/task-detail.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useDeleteTask(projectId: string) {
     const queryClient = useQueryClient();
     return useApiMutation(
         (taskId: string) => taskService.deleteTask(taskId),
         {
+            showSuccessToast: false,
+
             onMutate: async (taskId: string) => {
-                return removeTaskFromListCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await removeTaskFromListCache(
                     queryClient,
                     projectId,
                     taskId,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
             onSuccess: (_, taskId) => {
                 removeTaskDetailCache(queryClient, taskId);
@@ -30,6 +35,9 @@ export function useDeleteTask(projectId: string) {
                         context.previousTaskList,
                     );
                 }
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         }
     )

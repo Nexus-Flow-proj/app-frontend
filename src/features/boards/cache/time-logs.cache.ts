@@ -28,6 +28,43 @@ export function addTimeLogToCache(
     );
 }
 
+export async function addOptimisticTimeLogToCache(
+    qc: QueryClient,
+    taskId: string,
+    newTimeLog: TimeLog,
+) {
+    await qc.cancelQueries({ queryKey: getTimeLogsKey(taskId) });
+
+    const previousTimeLogs = qc.getQueryData<TimeLogList>(
+        getTimeLogsKey(taskId),
+    );
+
+    addTimeLogToCache(qc, taskId, newTimeLog);
+
+    return { previousTimeLogs };
+}
+
+export function replaceTimeLogInCache(
+    qc: QueryClient,
+    taskId: string,
+    timeLogId: string,
+    replacement: TimeLog,
+) {
+    qc.setQueryData<TimeLogList>(
+        getTimeLogsKey(taskId),
+        (old) => {
+            if (!old) return old;
+
+            return {
+                ...old,
+                timeLogs: old.timeLogs.map((log) =>
+                    log.id === timeLogId ? replacement : log,
+                ),
+            };
+        },
+    );
+}
+
 // ── Remove ──────────────────────────────────────────────────────────
 
 export function removeTimeLogFromCache(
@@ -49,4 +86,28 @@ export function removeTimeLogFromCache(
             };
         },
     );
+}
+
+export async function removeTimeLogFromCacheOptimistically(
+    qc: QueryClient,
+    taskId: string,
+    timeLogId: string,
+) {
+    await qc.cancelQueries({ queryKey: getTimeLogsKey(taskId) });
+
+    const previousTimeLogs = qc.getQueryData<TimeLogList>(
+        getTimeLogsKey(taskId),
+    );
+
+    removeTimeLogFromCache(qc, taskId, timeLogId);
+
+    return { previousTimeLogs };
+}
+
+export function rollbackTimeLogs(
+    qc: QueryClient,
+    taskId: string,
+    previousTimeLogs: TimeLogList | undefined,
+) {
+    qc.setQueryData(getTimeLogsKey(taskId), previousTimeLogs);
 }

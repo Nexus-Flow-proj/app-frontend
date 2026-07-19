@@ -21,8 +21,28 @@ export function addColumnToCache(
 ) {
     qc.setQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
-        (old = []) => [...old, column],
+        (old = []) => {
+            const existed = old.some(c => c.id === column.id);
+            if (existed) return old;
+            return [...old, column]
+        },
     );
+}
+
+export async function addOptimisticColumnToCache(
+    qc: QueryClient,
+    projectId: string,
+    column: BoardColumn,
+) {
+    await qc.cancelQueries({ queryKey: getColumnsKey(projectId) });
+
+    const previousColumns = qc.getQueryData<BoardColumn[]>(
+        getColumnsKey(projectId),
+    );
+
+    addColumnToCache(qc, projectId, column);
+
+    return { previousColumns };
 }
 
 // ── Remove (optimistic) ─────────────────────────────────────────────
@@ -82,12 +102,13 @@ export function replaceColumnInCache(
     qc: QueryClient,
     projectId: string,
     column: BoardColumn,
+    targetColumnId = column.id,
 ) {
     qc.setQueryData<BoardColumn[]>(
         getColumnsKey(projectId),
         (old = []) =>
             old.map((col) =>
-                col.id === column.id ? column : col,
+                col.id === targetColumnId ? column : col,
             ).sort((a, b) => a.sortOrder - b.sortOrder),
     );
 }

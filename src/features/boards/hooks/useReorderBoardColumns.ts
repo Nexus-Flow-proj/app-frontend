@@ -8,6 +8,7 @@ import {
     reconcileReorderedColumns,
     rollbackColumns,
 } from "../cache/board-columns.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useReorderBoardColumns(projectId: string) {
     const queryClient = useQueryClient();
@@ -17,12 +18,16 @@ export function useReorderBoardColumns(projectId: string) {
             boardService.reorderColumns(projectId, dto),
 
         {
+            showSuccessToast: false,
+
             onMutate: async (dto) => {
-                return reorderColumnsInCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await reorderColumnsInCache(
                     queryClient,
                     projectId,
                     dto,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError: (_, __, context) => {
@@ -42,6 +47,9 @@ export function useReorderBoardColumns(projectId: string) {
                     projectId,
                     columns,
                 );
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         },
     );

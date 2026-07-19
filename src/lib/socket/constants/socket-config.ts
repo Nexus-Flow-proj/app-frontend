@@ -1,6 +1,8 @@
 // src/lib/socket/constants/socket-config.ts
 
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "";
+export const SOCKET_URL = import.meta.env.DEV
+    ? ""
+    : import.meta.env.VITE_SOCKET_URL ?? "";
 
 export const SOCKET_OPTIONS = {
     withCredentials: true, // Crucial for HTTP-Only cookie parsing on handshake

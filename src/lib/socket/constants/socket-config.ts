@@ -2,9 +2,7 @@
 
 import type { ManagerOptions, SocketOptions } from "socket.io-client";
 
-export const SOCKET_URL = import.meta.env.DEV
-    ? ""
-    : import.meta.env.VITE_SOCKET_URL ?? "";
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "";
 
 type SocketClientOptions = Partial<ManagerOptions & SocketOptions>;
 

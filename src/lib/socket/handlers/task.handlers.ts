@@ -5,11 +5,18 @@ import { mapTaskSummary } from "@/features/boards/mappers";
 import { removeTaskDetailCache, updateTaskDetailCache } from "@/features/boards/cache/task-detail.cache";
 import type { QueryClient } from "@tanstack/react-query";
 import { updateTaskDetail, updateTaskList } from "@/features/boards/hooks/useUpdateTask";
+import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
 
 
 export function registerTaskHandlers(socketManager: SocketManager, qc: QueryClient) {
     socketManager.on(SOCKET_EVENTS.TASK.CREATED, payload => {
         const createdTask = mapTaskSummary(payload.task);
+        useHighlightStore
+            .getState()
+            .highlight(
+                HighlightEntity.task,
+                payload.task.id,
+            );
         addTaskToListCache(qc, payload.projectId, createdTask);
         console.log("TASK Event With Payload : ", payload);
     });
@@ -24,6 +31,12 @@ export function registerTaskHandlers(socketManager: SocketManager, qc: QueryClie
 
     socketManager.on(SOCKET_EVENTS.TASK.DELETED, payload => {
         removeTaskDetailCache(qc, payload.taskId);
+        useHighlightStore
+            .getState()
+            .highlight(
+                HighlightEntity.task,
+                payload.taskId,
+            );
         removeTaskFromListCache(qc, payload.projectId, payload.taskId);
         console.log("TASK Event With Payload : ", payload);
     });

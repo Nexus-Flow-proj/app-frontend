@@ -41,6 +41,13 @@ export function cloneSnapshot(
 export function pushUndo(state: WorkshopState): WorkshopSnapshot[] {
   const start = Math.max(0, state.undoStack.length - MAX_UNDO_STEPS + 1); // the index of the first snapshot to keep. If we have 10 snapshots and max is 5, we want to keep the last 5, so start = 10 - 5 + 1 = 6. We will slice from index 6 to the end (10), which gives us 4 snapshots (index 6,7,8,9). Then we will add the new snapshot at the end, making it 5 total.
 
+  console.log(
+    "pushUndo: start",
+    start,
+    "state.undoStack.length",
+    state.undoStack.length,
+  );
+
   return [
     ...state.undoStack.slice(start),
     cloneSnapshot(state.objects, state.connections),

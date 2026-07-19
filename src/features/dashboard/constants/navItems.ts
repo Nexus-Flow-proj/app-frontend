@@ -31,10 +31,6 @@ export const NAV_MAIN: NavMainItem[] = [
         title: "Project settings",
         url: "/projects/demo/settings",
       },
-      {
-        title: "Roles & permissions",
-        url: "/projects/demo/roles",
-      },
     ],
   },
   {

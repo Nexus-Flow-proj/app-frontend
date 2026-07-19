@@ -21,6 +21,7 @@ import {
 } from "../../../hooks/useBoardFilters";
 import { useSortableColumn } from "../../../hooks/useSortableColumn";
 import type { BoardState, Task } from "../../../types";
+import { CURRENT_USER } from "../../../data/mock-data";
 import KanbanColumnActionsMenu from "./ColumnActionsMenu";
 import TaskCard from "../task-card";
 import { MyEmpty } from "@/components/shared/feedback/MyEmpty";
@@ -29,7 +30,6 @@ interface KanbanBoardColumnProps {
   columnId: string;
   boardState: BoardState;
   onCardClick: (task: Task) => void;
-  currentUserId: string;
 
   onAddTask: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
@@ -41,16 +41,15 @@ function KanbanBoardColumn({
   columnId,
   boardState,
   onCardClick,
-  currentUserId,
   onAddTask,
-  onRenameColumn = () => {},
-  onDeleteColumn = () => {},
+  onRenameColumn = (id) => console.log("rename", id),
+  onDeleteColumn = (id) => console.log("delete", id),
   isOver = false,
 }: KanbanBoardColumnProps) {
   const column = boardState.columns[columnId];
   const tasks = boardState.tasks[columnId] ?? [];
   const filters = useUrlFilters();
-  const filteredTasks = useFilteredTasks(tasks, currentUserId);
+  const filteredTasks = useFilteredTasks(tasks, CURRENT_USER.id);
   const { attributes, listeners, setNodeRef, style } = useSortableColumn(column);
 
   const accentColor =

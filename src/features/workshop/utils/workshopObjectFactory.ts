@@ -1,4 +1,4 @@
-import { CanvasObjectType } from "@/types/enums";
+import { CanvasObjectType, TaskPriority, TaskStatus } from "@/types/enums";
 import { NODE_SIZE } from "../constants";
 import type { CanvasObject } from "../types";
 import type { WorkshopObjectKind } from "../types/workshopKinds";
@@ -9,12 +9,12 @@ const uid = (prefix: string) => `${prefix}-${++localId}`;
 export function createObject(
   kind: WorkshopObjectKind,
   position: Coordinates,
-  featureId?: string,
 ): CanvasObject {
-  if (kind === "Feature") {
+  // SectionFrame
+  if (kind === "Project" || kind === "Phase") {
     const { w, h } = NODE_SIZE.SECTION_FRAME;
     return {
-      id: uid("feature"),
+      id: uid(kind.toLowerCase()),
       type: CanvasObjectType.SECTION_FRAME,
       x: position.x - w / 2,
       y: position.y - h / 2,
@@ -24,9 +24,10 @@ export function createObject(
       zIndex: 0,
       data: {
         kind,
-        title: "New feature",
-        backgroundColor: "#F5F3FF",
-        borderColor: "#C4B5FD",
+        title: kind === "Project" ? "New project" : "New phase",
+        description: "Describe this planning area.",
+        backgroundColor: kind === "Project" ? "#F0EAFF" : "#EFF6FF",
+        borderColor: kind === "Project" ? "#C4AFF7" : "#BFDBFE",
       },
     };
   }
@@ -44,8 +45,8 @@ export function createObject(
       zIndex: 3,
       data: {
         kind,
-        content: "Capture an idea, question, or reminder…",
-        color: "#FEF3C7",
+        content: "Add a workshop note.",
+        color: "#FEF08A",
         fontSize: 13,
       },
     };
@@ -62,10 +63,12 @@ export function createObject(
     rotation: 0,
     zIndex: 2,
     data: {
-      featureId,
+      taskId: uid("t"),
       kind,
-      title: "New task",
-      description: "Describe the work required for this task.",
+      title: `New ${kind.toLowerCase()}`,
+      description: "Add context, owner, and timing.",
+      status: TaskStatus.BACKLOG,
+      priority: kind === "Risk" ? TaskPriority.URGENT : TaskPriority.MEDIUM,
     },
   };
 }

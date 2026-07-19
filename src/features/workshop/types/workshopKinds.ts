@@ -1,7 +1,17 @@
-export type WorkshopObjectKind = "Feature" | "Task" | "Note";
+export type WorkshopObjectKind =
+  | "Project"
+  | "Phase"
+  | "Task"
+  | "Milestone"
+  | "Note"
+  | "Decision"
+  | "Risk";
 
-export type SectionFrameKind = Extract<WorkshopObjectKind, "Feature">;
+export type SectionFrameKind = Extract<WorkshopObjectKind, "Project" | "Phase">;
 
 export type StickyNoteKind = Extract<WorkshopObjectKind, "Note">;
 
-export type TaskCardKind = Extract<WorkshopObjectKind, "Task">;
+export type TaskCardKind = Exclude<
+  WorkshopObjectKind,
+  "Project" | "Phase" | "Note"
+>;

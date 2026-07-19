@@ -1,5 +1,11 @@
-import { ProjectPermissionGuard } from "./ProjectPermissionGuard";
+import { Outlet } from "react-router";
 
 export function AdminGuard() {
-  return <ProjectPermissionGuard permissions={["project.updateSettings"]} />;
+  // const isAdmin = useProjectStore((s) => s.isAdmin);
+
+  // if (!isAdmin()) {
+  //   return <Navigate to="/dashboard" replace />;
+  // }
+
+  return <Outlet />;
 }

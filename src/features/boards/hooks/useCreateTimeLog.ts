@@ -4,23 +4,15 @@ import { taskService } from "../services";
 import { mapTimeLog } from "../mappers";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { addTimeLogToCache } from "../cache/time-logs.cache";
-import type { BoardMember } from "../types";
 
-export function useCreateTimeLog(
-    taskId: string,
-    fallbackUser?: BoardMember,
-) {
+export function useCreateTimeLog(taskId: string) {
     const queryClient = useQueryClient();
     return useApiMutation(
         (dto: CreateTimeLogDto) =>
             taskService.createTimeLog(taskId, dto),
         {
             onSuccess: (res) => {
-                const newTimeLog = mapTimeLog(
-                    res.data,
-                    taskId,
-                    fallbackUser,
-                );
+                const newTimeLog = mapTimeLog(res.data, taskId);
                 addTimeLogToCache(queryClient, taskId, newTimeLog);
             }
         }

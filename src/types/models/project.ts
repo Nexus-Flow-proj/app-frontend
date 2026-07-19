@@ -1,40 +1,27 @@
-import type { ProjectRoleDefinition } from "@/features/project/types";
-import { InviteStatus, ProjectStatus } from "../enums";
+import { InviteStatus, MemberRole, ProjectStatus } from "../enums";
 import type { User } from "./user";
 
 export interface Project {
   id: string;
   name: string;
-  description?: string | null;
+  description?: string;
   status: ProjectStatus;
-  color?: string | null;
-  adminId?: string;
-  ownerId?: string;
-  owner?: User;
+  color: string;
+  ownerId: string;
+  owner: User;
   memberCount: number;
-  taskCount?: number;
-  completedTaskCount?: number;
-  currentMember?: ProjectMember | null;
-  createdAt?: string;
-  updatedAt?: string;
-  created_at?: string;
-  updated_at?: string;
+  taskCount: number;
+  completedTaskCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProjectMember {
   id: string;
   projectId: string;
   userId: string;
-  user?: User;
-  email: string;
-  firstName: string;
-  lastName: string;
-  title: string | null;
-  avatarUrl: string | null;
-  roleId: string;
-  role?: ProjectRoleDefinition | null;
-  roleLabel?: string;
-  isAdmin?: boolean;
+  user: User;
+  role: MemberRole;
   joinedAt: string;
 }
 
@@ -43,12 +30,17 @@ export interface Invite {
   projectId: string;
   project: Pick<Project, "id" | "name" | "color">;
   email: string;
-  roleId?: string;
-  role?: ProjectRoleDefinition | null;
-  roleLabel?: string;
+  role: MemberRole;
   status: InviteStatus;
   token: string;
   expiresAt: string;
   invitedBy: User;
   createdAt: string;
+}
+
+export interface InvitePreview {
+  project: Pick<Project, "id" | "name" | "color" | "description">;
+  invitedBy: Pick<User, "id" | "name" | "avatar">;
+  role: MemberRole;
+  expiresAt: string;
 }

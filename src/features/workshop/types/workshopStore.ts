@@ -18,13 +18,9 @@ export interface WorkshopStore {
   selectedObjectId: Nullable<string>;
   detailsObjectId: Nullable<string>;
   hoveredObjectId: Nullable<string>;
-  isEditing: boolean;
-  isPublishing: boolean;
   isConnecting: boolean;
   connectFromId: Nullable<string>;
   isDirty: boolean;
-  publishedSnapshot: WorkshopSnapshot;
-  publishedViewport: CanvasViewport;
 
   // Undo / redo
   undoStack: WorkshopSnapshot[];

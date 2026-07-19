@@ -4,12 +4,9 @@ import type { TaskAttachment } from "..";
 
 export interface ApiUserSummary {
     id: string;
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    first_name?: string;
-    last_name?: string;
-    name?: string;
+    email: string;
+    firstName: string;
+    lastName: string;
     avatarUrl: string | null;
 }
 
@@ -86,7 +83,7 @@ export interface ApiSubtask {
 export interface ApiComment {
     id: string;
     body: string;
-    user?: ApiUserSummary | null;
+    user: ApiUserSummary;
     created_at: string;
     updated_at?: string;
 }
@@ -94,8 +91,8 @@ export interface ApiTimeLog {
     id: string;
     durationMin: number;
     loggedDate: string;
-    note?: string;
-    user?: ApiUserSummary | null;
+    note: string;
+    user: ApiUserSummary;
     created_at: string;
 }
 // export interface ApiAttachment {
@@ -138,7 +135,6 @@ export interface CreateBoardColumnDto {
 }
 export interface UpdateBoardColumnDto {
     name?: string;
-    sortOrder?: number;
     color?: string;
 }
 // export interface ReorderBoardColumnItemDto {
@@ -162,7 +158,6 @@ export interface CreateTaskDto {
     type: string;
     status: string;
     priority: string;
-    assigneeId?: string;
 }
 export interface UpdateTaskDto {
     title?: string;
@@ -171,7 +166,7 @@ export interface UpdateTaskDto {
 
     label?: string;
 
-    deadline?: string | null;
+    deadline?: string;
 
     status?: TaskStatus;
 
@@ -180,8 +175,6 @@ export interface UpdateTaskDto {
     assigneeId?: string | null;
 
     boardColumnId?: string;
-
-    columnOrder?: number;
 }
 
 

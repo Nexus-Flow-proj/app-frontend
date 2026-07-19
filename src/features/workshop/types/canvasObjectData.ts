@@ -1,3 +1,4 @@
+import type { TaskStatus, TaskPriority } from "@/types/enums";
 import type {
   SectionFrameKind,
   StickyNoteKind,
@@ -12,12 +13,16 @@ export type CanvasObjectData =
   | SubtaskCardData;
 
 export interface TaskCardData {
-  taskId?: string;
-  featureId?: string;
+  taskId: string;
   kind: TaskCardKind;
   title: string;
   description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assigneeAvatar?: string;
+  assigneeName?: string;
   dueDate?: string;
+  category?: string;
 }
 
 export interface StickyNoteData {
@@ -33,7 +38,6 @@ export interface ImageBlockData {
 }
 
 export interface SectionFrameData {
-  boardColumnId?: string;
   kind: SectionFrameKind;
   title: string;
   description?: string;

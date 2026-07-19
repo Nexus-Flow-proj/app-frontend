@@ -14,11 +14,9 @@ export function registerTaskHandlers(socketManager: SocketManager, qc: QueryClie
         console.log("TASK Event With Payload : ", payload);
     });
     socketManager.on(SOCKET_EVENTS.TASK.UPDATED, payload => {
-        const taskId = payload.task.id;
-        if (!taskId) return;
 
-        updateTaskInListCache(qc, payload.projectId, taskId, (task) => updateTaskList(task, payload.task));
-        updateTaskDetailCache(qc, taskId, (task) => updateTaskDetail(task, payload.task));
+        updateTaskInListCache(qc, payload.projectId, payload.task.id, (task) => updateTaskList(task, payload.task));
+        updateTaskDetailCache(qc, payload.task.id, (task) => updateTaskDetail(task, payload.task));
         console.log("TASK Event With Payload : ", payload);
     });
 

@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router";
 import { dateformat } from "@/lib/format/date";
-import { ROUTES } from "@/constants";
 import {
   ProjectActivityFeedCard,
   ProjectDetailsCard,
@@ -11,23 +10,16 @@ import {
   ProjectUnavailableState,
   type ProjectActivityItem,
 } from "../components/overview";
-import { useProjectAccess, useProjectMembers } from "../hooks";
-import {
-  canManageProjectSettings,
-  canReadBoard,
-  canReadWorkshop,
-} from "../utils/rolePermissions";
-import { isProjectAdmin } from "../utils/roles";
+import { useProject, useProjectMembers } from "../hooks";
 
 export default function ProjectOverviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const {
-    project,
-    role,
+    data: project,
     isLoading: isProjectLoading,
     isError: isProjectError,
-  } = useProjectAccess(id);
+  } = useProject(id);
   const { data: members = [], isLoading: isMembersLoading } =
     useProjectMembers(id);
 
@@ -45,29 +37,20 @@ export default function ProjectOverviewPage() {
     taskCount > 0 ? Math.round((completedTaskCount / taskCount) * 100) : 0;
   const createdAt = project.created_at ?? "";
   const updatedAt = project.updated_at ?? "";
-  const adminCount = members.filter((member) => isProjectAdmin(member)).length;
-  const projectAdmin =
-    members.find((member) => member.userId === project.adminId) ??
-    members.find((member) => isProjectAdmin(member)) ??
-    members[0];
-  const canManageSettings = role ? canManageProjectSettings(role) : false;
-  const canOpenWorkshop = role ? canReadWorkshop(role) : false;
-  const canOpenBoard = role ? canReadBoard(role) : false;
-  const adminName = projectAdmin
-    ? `${projectAdmin.firstName} ${projectAdmin.lastName}`.trim() ||
-      projectAdmin.email
+  const adminCount = members.filter((member) => member.isAdmin).length;
+  const owner = members.find((member) => member.isAdmin) ?? members[0];
+  const ownerName = owner
+    ? `${owner.firstName} ${owner.lastName}`.trim() || owner.email
     : "Not loaded";
   const activityFeed: ProjectActivityItem[] = [
     {
       title: "Project created",
-      description: `${project.name} was created${
-        projectAdmin ? ` by ${adminName}` : ""
-      }.`,
+      description: `${project.name} was created${owner ? ` by ${ownerName}` : ""}.`,
       time: createdAt ? dateformat(createdAt) : "Recently",
     },
     {
-      title: "Project admin assigned",
-      description: `${adminName} is currently listed as a project admin.`,
+      title: "Owner role assigned",
+      description: `${ownerName} is currently listed as the project owner/admin.`,
       time: createdAt ? dateformat(createdAt) : "Recently",
     },
     {
@@ -83,9 +66,6 @@ export default function ProjectOverviewPage() {
         <ProjectOverviewHero
           project={project}
           createdAt={createdAt}
-          canOpenWorkshop={canOpenWorkshop}
-          canOpenBoard={canOpenBoard}
-          canManageSettings={canManageSettings}
           onNavigate={navigate}
         />
         <ProjectStatsGrid
@@ -102,14 +82,13 @@ export default function ProjectOverviewPage() {
             members={members}
             adminCount={adminCount}
             isLoading={isMembersLoading}
-            onOpenMembers={() => navigate(ROUTES.PROJECT_MEMBERS(project.id))}
           />
         </div>
 
         <div className="grid gap-6">
           <ProjectDetailsCard
             project={project}
-            adminName={adminName}
+            ownerName={ownerName}
             createdAt={createdAt}
             updatedAt={updatedAt}
           />

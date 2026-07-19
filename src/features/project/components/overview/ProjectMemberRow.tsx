@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatInitials } from "@/lib/format/text";
 import type { ProjectMemberSummary } from "../../types";
-import { isProjectAdmin } from "../../utils/roles";
 
 interface ProjectMemberRowProps {
   member: ProjectMemberSummary;
@@ -28,8 +27,8 @@ export function ProjectMemberRow({ member }: ProjectMemberRowProps) {
           </p>
         </div>
       </div>
-      <Badge variant={isProjectAdmin(member) ? "secondary" : "outline"}>
-        {member.role?.name ?? member.roleLabel ?? "Project role"}
+      <Badge variant={member.isAdmin ? "secondary" : "outline"}>
+        {member.roleLabel}
       </Badge>
     </div>
   );

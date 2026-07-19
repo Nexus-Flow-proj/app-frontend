@@ -1,4 +1,4 @@
-import { Group, Line, Rect, Text } from "react-konva";
+import { Group, Rect, Text } from "react-konva";
 import type { CanvasObject } from "../../types";
 import { useStickyNoteNode } from "../../hooks/useStickyNoteNode";
 
@@ -31,37 +31,17 @@ export function StickyNoteNode({ obj }: Props) {
         height={obj.height}
         fill={data.color}
         shadowColor="rgba(15, 23, 42, 0.18)"
-        shadowBlur={isSelected ? 18 : 12}
-        shadowOffsetY={6}
+        shadowBlur={10}
+        shadowOffsetY={4}
         stroke={isSelected ? "#9063EB" : "rgba(15, 23, 42, 0.08)"}
         strokeWidth={isSelected ? 2.5 : 1}
-        cornerRadius={10}
-      />
-      <Rect
-        width={obj.width}
-        height={7}
-        fill="rgba(255, 255, 255, 0.38)"
-        cornerRadius={[10, 10, 0, 0]}
-        listening={false}
-      />
-      <Line
-        points={[
-          obj.width - 28,
-          0,
-          obj.width,
-          0,
-          obj.width,
-          28,
-        ]}
-        closed
-        fill="rgba(255, 255, 255, 0.48)"
-        listening={false}
+        cornerRadius={6}
       />
       <Text
-        x={16}
-        y={22}
-        width={obj.width - 32}
-        height={obj.height - 38}
+        x={14}
+        y={14}
+        width={obj.width - 28}
+        height={obj.height - 28}
         text={data.content}
         fontSize={data.fontSize ?? 13}
         fill="#374151"

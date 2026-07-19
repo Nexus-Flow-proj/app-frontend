@@ -22,52 +22,19 @@ import type {
     TaskStatus,
 } from "../types/enums";
 
-export function mapBoardMember(user: ApiUserSummary | null | undefined): BoardMember {
-    if (!user) {
-        return {
-            id: "unknown-user",
-            name: "Unknown user",
-        };
-    }
-
-    const firstName = user.firstName ?? user.first_name ?? "";
-    const lastName = user.lastName ?? user.last_name ?? "";
-    const fullName = `${firstName} ${lastName}`.trim();
-    const name = user.name ?? (fullName || user.email || "Unknown user");
-
+export function mapBoardMember(user: ApiUserSummary): BoardMember {
     return {
         id: user.id,
-        name,
+        name: user.firstName + " " + user.lastName,
         avatarUrl: user.avatarUrl ?? undefined,
     }
 }
-
-function hasUserDisplayName(user: ApiUserSummary | null | undefined) {
-    return Boolean(
-        user?.name ||
-        user?.firstName ||
-        user?.lastName ||
-        user?.first_name ||
-        user?.last_name ||
-        user?.email,
-    );
-}
-
-export function mapComment(
-    comment: ApiComment,
-    taskId: string,
-    fallbackAuthor?: BoardMember,
-): Comment {
-    const author =
-        hasUserDisplayName(comment.user) || !fallbackAuthor
-            ? mapBoardMember(comment.user)
-            : fallbackAuthor;
-
+export function mapComment(comment: ApiComment, taskId: string): Comment {
     return {
         id: comment.id,
         taskId,
-        authorId: comment.user?.id,
-        author,
+        authorId: comment.user.id,
+        author: mapBoardMember(comment.user),
         content: comment.body,
         createdAt: comment.created_at,
         updatedAt: comment.updated_at,
@@ -101,21 +68,16 @@ export function mapSubtask(subtask: ApiSubtask, taskId: string): Subtask {
 //         createdAt: attachment.created_at,
 //     }
 // }
-export function mapTimeLog(
-    timeLog: ApiTimeLog,
-    taskId: string,
-    fallbackUser?: BoardMember,
-): TimeLog {
-    const user =
-        hasUserDisplayName(timeLog.user) || !fallbackUser
-            ? mapBoardMember(timeLog.user)
-            : fallbackUser;
-
+export function mapTimeLog(timeLog: ApiTimeLog, taskId: string): TimeLog {
     return {
         id: timeLog.id,
         taskId,
-        userId: timeLog.user?.id ?? user.id,
-        user,
+        userId: timeLog.user.id,
+        user: {
+            id: timeLog.user.id,
+            name: `${timeLog.user.firstName} ${timeLog.user.lastName}`,
+            avatar: timeLog.user.avatarUrl ?? undefined,
+        },
         minutes: timeLog.durationMin,
         description: timeLog.note,
         loggedAt: timeLog.loggedDate,
@@ -144,9 +106,8 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
         subtasksCount: task.subtasksCount,
         completedSubtasksCount: task.completedSubtasksCount,
         attachmentsCount: task.attachmentsCount,
-        description: task.description ?? undefined,
-        dueDate: task.deadline ?? undefined,
-        tags: task.label ? [task.label] : [],
+        description: task.description,
+        dueDate: task.deadline,
 
     };
 }
@@ -175,7 +136,6 @@ export function mapTaskDetail(
         completedSubtasksCount:
             task.completedSubtasksCount,
         attachmentsCount: task.attachmentsCount,
-        tags: task.label ? [task.label] : [],
     };
 
     return {

@@ -109,14 +109,15 @@ export class SocketManager {
      * Register a typed socket listener.
      */
     on<K extends keyof ServerToClientEvents>(event: K, listener: ServerToClientEvents[K]): () => void {
-        this.socket.on(event, listener as never);
-        return () => { this.socket.off(event, listener as never) };
+        this.socket.on(event, listener as any);
+        return () => { this.socket.off(event, listener as any) };
     }
     off<K extends keyof ServerToClientEvents>(event: K, listener: ServerToClientEvents[K]): void {
-        this.socket.off(event, listener as never);
+        this.socket.off(event, listener as any);
     }
     once<K extends keyof ServerToClientEvents>(event: K, listener: ServerToClientEvents[K]): void {
-        this.socket.once(event, listener as never)
+        this.socket.once(event, listener as any)
     }
 }
+
 

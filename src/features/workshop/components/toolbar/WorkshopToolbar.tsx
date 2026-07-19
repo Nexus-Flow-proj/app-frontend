@@ -11,23 +11,13 @@ import ToolbarButton from "./ToolbarButton";
 import { TOOLS } from "../../constants/tools";
 
 export function WorkshopToolbar() {
-  const {
-    activeTool,
-    setActiveTool,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    isEditing,
-  } = useWorkshopToolbar();
-  const visibleTools = isEditing
-    ? TOOLS
-    : TOOLS.filter(({ tool }) => tool === "select" || tool === "pan");
+  const { activeTool, setActiveTool, undo, redo, canUndo, canRedo } =
+    useWorkshopToolbar();
 
   return (
-    <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-xl border border-border/80 bg-card/92 px-2 py-1.5 text-[11px] text-muted-foreground shadow-lg shadow-slate-900/5 backdrop-blur-md">
+    <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-md border border-border bg-card/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur">
       <div className="flex items-center gap-1">
-        {visibleTools.map(({ tool, icon: Icon, label, shortcut }) => (
+        {TOOLS.map(({ tool, icon: Icon, label, shortcut }) => (
           <ToolbarButton
             key={tool}
             Icon={Icon}
@@ -38,9 +28,8 @@ export function WorkshopToolbar() {
           />
         ))}
 
-        {isEditing ? (
-          <div className="flex items-center gap-1">
-            <Separator orientation="vertical" />
+        <div className="flex items-center gap-1">
+          <Separator orientation="vertical" />
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -81,8 +70,7 @@ export function WorkshopToolbar() {
               </kbd>
             </TooltipContent>
           </Tooltip>
-          </div>
-        ) : null}
+        </div>
       </div>
     </div>
   );

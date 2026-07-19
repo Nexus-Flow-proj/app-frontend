@@ -341,7 +341,7 @@ function buildComments(taskId: string): Comment[] {
 // ─── Task cards — counts are derived, never hand-typed ───────────────────────
 type TaskInput = Omit<
   Task,
-  "subtasksCount" | "completedSubtasksCount" | "commentsCount"
+  "subtasksCount" | "completedsubtasksCount" | "commentsCount"
 >;
 
 const createTask = (task: TaskInput): Task => {
@@ -351,7 +351,7 @@ const createTask = (task: TaskInput): Task => {
   return {
     ...task,
     subtasksCount: subtasks.length,
-    completedSubtasksCount: subtasks.filter((s) => s.completed).length,
+    completedsubtasksCount: subtasks.filter((s) => s.completed).length,
     commentsCount: comments.length,
   };
 };
@@ -584,7 +584,6 @@ export const MOCK_TASK_DETAIL: Partial<Record<string, TaskDetail>> =
       subtasks: buildSubtasks(task.id),
       comments: buildComments(task.id),
       activityLog: buildActivityLog(task.id),
-      attachments: [],
     };
     return acc;
   }, {});

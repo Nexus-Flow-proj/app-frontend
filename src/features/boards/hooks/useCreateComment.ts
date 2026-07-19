@@ -7,12 +7,8 @@ import { mapComment } from "../mappers/task.mapper";
 
 import type { CreateCommentDto } from "../types/api/board-api.types";
 import { addCommentToCache } from "../cache/task-detail.cache";
-import type { BoardMember } from "../types";
 
-export function useCreateComment(
-    taskId: string,
-    fallbackAuthor?: BoardMember,
-) {
+export function useCreateComment(taskId: string) {
     const queryClient = useQueryClient();
 
     return useApiMutation(
@@ -21,11 +17,7 @@ export function useCreateComment(
 
         {
             onSuccess: (res) => {
-                const newComment = mapComment(
-                    res.data,
-                    taskId,
-                    fallbackAuthor,
-                );
+                const newComment = mapComment(res.data, taskId);
                 addCommentToCache(queryClient, taskId, newComment);
             },
         }

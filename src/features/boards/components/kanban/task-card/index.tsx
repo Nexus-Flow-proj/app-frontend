@@ -70,7 +70,7 @@ function TaskCard({
 
         {!!task.subtasksCount && task.subtasksCount > 0 && (
           <SubtaskProgress
-            completed={task.completedSubtasksCount ?? 0}
+            completed={task.completedsubtasksCount ?? 0}
             total={task.subtasksCount}
           />
         )}

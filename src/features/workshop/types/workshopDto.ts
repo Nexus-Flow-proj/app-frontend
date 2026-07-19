@@ -1,15 +1,21 @@
+import type { TaskStatus, TaskPriority } from "@/types/enums";
+
 export interface CreateTaskCardPayload {
-  featureId: string;
   title: string;
   description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assigneeId?: string;
   dueDate?: string;
   position: { x: number; y: number };
 }
 
 export interface UpdateTaskCardPayload {
-  featureId?: string;
   title?: string;
   description?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  assigneeId?: string | null;
   dueDate?: string | null;
 }
 

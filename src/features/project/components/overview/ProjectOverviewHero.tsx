@@ -1,4 +1,8 @@
-import { KanbanSquareIcon, Settings2Icon, SparklesIcon } from "lucide-react";
+import {
+  KanbanSquareIcon,
+  Settings2Icon,
+  SparklesIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
@@ -9,18 +13,12 @@ import type { ProjectDetails } from "../../types";
 interface ProjectOverviewHeroProps {
   project: ProjectDetails;
   createdAt: string;
-  canOpenWorkshop: boolean;
-  canOpenBoard: boolean;
-  canManageSettings: boolean;
   onNavigate: (to: string) => void;
 }
 
 export function ProjectOverviewHero({
   project,
   createdAt,
-  canOpenWorkshop,
-  canOpenBoard,
-  canManageSettings,
   onNavigate,
 }: ProjectOverviewHeroProps) {
   return (
@@ -56,39 +54,33 @@ export function ProjectOverviewHero({
         </div>
       </div>
 
-      <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-72">
-        {canOpenWorkshop && (
-          <Button
-            size="lg"
-            className="justify-center gap-2"
-            onClick={() => onNavigate(ROUTES.WORKSHOP(project.id))}
-          >
-            <SparklesIcon data-icon="inline-start" className="size-4" />
-            <span>Workshop</span>
-          </Button>
-        )}
-        {canOpenBoard && (
-          <Button
-            size="lg"
-            variant="surface"
-            className="justify-center gap-2"
-            onClick={() => onNavigate(ROUTES.BOARDS(project.id))}
-          >
-            <KanbanSquareIcon data-icon="inline-start" className="size-4" />
-            <span>Board</span>
-          </Button>
-        )}
-        {canManageSettings && (
-          <Button
-            size="lg"
-            variant="surface"
-            className="justify-center gap-2"
-            onClick={() => onNavigate(ROUTES.PROJECT_SETTINGS(project.id))}
-          >
-            <Settings2Icon data-icon="inline-start" className="size-4" />
-            <span>Settings</span>
-          </Button>
-        )}
+      <div className="grid w-full gap-2 sm:grid-cols-3 lg:w-auto lg:min-w-108">
+        <Button
+          size="lg"
+          className="justify-center gap-2"
+          onClick={() => onNavigate(ROUTES.WORKSHOP(project.id))}
+        >
+          <SparklesIcon data-icon="inline-start" className="size-4" />
+          <span>Workshop</span>
+        </Button>
+        <Button
+          size="lg"
+          variant="surface"
+          className="justify-center gap-2"
+          onClick={() => onNavigate(ROUTES.BOARDS(project.id))}
+        >
+          <KanbanSquareIcon data-icon="inline-start" className="size-4" />
+          <span>Board</span>
+        </Button>
+        <Button
+          size="lg"
+          variant="surface"
+          className="justify-center gap-2"
+          onClick={() => onNavigate(ROUTES.PROJECT_SETTINGS(project.id))}
+        >
+          <Settings2Icon data-icon="inline-start" className="size-4" />
+          <span>Settings</span>
+        </Button>
       </div>
     </div>
   );

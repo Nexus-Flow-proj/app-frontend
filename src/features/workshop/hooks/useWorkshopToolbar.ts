@@ -7,7 +7,6 @@ export function useWorkshopToolbar() {
   const redo = useWorkshopStore((s) => s.redo);
   const undoStack = useWorkshopStore((s) => s.undoStack);
   const redoStack = useWorkshopStore((s) => s.redoStack);
-  const isEditing = useWorkshopStore((s) => s.isEditing);
 
   return {
     activeTool,
@@ -16,6 +15,5 @@ export function useWorkshopToolbar() {
     redo,
     canUndo: undoStack.length > 0,
     canRedo: redoStack.length > 0,
-    isEditing,
   };
 }

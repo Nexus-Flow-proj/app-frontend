@@ -1,9 +1,9 @@
+import { useAuthStore } from "@/store";
+import { useMe } from "@/features/auth/hooks";
+import Loading from "@/components/shared/loading/Loading";
 import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
-import Loading from "@/components/shared/loading/Loading";
-import { useMe } from "@/features/auth/hooks";
 import { markSessionActive } from "@/lib/api/session";
-import { useAuthStore } from "@/store";
 
 export function AuthGuard() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);

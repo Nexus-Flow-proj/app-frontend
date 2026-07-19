@@ -2,7 +2,7 @@ import ColumnSkeleton from "./ColumnSkeleton";
 
 function BoardSkeleton() {
   return (
-    <div className="flex items-start gap-4">
+    <div>
       <ColumnSkeleton />
       <ColumnSkeleton />
       <ColumnSkeleton />

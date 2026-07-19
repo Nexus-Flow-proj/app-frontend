@@ -1,255 +1,147 @@
 import { create } from "zustand";
-import { CanvasObjectType } from "@/types/enums";
+import {
+  mockCanvasConnections,
+  mockCanvasObjects,
+  mockViewport,
+} from "../data/workshop-mock";
 import type {
   CanvasConnection,
   CanvasObject,
   CanvasViewport,
-  TaskCardData,
   WorkshopSnapshot,
   WorkshopTool,
 } from "../types";
-import { MAX_UNDO_STEPS } from "../constants";
 import { cloneSnapshot, pushUndo } from "../utils/cloneSnapshotCanvas";
-import { normalizeTaskContainment } from "../utils/featureContainment";
 
+// Define the shape of the workshop Data (This describes the data stored inside Zustand.
 export interface WorkshopState {
-  projectId: Nullable<string>;
   canvasId: Nullable<string>;
   objects: CanvasObject[];
   connections: CanvasConnection[];
   viewport: CanvasViewport;
-  publishedSnapshot: WorkshopSnapshot;
-  publishedViewport: CanvasViewport;
-  isEditing: boolean;
-  isPublishing: boolean;
-  isDirty: boolean;
+  isDirty: boolean; // indicates if the canvas has unsaved changes
   activeTool: WorkshopTool;
   selectedObjectId: Nullable<string>;
-  detailsObjectId: Nullable<string>;
-  hoveredObjectId: Nullable<string>;
-  isConnecting: boolean;
-  connectFromId: Nullable<string>;
+  detailsObjectId: Nullable<string>; // The object currently open in the details drawer. UI-only, never persisted.
+  hoveredObjectId: Nullable<string>; // The object currently under the mouse. Used for hover styling.
+  isConnecting: boolean; // True when the user has clicked a source node and is hovering over the canvas to select a target node.
+  connectFromId: Nullable<string>; // The ID of the source node when isConnecting is true. Used to create a new connection when the user clicks a target node.
   undoStack: WorkshopSnapshot[];
   redoStack: WorkshopSnapshot[];
 }
 
+// Define the shape of the workshop actions (This describes all functions/actions the store can do.)
 interface WorkshopActions {
-  beginEdit: () => void;
-  discardDraft: () => void;
-  setPublishing: (isPublishing: boolean) => void;
-  completePublish: (
+  setActiveTool: (tool: WorkshopTool) => void;
+  selectObject: (id: Nullable<string>) => void; // Select or deselect an object.
+  openObjectDetails: (id: string) => void; // Open the details drawer for an object.
+  closeObjectDetails: () => void; // Close the details drawer.
+  setHoveredObject: (id: Nullable<string>) => void; // Set the object currently under the mouse. Used for hover styling.
+  setViewport: (vp: Partial<CanvasViewport>) => void;
+
+  // Object CRUD.
+  addObject: (obj: CanvasObject) => void;
+  updateObject: (id: string, patch: Partial<CanvasObject>) => void;
+  moveObject: (id: string, { x, y }: Coordinates) => void;
+  deleteObject: (id: string) => void;
+
+  // Connection CRUD.
+  addConnection: (conn: CanvasConnection) => void;
+  deleteConnection: (id: string) => void;
+
+  // Connection workflow.
+  startConnect: (fromId: string) => void;
+  finishConnect: (toId: string) => void;
+  cancelConnect: () => void;
+
+  // History operations (Undo and redo canvas changes)
+  undo: () => void;
+  redo: () => void;
+
+  markClean: () => void; // Mark canvas as saved (Ex. after successful backend save later)
+  loadCanvas: (
+    // Load a full canvas. Later, when backend is ready, this will be useful after fetching data
+    canvasId: string,
     objects: CanvasObject[],
     connections: CanvasConnection[],
     viewport: CanvasViewport,
   ) => void;
-  setActiveTool: (tool: WorkshopTool) => void;
-  selectObject: (id: Nullable<string>) => void;
-  openObjectDetails: (id: string) => void;
-  closeObjectDetails: () => void;
-  setHoveredObject: (id: Nullable<string>) => void;
-  setViewport: (viewport: Partial<CanvasViewport>) => void;
-  addObject: (object: CanvasObject) => void;
-  updateObject: (id: string, patch: Partial<CanvasObject>) => void;
-  moveObject: (id: string, position: Coordinates) => void;
-  previewFeatureMove: (id: string, position: Coordinates) => void;
-  commitPreviewMove: (snapshot: WorkshopSnapshot) => void;
-  deleteObject: (id: string) => void;
-  addConnection: (connection: CanvasConnection) => void;
-  deleteConnection: (id: string) => void;
-  startConnect: (fromId: string) => void;
-  finishConnect: (toId: string) => void;
-  cancelConnect: () => void;
-  undo: () => void;
-  redo: () => void;
-  markClean: () => void;
-  loadCanvas: (
-    projectId: string,
-    canvasId: string,
-    objects: CanvasObject[],
-    connections: CanvasConnection[],
-    viewport?: CanvasViewport,
-  ) => void;
-}
-
-const initialSnapshot = cloneSnapshot([], []);
-const initialViewport = { x: 24, y: 24, scale: 0.82 };
-
-function appendUndoSnapshot(
-  stack: WorkshopSnapshot[],
-  snapshot: WorkshopSnapshot,
-): WorkshopSnapshot[] {
-  const start = Math.max(0, stack.length - MAX_UNDO_STEPS + 1);
-  return [
-    ...stack.slice(start),
-    cloneSnapshot(snapshot.objects, snapshot.connections),
-  ];
 }
 
 export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
   (set) => ({
-    projectId: null,
-    canvasId: null,
-    objects: initialSnapshot.objects,
-    connections: initialSnapshot.connections,
-    viewport: initialViewport,
-    publishedSnapshot: cloneSnapshot(
-      initialSnapshot.objects,
-      initialSnapshot.connections,
-    ),
-    publishedViewport: initialViewport,
-    isEditing: false,
-    isPublishing: false,
-    isDirty: false,
-    activeTool: "select",
+    //** state
+    // This is the initial state of the store. Later, when backend is ready, this will be replaced with data fetched from the backend.
+    // For now, we use mock data.
+    canvasId: "mock-canvas-01",
+    objects: mockCanvasObjects,
+    connections: mockCanvasConnections,
+    viewport: mockViewport,
+
+    isDirty: false, // At first, nothing changed
+
+    activeTool: "select", // Default tool is select.
+
+    // At first, no object selected or hovered.
     selectedObjectId: null,
     detailsObjectId: null,
     hoveredObjectId: null,
+
+    // At first, user is not creating a connection.
     isConnecting: false,
     connectFromId: null,
+
+    // At first, there is no undo/redo history.
     undoStack: [],
     redoStack: [],
 
-    beginEdit: () =>
-      set((state) => {
-        if (state.isEditing || state.isPublishing) return {};
-        return {
-          publishedSnapshot: cloneSnapshot(state.objects, state.connections),
-          publishedViewport: structuredClone(state.viewport),
-          isEditing: true,
-          isDirty: false,
-          activeTool: "select",
-          selectedObjectId: null,
-          detailsObjectId: null,
-          undoStack: [],
-          redoStack: [],
-        };
-      }),
-
-    discardDraft: () =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const published = cloneSnapshot(
-          state.publishedSnapshot.objects,
-          state.publishedSnapshot.connections,
-        );
-        return {
-          objects: published.objects,
-          connections: published.connections,
-          viewport: structuredClone(state.publishedViewport),
-          isEditing: false,
-          isDirty: false,
-          activeTool: "select",
-          selectedObjectId: null,
-          detailsObjectId: null,
-          hoveredObjectId: null,
-          isConnecting: false,
-          connectFromId: null,
-          undoStack: [],
-          redoStack: [],
-        };
-      }),
-
-    setPublishing: (isPublishing) => set({ isPublishing }),
-
-    completePublish: (objects, connections, viewport) => {
-      const published = cloneSnapshot(objects, connections);
-      set({
-        objects: published.objects,
-        connections: published.connections,
-        viewport: structuredClone(viewport),
-        publishedSnapshot: cloneSnapshot(
-          published.objects,
-          published.connections,
-        ),
-        publishedViewport: structuredClone(viewport),
-        isEditing: false,
-        isPublishing: false,
-        isDirty: false,
-        activeTool: "select",
-        selectedObjectId: null,
-        detailsObjectId: null,
-        hoveredObjectId: null,
-        isConnecting: false,
-        connectFromId: null,
-        undoStack: [],
-        redoStack: [],
-      });
-    },
-
+    //** actions
     setActiveTool: (tool) =>
-      set((state) => {
-        if (!state.isEditing && tool !== "select" && tool !== "pan") {
-          return {};
-        }
-        return {
-          activeTool: tool,
-          ...(tool !== "connect"
-            ? { isConnecting: false, connectFromId: null }
-            : {}),
-        };
+      set({
+        activeTool: tool,
+        // If the user changes to any tool except "connect", it cancels connection mode.
+        ...(tool !== "connect"
+          ? { isConnecting: false, connectFromId: null }
+          : null),
       }),
 
     selectObject: (id) => set({ selectedObjectId: id }),
     openObjectDetails: (id) => set({ detailsObjectId: id }),
     closeObjectDetails: () => set({ detailsObjectId: null }),
-    setHoveredObject: (id) => set({ hoveredObjectId: id }),
-    setViewport: (viewport) =>
-      set((state) => {
-        const nextViewport = { ...state.viewport, ...viewport };
-        const changed =
-          nextViewport.x !== state.viewport.x ||
-          nextViewport.y !== state.viewport.y ||
-          nextViewport.scale !== state.viewport.scale;
-        return {
-          viewport: nextViewport,
-          ...(state.isEditing && changed ? { isDirty: true } : {}),
-        };
-      }),
+    setHoveredObject: (id) => set({ hoveredObjectId: id }), // This is UI-only state. It should never be saved to backend
 
     startConnect: (fromId) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const source = state.objects.find((object) => object.id === fromId);
-        if (source?.type !== CanvasObjectType.SECTION_FRAME) return {};
-        return { isConnecting: true, connectFromId: fromId };
-      }),
-
+      set({ isConnecting: true, connectFromId: fromId }),
     cancelConnect: () => set({ isConnecting: false, connectFromId: null }),
-
     finishConnect: (toId) =>
       set((state) => {
-        if (!state.isEditing || state.isPublishing || !state.connectFromId) {
+        // Case 1: no source, or source equals target: This prevents invalid connections
+        if (!state.connectFromId || state.connectFromId === toId) {
           return { isConnecting: false, connectFromId: null };
         }
-        const source = state.objects.find(
-          (object) => object.id === state.connectFromId,
-        );
-        const target = state.objects.find((object) => object.id === toId);
-        if (
-          source?.type !== CanvasObjectType.SECTION_FRAME ||
-          target?.type !== CanvasObjectType.SECTION_FRAME ||
-          source.id === target.id
-        ) {
-          return { isConnecting: false, connectFromId: null };
-        }
+
+        // Case 2: duplicate connection: This prevents duplicate arrows.
         const exists = state.connections.some(
-          (connection) =>
-            connection.fromObjectId === source.id &&
-            connection.toObjectId === target.id,
+          (conn) =>
+            conn.fromObjectId === state.connectFromId &&
+            conn.toObjectId === toId,
         );
         if (exists) return { isConnecting: false, connectFromId: null };
 
         return {
           connections: [
+            // This is immutable update. We do not mutate the old array.
             ...state.connections,
             {
-              id: `connection-${Date.now()}`,
-              fromObjectId: source.id,
-              toObjectId: target.id,
+              // newConnection
+              id: `conn-${Date.now()}`,
+              fromObjectId: state.connectFromId,
+              toObjectId: toId,
               style: {
-                color: "#8B5CF6",
+                color: "#9063EB",
                 strokeWidth: 2,
-                type: "ARROW",
+                dashed: false,
+                arrowEnd: true,
               },
             },
           ],
@@ -261,30 +153,40 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         };
       }),
 
-    addObject: (object) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        return {
-          objects: [...state.objects, object],
-          selectedObjectId: object.id,
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
+    addObject: (obj) =>
+      set((state) => ({
+        objects: [...state.objects, obj],
+        selectedObjectId: obj.id,
+        undoStack: pushUndo(state),
+        redoStack: [],
+        isDirty: true,
+      })),
 
+    /**
+       * Important: this is a shallow patch.
+        This works:
+        updateObject(id, { x: 100 })
+        This works too:
+        updateObject(id, { data: newData })
+        But this would be wrong if you expected deep merging:
+        updateObject(id, {
+          data: { title: "Only title" }
+        })
+        That would replace the entire data object and lose other fields.
+        That is why drawer code does this:
+        data: {
+          ...(obj.data as TaskCardData),
+          title: form.title,
+        }
+        It preserves existing data manually.
+      */
     updateObject: (id, patch) =>
       set((state) => {
-        if (
-          !state.isEditing ||
-          state.isPublishing ||
-          !state.objects.some((object) => object.id === id)
-        ) {
-          return {};
-        }
+        // First it checks if the object exists.
+        if (!state.objects.some((obj) => obj.id === id)) return {};
         return {
-          objects: state.objects.map((object) =>
-            object.id === id ? { ...object, ...patch } : object,
+          objects: state.objects.map((obj) =>
+            obj.id === id ? { ...obj, ...patch } : obj,
           ),
           undoStack: pushUndo(state),
           redoStack: [],
@@ -292,142 +194,65 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         };
       }),
 
+    /**
+     * does not push to undo stack. because dragging fires many updates. If every drag movement pushed undo,
+     * one drag would create dozens or hundreds of undo entries.
+     */
     moveObject: (id, { x, y }) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const movingObject = state.objects.find((object) => object.id === id);
-        if (!movingObject) return {};
-        const dx = x - movingObject.x;
-        const dy = y - movingObject.y;
-        return {
-          objects: state.objects.map((object) => {
-            if (object.id === id) return { ...object, x, y };
-            if (
-              movingObject.type === CanvasObjectType.SECTION_FRAME &&
-              object.type === CanvasObjectType.TASK_CARD &&
-              (object.data as TaskCardData).featureId === id
-            ) {
-              return { ...object, x: object.x + dx, y: object.y + dy };
-            }
-            return object;
-          }),
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
-
-    previewFeatureMove: (id, { x, y }) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const feature = state.objects.find(
-          (object) =>
-            object.id === id &&
-            object.type === CanvasObjectType.SECTION_FRAME,
-        );
-        if (!feature) return {};
-        const dx = x - feature.x;
-        const dy = y - feature.y;
-        if (dx === 0 && dy === 0) return {};
-
-        return {
-          objects: state.objects.map((object) => {
-            if (object.id === id) return { ...object, x, y };
-            if (
-              object.type === CanvasObjectType.TASK_CARD &&
-              (object.data as TaskCardData).featureId === id
-            ) {
-              return { ...object, x: object.x + dx, y: object.y + dy };
-            }
-            return object;
-          }),
-        };
-      }),
-
-    commitPreviewMove: (snapshot) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const changed =
-          JSON.stringify(snapshot.objects) !== JSON.stringify(state.objects);
-        if (!changed) return {};
-        return {
-          undoStack: appendUndoSnapshot(state.undoStack, snapshot),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
+      set((state) => ({
+        objects: state.objects.map((obj) =>
+          obj.id === id ? { ...obj, x, y } : obj,
+        ),
+        isDirty: true,
+      })),
 
     deleteObject: (id) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        const selected = state.objects.find((object) => object.id === id);
-        const idsToDelete = new Set([id]);
+      set((state) => ({
+        objects: state.objects.filter((obj) => obj.id !== id),
+        connections: state.connections.filter(
+          (conn) => conn.fromObjectId !== id && conn.toObjectId !== id,
+        ),
+        selectedObjectId:
+          state.selectedObjectId === id ? null : state.selectedObjectId,
+        detailsObjectId:
+          state.detailsObjectId === id ? null : state.detailsObjectId,
+        undoStack: pushUndo(state),
+        redoStack: [],
+        isDirty: true,
+      })),
 
-        if (selected?.type === CanvasObjectType.SECTION_FRAME) {
-          state.objects.forEach((object) => {
-            if (
-              object.type === CanvasObjectType.TASK_CARD &&
-              (object.data as TaskCardData).featureId === id
-            ) {
-              idsToDelete.add(object.id);
-            }
-          });
-        }
-
-        return {
-          objects: state.objects.filter(
-            (object) => !idsToDelete.has(object.id),
-          ),
-          connections: state.connections.filter(
-            (connection) =>
-              !idsToDelete.has(connection.fromObjectId) &&
-              !idsToDelete.has(connection.toObjectId),
-          ),
-          selectedObjectId: idsToDelete.has(state.selectedObjectId ?? "")
-            ? null
-            : state.selectedObjectId,
-          detailsObjectId: idsToDelete.has(state.detailsObjectId ?? "")
-            ? null
-            : state.detailsObjectId,
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
-
-    addConnection: (connection) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        return {
-          connections: [...state.connections, connection],
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
+    addConnection: (newConnection) =>
+      set((state) => ({
+        connections: [...state.connections, newConnection],
+        undoStack: pushUndo(state),
+        redoStack: [],
+        isDirty: true,
+      })),
 
     deleteConnection: (id) =>
-      set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
-        return {
-          connections: state.connections.filter(
-            (connection) => connection.id !== id,
-          ),
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-        };
-      }),
+      set((state) => ({
+        connections: state.connections.filter((conn) => conn.id !== id),
+        undoStack: pushUndo(state),
+        redoStack: [],
+        isDirty: true,
+      })),
+
+    setViewport: (vp) =>
+      set((state) => ({ viewport: { ...state.viewport, ...vp } })),
 
     undo: () =>
       set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
+        // Gets the latest undo snapshot.
         const snapshot = state.undoStack.at(-1);
         if (!snapshot) return {};
+
         return {
+          // Restores old objects and connections.
           objects: snapshot.objects,
           connections: snapshot.connections,
+          //Removes the snapshot we just used.
           undoStack: state.undoStack.slice(0, -1),
+          // Pushes the current state to redo stack, so we can redo it later.
           redoStack: [
             ...state.redoStack,
             cloneSnapshot(state.objects, state.connections),
@@ -438,7 +263,6 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     redo: () =>
       set((state) => {
-        if (!state.isEditing || state.isPublishing) return {};
         const snapshot = state.redoStack.at(-1);
         if (!snapshot) return {};
         return {
@@ -455,30 +279,17 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     markClean: () => set({ isDirty: false }),
 
-    loadCanvas: (projectId, canvasId, objects, connections, viewport) =>
-      set((state) => {
-        if (state.isEditing || state.isPublishing) return {};
-        const normalizedObjects = normalizeTaskContainment(objects);
-        const published = cloneSnapshot(normalizedObjects, connections);
-        const loadedViewport = viewport ?? initialViewport;
-        return {
-          projectId,
-          canvasId,
-          objects: published.objects,
-          connections: published.connections,
-          viewport: structuredClone(loadedViewport),
-          publishedSnapshot: cloneSnapshot(
-            published.objects,
-            published.connections,
-          ),
-          publishedViewport: structuredClone(loadedViewport),
-          isDirty: false,
-          undoStack: [],
-          redoStack: [],
-          selectedObjectId: null,
-          detailsObjectId: null,
-          activeTool: "select",
-        };
+    loadCanvas: (canvasId, objects, connections, viewport) =>
+      set({
+        canvasId,
+        objects,
+        connections,
+        viewport,
+        isDirty: false,
+        undoStack: [],
+        redoStack: [],
+        selectedObjectId: null,
+        detailsObjectId: null,
       }),
   }),
 );

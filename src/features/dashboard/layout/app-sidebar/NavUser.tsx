@@ -19,32 +19,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/authStore";
+import { MOCK_USER } from "../../mock";
 import NavUserInfo from "./NavUserInfo";
 import { useLogout } from "@/features/auth/hooks";
 
 export function NavUser() {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((s) => s.user) ?? MOCK_USER;
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const plan: string = "Free"; // Replace with actual plan logic if available
-
-  if (!user) {
-    return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size="lg" disabled>
-            <Skeleton className="size-8 rounded-lg" />
-            <span className="grid flex-1 gap-1">
-              <Skeleton className="h-3 w-24 rounded" />
-              <Skeleton className="h-3 w-32 rounded" />
-            </span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    );
-  }
 
   return (
     <SidebarMenu>

@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import type Konva from "konva";
 import { CanvasObjectType } from "@/types/enums";
+import { STATUS_CONFIG } from "../constants";
 import { useWorkshopStore } from "../store/workshopStore";
 import type {
   CanvasObject,
   SectionFrameData,
   StickyNoteData,
+  TaskCardData,
 } from "../types";
 
 export const MINI_MAP_W = 180;
@@ -18,7 +20,8 @@ const SCALE_Y = MINI_MAP_H / CANVAS_H;
 
 function miniColor(obj: CanvasObject): string {
   if (obj.type === CanvasObjectType.TASK_CARD) {
-    return "#8B5CF6";
+    const data = obj.data as TaskCardData;
+    return STATUS_CONFIG[data.status]?.dot ?? "#CBD5E1";
   }
   if (obj.type === CanvasObjectType.STICKY_NOTE) {
     return (obj.data as StickyNoteData).color;

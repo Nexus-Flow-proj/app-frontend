@@ -32,24 +32,12 @@ interface AddColumnDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: NewColumnData) => void;
-  initialData?: NewColumnData | null;
-  title?: string;
-  submitLabel?: string;
-  isSubmitting?: boolean;
 }
 
 
-export function AddColumnDialog({
-  isOpen,
-  onClose,
-  onSubmit,
-  initialData,
-  title = "New column",
-  submitLabel = "Add column",
-  isSubmitting = false,
-}: AddColumnDialogProps) {
-  const [name, setName] = useState(initialData?.name ?? "");
-  const [color, setColor] = useState<string>(initialData?.color ?? DEFAULT_COLOR);
+export function AddColumnDialog({ isOpen, onClose, onSubmit }: AddColumnDialogProps) {
+  const [name, setName] = useState("");
+  const [color, setColor] = useState<string>(DEFAULT_COLOR);
 
   const reset = () => {
     setName("");
@@ -63,15 +51,17 @@ export function AddColumnDialog({
 
   const handleSubmit = () => {
     const trimmed = name.trim();
-    if (!trimmed || isSubmitting) return;
+    if (!trimmed) return;
     onSubmit({ name: trimmed, color });
+    reset();
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-base">{title}</DialogTitle>
+          <DialogTitle className="text-base">New column</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -93,11 +83,8 @@ export function AddColumnDialog({
             <p className="text-xs text-muted-foreground">Color</p>
             <div className="flex items-center gap-2">
               {COLUMN_COLORS.map((c) => (
-                <Button
+                <button
                   key={c.value}
-                  type="button"
-                  variant="transparent"
-                  size="icon-xs"
                   title={c.label}
                   onClick={() => setColor(c.value)}
                   className={cn(
@@ -130,13 +117,8 @@ export function AddColumnDialog({
           <Button variant="ghost" size="sm" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={!name.trim()}
-            isLoading={isSubmitting}
-          >
-            {submitLabel}
+          <Button size="sm" onClick={handleSubmit} disabled={!name.trim()}>
+            Add column
           </Button>
         </DialogFooter>
       </DialogContent>

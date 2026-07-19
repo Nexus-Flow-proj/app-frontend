@@ -47,7 +47,3 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-
-#agent
-.codex
-.playwright-mcp

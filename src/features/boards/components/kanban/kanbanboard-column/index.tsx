@@ -24,6 +24,7 @@ import type { BoardState, Task } from "../../../types";
 import KanbanColumnActionsMenu from "./ColumnActionsMenu";
 import TaskCard from "../task-card";
 import { MyEmpty } from "@/components/shared/feedback/MyEmpty";
+import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
 
 interface KanbanBoardColumnProps {
   columnId: string;
@@ -52,6 +53,24 @@ function KanbanBoardColumn({
   const filters = useUrlFilters();
   const filteredTasks = useFilteredTasks(tasks, currentUserId);
   const { attributes, listeners, setNodeRef, style } = useSortableColumn(column);
+  const highlighted = useHighlightStore(
+    state =>
+      state.highlighted
+        .get(HighlightEntity.column)
+        ?.has(column.id) ?? false,
+  );
+  const removing = useHighlightStore(
+    state =>
+      state.removing
+        .get(HighlightEntity.column)
+        ?.has(column.id) ?? false,
+  );
+  const moving = useHighlightStore(
+    state =>
+      state.moving
+        .get(HighlightEntity.column)
+        ?.has(column.id) ?? false,
+  );
 
   const accentColor =
     column.color ?? COLUMN_ACCENT_COLORS[column.name] ?? "var(--primary)";
@@ -63,96 +82,113 @@ function KanbanBoardColumn({
   );
 
   return (
-    <Card ref={setNodeRef} style={style} className="w-68">
-      <CardHeader
-        className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <div className="min-w-0">
-          <div
-            className="h-0.5 w-7 rounded-full mb-3 opacity-90"
-            style={{ background: accentColor }}
-          />
-          <div className="flex items-center gap-2 min-w-0">
-            <CardTitle className="text-[14px] font-semibold truncate">
-              {column.name}
-            </CardTitle>
-            <Badge
-              variant="outline"
-              size="sm"
-              shape="rounded"
-              className="font-semibold tabular-nums"
-            >
-              {isFiltered
-                ? `${filteredTasks.length}/${tasks.length}`
-                : filteredTasks.length}
-            </Badge>
-          </div>
-        </div>
-
-        <CardAction>
-          <KanbanColumnActionsMenu
-            columnId={column.id}
-            isProtected={isProtected}
-            onAddTask={() => onAddTask(columnId)}
-            onRenameColumn={onRenameColumn}
-            onDeleteColumn={onDeleteColumn}
-          />
-        </CardAction>
-      </CardHeader>
-
-      <CardContent
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "w-68 shrink-0",
+        removing && "animate-column-remove",
+      )}
+    >
+      <Card
+        data-realtime-entity={HighlightEntity.column}
+        data-realtime-id={column.id}
         className={cn(
-          "flex-1 min-h-0 flex flex-col gap-2 px-3 overflow-y-auto transition-colors duration-150",
-          "custom-scrollbar",
-          isOver && "bg-primary/3",
+          "h-full",
+          highlighted && "animate-column-add",
+          moving && "animate-realtime-move",
         )}
       >
-        {filteredTasks.length === 0 ? (
-          hasActiveFilters ? (
-            <MyEmpty
-              title="No tasks match filters"
-              description="Try adjusting your filters to see more tasks"
-              icon={FolderX}
-            />
-          ) : (
-            <MyEmpty
-              title="No tasks yet"
-              description="Add a task to get started"
-              icon={FolderX}
-            />
-          )
-        ) : (
-          <SortableContext
-            items={filteredTasks.map((task) => task.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {filteredTasks.map((task) => (
-              <TaskCard key={task.id} task={task} onClick={onCardClick} />
-            ))}
-          </SortableContext>
-        )}
-
-        {isOver && filteredTasks.length === 0 && (
-          <div className="flex-1 rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center min-h-15">
-            <p className="text-xs text-primary/40">Drop here</p>
-          </div>
-        )}
-      </CardContent>
-
-      <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
-        <Button
-          variant="outline"
-          className="w-full justify-start"
-          size="sm"
-          onClick={() => onAddTask(columnId)}
+        <CardHeader
+          className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
         >
-          <Plus />
-          Add task
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="min-w-0">
+            <div
+              className="h-0.5 w-7 rounded-full mb-3 opacity-90"
+              style={{ background: accentColor }}
+            />
+            <div className="flex items-center gap-2 min-w-0">
+              <CardTitle className="text-[14px] font-semibold truncate">
+                {column.name}
+              </CardTitle>
+              <Badge
+                variant="outline"
+                size="sm"
+                shape="rounded"
+                className="font-semibold tabular-nums"
+              >
+                {isFiltered
+                  ? `${filteredTasks.length}/${tasks.length}`
+                  : filteredTasks.length}
+              </Badge>
+            </div>
+          </div>
+
+          <CardAction>
+            <KanbanColumnActionsMenu
+              columnId={column.id}
+              isProtected={isProtected}
+              onAddTask={() => onAddTask(columnId)}
+              onRenameColumn={onRenameColumn}
+              onDeleteColumn={onDeleteColumn}
+            />
+          </CardAction>
+        </CardHeader>
+
+        <CardContent
+          className={cn(
+            "flex-1 min-h-0 flex flex-col gap-2 px-3 overflow-y-auto transition-colors duration-150",
+            "custom-scrollbar",
+            isOver && "bg-primary/3",
+          )}
+        >
+          {filteredTasks.length === 0 ? (
+            hasActiveFilters ? (
+              <MyEmpty
+                title="No tasks match filters"
+                description="Try adjusting your filters to see more tasks"
+                icon={FolderX}
+              />
+            ) : (
+              <MyEmpty
+                title="No tasks yet"
+                description="Add a task to get started"
+                icon={FolderX}
+              />
+            )
+          ) : (
+            <SortableContext
+              items={filteredTasks.map((task) => task.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {filteredTasks.map((task) => (
+                <TaskCard key={task.id} task={task} onClick={onCardClick} />
+              ))}
+            </SortableContext>
+          )}
+
+          {isOver && filteredTasks.length === 0 && (
+            <div className="flex-1 rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center min-h-15">
+              <p className="text-xs text-primary/40">Drop here</p>
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => onAddTask(columnId)}
+          >
+            <Plus />
+            Add task
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
 

@@ -30,6 +30,10 @@ export function buildBoardState(
         tasksMap[task.boardColumnId]?.push(task);
     }
 
+    Object.values(tasksMap).forEach((columnTasks) => {
+        columnTasks.sort((a, b) => a.columnOrder - b.columnOrder);
+    });
+
     return {
         columns: columnsMap,
         tasks: tasksMap,

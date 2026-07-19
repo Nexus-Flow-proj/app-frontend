@@ -48,10 +48,24 @@ function TaskCard({
         .get(HighlightEntity.task)
         ?.has(task.id) ?? false,
   );
+  const removing = useHighlightStore(
+    state =>
+      state.removing
+        .get(HighlightEntity.task)
+        ?.has(task.id) ?? false,
+  );
+  const moving = useHighlightStore(
+    state =>
+      state.moving
+        .get(HighlightEntity.task)
+        ?.has(task.id) ?? false,
+  );
 
   return (
     <div
       ref={setNodeRef}
+      data-realtime-entity={HighlightEntity.task}
+      data-realtime-id={task.id}
       style={{ ...sortableStyle, ...style }}
       onClick={() => onClick?.(task)}
       className={cn(
@@ -61,10 +75,9 @@ function TaskCard({
           : isOverlay
             ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
             : "border-border hover:border-dashed hover:bg-background/70",
-        highlighted &&
-        "animate-realtime-highlight",
-        highlighted &&
-        "animate-realtime-highlight",
+        highlighted && "animate-realtime-highlight",
+        moving && "animate-realtime-move",
+        removing && "animate-realtime-remove",
       )}
       {...attributes}
       {...listeners}

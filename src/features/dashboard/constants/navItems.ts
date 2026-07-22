@@ -1,5 +1,4 @@
 import {
-  KanbanIcon,
   LayoutDashboardIcon,
   LifeBuoyIcon,
   SendIcon,
@@ -13,29 +12,6 @@ export const NAV_MAIN: NavMainItem[] = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboardIcon,
-  },
-  {
-    title: "Projects",
-    url: "/projects",
-    icon: KanbanIcon,
-    items: [
-      {
-        title: "New project",
-        url: "/projects/new",
-      },
-      {
-        title: "Team board",
-        url: "/projects/demo/boards",
-      },
-      {
-        title: "Project settings",
-        url: "/projects/demo/settings",
-      },
-      {
-        title: "Roles & permissions",
-        url: "/projects/demo/roles",
-      },
-    ],
   },
   {
     title: "Settings",

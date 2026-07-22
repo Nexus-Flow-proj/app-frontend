@@ -5,7 +5,6 @@ import {
   KanbanIcon,
   MailCheckIcon,
   MoreHorizontalIcon,
-  PlusIcon,
   Settings2Icon,
   ShieldCheckIcon,
   StickyNoteIcon,
@@ -23,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
@@ -86,22 +84,16 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
     <SidebarGroup>
       <SidebarGroupLabel>
         Projects
-        <SidebarGroupAction
-          aria-label="Create project"
-          onClick={() => navigate(ROUTES.PROJECT_NEW)}
-        >
-          <PlusIcon className="size-3.5!" />
-        </SidebarGroupAction>
       </SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {projects.length === 0 && (
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={() => navigate(ROUTES.PROJECT_NEW)}
+              disabled
               className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
             >
-              <PlusIcon />
-              <span>Create your first project</span>
+              <FolderKanbanIcon />
+              <span>No projects yet</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}
@@ -414,18 +406,6 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
             </Collapsible>
           );
         })}
-
-        {projects.length > 0 && (
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => navigate(ROUTES.PROJECT_NEW)}
-              className="text-sidebar-foreground/60"
-            >
-              <PlusIcon />
-              <span>New project</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        )}
       </SidebarMenu>
     </SidebarGroup>
   );

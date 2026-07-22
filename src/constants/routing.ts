@@ -8,7 +8,10 @@ export const ROUTES = {
 
   DASHBOARD: "/dashboard",
 
-  PROJECT_NEW: "/projects/new",
+  PROJECT_NEW: "/drafts/new",
+  DRAFT_NEW: "/drafts/new",
+  DRAFT_DETAIL: (id: string) => `/drafts/${id}`,
+  DRAFT_WORKSHOP: (id: string) => `/drafts/${id}/workshop`,
 
   PROJECT_OVERVIEW: (id: string) => `/projects/${id}`,
   PROJECT_SETTINGS: (id: string) => `/projects/${id}/settings`,

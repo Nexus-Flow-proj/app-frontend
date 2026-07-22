@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavMain } from "./NavMain";
+import { NavDrafts } from "./NavDrafts";
 import { NavProjects } from "./NavProjects";
 import { NavSecondary } from "./NavSecondary";
 import { NavUser } from "./NavUser";
@@ -45,6 +46,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <NavMain items={NAV_MAIN} label="Navigation" />
+        <NavDrafts />
         <NavProjects projects={projects} isLoading={projectsLoading} />
         <NavSecondary items={NAV_SECONDARY} className="mt-auto" />
       </SidebarContent>

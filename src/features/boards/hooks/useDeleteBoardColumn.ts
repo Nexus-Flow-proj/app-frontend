@@ -5,6 +5,7 @@ import {
     removeColumnFromCache,
     rollbackColumns,
 } from "../cache/board-columns.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useDeleteBoardColumn(projectId: string) {
     const queryClient = useQueryClient();
@@ -14,12 +15,16 @@ export function useDeleteBoardColumn(projectId: string) {
             boardService.deleteColumn(columnId),
 
         {
+            showSuccessToast: false,
+
             async onMutate(columnId) {
-                return removeColumnFromCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await removeColumnFromCache(
                     queryClient,
                     projectId,
                     columnId,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError(_, __, context) {
@@ -28,6 +33,10 @@ export function useDeleteBoardColumn(projectId: string) {
                     projectId,
                     context?.previousColumns,
                 );
+            },
+
+            onSettled(_, error, __, context) {
+                finishBoardSync(context, !error);
             },
         },
     );

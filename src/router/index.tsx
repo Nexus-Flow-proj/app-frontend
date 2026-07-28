@@ -28,10 +28,14 @@ const DashboardPages = {
   Dashboard: lazy(() => import("@/features/dashboard/pages/DashboardPage")),
 };
 
+// ** Draft Pages
+const DraftPages = {
+  Create: lazy(() => import("@/features/drafts/pages/CreateDraftPage")),
+};
+
 // ** Project Pages
 const ProjectPages = {
   Overview: lazy(() => import("@/features/project/pages/ProjectOverviewPage")),
-  Create: lazy(() => import("@/features/project/pages/CreateProjectPage")),
   Invitation: lazy(
     () => import("@/features/project/pages/ProjectInvitationPage"),
   ),
@@ -117,7 +121,15 @@ const router = createBrowserRouter([
           },
           {
             path: "/projects/new",
-            element: <WithSuspense Component={ProjectPages.Create} />,
+            element: <Navigate to="/drafts/new" replace />,
+          },
+          {
+            path: "/drafts/new",
+            element: <WithSuspense Component={DraftPages.Create} />,
+          },
+          {
+            path: "/drafts/:id",
+            element: <WithSuspense Component={DraftPages.Create} />,
           },
           {
             path: "/projects/:id",
@@ -204,6 +216,10 @@ const router = createBrowserRouter([
             element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
           },
         ],
+      },
+      {
+        path: "/drafts/:id/workshop",
+        element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
       },
     ],
   },

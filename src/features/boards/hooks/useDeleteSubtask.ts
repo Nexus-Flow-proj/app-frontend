@@ -9,6 +9,7 @@ import {
     rollbackTaskDetail,
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useDeleteSubtask(taskId: string) {
     const queryClient = useQueryClient();
@@ -18,12 +19,16 @@ export function useDeleteSubtask(taskId: string) {
             taskService.deleteSubtask(taskId, subtaskId),
 
         {
+            showSuccessToast: false,
+
             onMutate: async (subtaskId) => {
-                return removeSubtaskFromCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await removeSubtaskFromCache(
                     queryClient,
                     taskId,
                     subtaskId,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError: (_, __, context) => {
@@ -36,8 +41,9 @@ export function useDeleteSubtask(taskId: string) {
                 }
             },
 
-            onSettled: () => {
+            onSettled: (_, error, __, context) => {
                 invalidateTaskDetail(queryClient, taskId);
+                finishBoardSync(context, !error);
             },
         },
     );

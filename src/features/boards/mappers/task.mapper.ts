@@ -21,6 +21,35 @@ import type {
     TaskSource,
     TaskStatus,
 } from "../types/enums";
+import {
+    TaskPriority as BoardTaskPriority,
+    TaskSource as BoardTaskSource,
+    TaskStatus as BoardTaskStatus,
+} from "../types/enums";
+
+export function normalizeTaskPriority(priority: unknown): TaskPriority {
+    const normalized = String(priority ?? "").toUpperCase();
+
+    return Object.values(BoardTaskPriority).includes(normalized as TaskPriority)
+        ? normalized as TaskPriority
+        : BoardTaskPriority.MEDIUM;
+}
+
+export function normalizeTaskStatus(status: unknown): TaskStatus {
+    const normalized = String(status ?? "").toUpperCase();
+
+    return Object.values(BoardTaskStatus).includes(normalized as TaskStatus)
+        ? normalized as TaskStatus
+        : BoardTaskStatus.TODO;
+}
+
+export function normalizeTaskSource(source: unknown): TaskSource {
+    const normalized = String(source ?? "").toUpperCase();
+
+    return Object.values(BoardTaskSource).includes(normalized as TaskSource)
+        ? normalized as TaskSource
+        : BoardTaskSource.MANUAL;
+}
 
 export function mapBoardMember(user: ApiUserSummary | null | undefined): BoardMember {
     if (!user) {
@@ -128,11 +157,11 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
         projectId: task.projectId,
         createdBy: task.createdBy.id,
         title: task.title,
-        status: task.status as TaskStatus,
-        priority: task.priority as TaskPriority,
+        status: normalizeTaskStatus(task.status),
+        priority: normalizeTaskPriority(task.priority),
         boardColumnId: task.boardColumn.id,
         columnOrder: task.columnOrder,
-        source: task.source as TaskSource,
+        source: normalizeTaskSource(task.source),
         createdAt: task.created_at,
 
         updatedAt: task.updated_at,
@@ -160,11 +189,11 @@ export function mapTaskDetail(
         title: task.title,
         description: task.description ?? undefined,
         dueDate: task.deadline ?? undefined,
-        status: task.status as TaskStatus,
-        priority: task.priority as TaskPriority,
+        status: normalizeTaskStatus(task.status),
+        priority: normalizeTaskPriority(task.priority),
         boardColumnId: task.boardColumn.id,
         columnOrder: task.columnOrder,
-        source: task.source as TaskSource,
+        source: normalizeTaskSource(task.source),
         createdAt: task.created_at,
         updatedAt: task.updated_at,
         assignee: task.assignee

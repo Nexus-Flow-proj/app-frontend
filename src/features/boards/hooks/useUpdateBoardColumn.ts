@@ -8,6 +8,7 @@ import {
     replaceColumnInCache,
     rollbackColumns,
 } from "../cache/board-columns.cache";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useUpdateBoardColumn(
     projectId: string,
@@ -20,13 +21,17 @@ export function useUpdateBoardColumn(
             boardService.updateColumn(columnId, dto),
 
         {
+            showSuccessToast: false,
+
             onMutate: async (dto) => {
-                return updateColumnInCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await updateColumnInCache(
                     queryClient,
                     projectId,
                     columnId,
                     dto,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError: (_, __, context) => {
@@ -44,6 +49,9 @@ export function useUpdateBoardColumn(
                     projectId,
                     updated,
                 );
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         },
     );
@@ -65,12 +73,14 @@ export function useUpdateBoardColumnById(projectId: string) {
             showSuccessToast: false,
 
             onMutate: async ({ columnId, dto }) => {
-                return updateColumnInCache(
+                const syncContext = startBoardSync();
+                const optimisticContext = await updateColumnInCache(
                     queryClient,
                     projectId,
                     columnId,
                     dto,
                 );
+                return { ...syncContext, ...optimisticContext };
             },
 
             onError: (_, __, context) => {
@@ -88,6 +98,9 @@ export function useUpdateBoardColumnById(projectId: string) {
                     projectId,
                     updated,
                 );
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         },
     );

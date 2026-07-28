@@ -17,6 +17,7 @@ import type {
   BoardColumn,
   TimeLog,
 } from "../../types";
+import type { TaskStatus } from "../../types/enums";
 import { Separator } from "@/components/ui/separator";
 
 interface TaskDetailDrawerProps {
@@ -33,6 +34,7 @@ interface TaskDetailDrawerProps {
   onUpdateDescription: (taskId: string, description: string) => void;
   onUpdateLabel: (taskId: string, label: string) => void;
   onUpdatePriority: (taskId: string, priority: Priority) => void;
+  onUpdateStatus: (taskId: string, status: TaskStatus) => void;
   onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
   onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
@@ -72,6 +74,7 @@ export function TaskDetailDrawer({
   onUpdateDescription,
   onUpdateLabel,
   onUpdatePriority,
+  onUpdateStatus,
   onUpdateAssignee,
   onUpdateDueDate,
   onMoveToColumn,
@@ -186,6 +189,7 @@ export function TaskDetailDrawer({
                 columns={columns}
                 members={members}
                 onUpdatePriority={onUpdatePriority}
+                onUpdateStatus={onUpdateStatus}
                 onUpdateAssignee={onUpdateAssignee}
                 onUpdateDueDate={onUpdateDueDate}
                 onUpdateLabel={onUpdateLabel}

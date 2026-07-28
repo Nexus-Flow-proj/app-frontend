@@ -7,6 +7,7 @@ import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import DarkModeToggle from "@/components/shared/ModeToggle";
 import { Separator } from "@/components/ui/separator";
 import MyBreadcrumb from "@/components/shared/MyBreadcrumb";
+import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 export function SiteHeader() {
   const { pathname } = useLocation();
@@ -34,6 +35,7 @@ export function SiteHeader() {
         <MyBreadcrumb breadcrumbs={breadcrumbs} />
         <div className="ml-auto flex items-center gap-2">
           <SearchForm className="hidden md:block w-56" />
+          <NotificationCenter />
           <DarkModeToggle />
         </div>
       </div>

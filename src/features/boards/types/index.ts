@@ -136,6 +136,7 @@ export interface CreateTaskDto {
 export interface UpdateTaskDto {
   title?: string;
   description?: string;
+  status?: TaskStatus;
   priority?: Priority;
   assigneeId?: string | null;
   dueDate?: string | null;

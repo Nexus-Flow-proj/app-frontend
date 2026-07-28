@@ -46,7 +46,7 @@ import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
 import { useUpdateComment } from "../hooks/useUpdateComment";
 import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
 import type { BoardMember, Task } from "../types";
-import { TaskStatus, TaskType } from "../types/enums";
+import { TaskStatus, TaskType, type TaskStatus as TaskStatusValue } from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
@@ -56,6 +56,7 @@ import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
 import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
 import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
+import { getTaskStatusFromColumnName } from "../utils/task-status";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -101,6 +102,14 @@ function mapUserToBoardMember(user: NonNullable<ReturnType<typeof useAuthStore.g
     avatar: user.avatar ?? user.avatarUrl,
     isActive: true,
   };
+}
+
+function getColumnTaskStatus(
+  boardState: ReturnType<typeof useKanbanStore.getState>["boardState"],
+  columnId: string,
+  fallback: TaskStatusValue = TaskStatus.TODO,
+) {
+  return getTaskStatusFromColumnName(boardState.columns[columnId]?.name, fallback);
 }
 
 function BoardsPage() {
@@ -188,10 +197,19 @@ function BoardsPage() {
     boardState,
     setBoardState,
     onMoveTask: (taskId, sourceColId, targetColId, newPositionFloat) => {
+      const movingTask = boardState.tasks[sourceColId]?.find(
+        (task) => task.id === taskId,
+      );
+
       updateTaskByIdMutation.mutate({
         taskId,
         dto: {
           columnOrder: newPositionFloat,
+          status: getColumnTaskStatus(
+            boardState,
+            targetColId,
+            movingTask?.status ?? TaskStatus.TODO,
+          ),
           ...(sourceColId !== targetColId
             ? { boardColumnId: targetColId }
             : {}),
@@ -278,13 +296,13 @@ function BoardsPage() {
           deadline: data.dueDate ?? undefined,
           label,
           type: TaskType.FEATURE,
-          status: TaskStatus.TODO,
+          status: getColumnTaskStatus(boardState, data.columnId),
           priority: data.priority,
           assigneeId: data.assigneeId ?? undefined,
         },
       });
     },
-    [createTaskMutation],
+    [boardState, createTaskMutation],
   );
 
   const handleDeleteTask = useCallback(
@@ -303,6 +321,9 @@ function BoardsPage() {
       const sourceColumnId = Object.entries(boardState.tasks).find(([, tasks]) =>
         tasks.some((task) => task.id === taskId),
       )?.[0];
+      const movingTask = sourceColumnId
+        ? boardState.tasks[sourceColumnId]?.find((task) => task.id === taskId)
+        : undefined;
 
       if (!sourceColumnId || sourceColumnId === targetColumnId) return;
 
@@ -319,10 +340,15 @@ function BoardsPage() {
         dto: {
           boardColumnId: targetColumnId,
           columnOrder: newColumnOrder,
+          status: getColumnTaskStatus(
+            boardState,
+            targetColumnId,
+            movingTask?.status ?? TaskStatus.TODO,
+          ),
         },
       });
     },
-    [boardState.tasks, moveTaskToColumn, updateTaskByIdMutation],
+    [boardState, moveTaskToColumn, updateTaskByIdMutation],
   );
 
   return (
@@ -453,6 +479,9 @@ function BoardsPage() {
         }
         onUpdatePriority={(_taskId, priority) =>
           updateTaskMutation.mutate({ priority })
+        }
+        onUpdateStatus={(_taskId, status) =>
+          updateTaskMutation.mutate({ status })
         }
         onUpdateAssignee={(_taskId, assigneeId) =>
           updateTaskMutation.mutate({ assigneeId })

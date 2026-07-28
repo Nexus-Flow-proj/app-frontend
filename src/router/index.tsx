@@ -187,18 +187,19 @@ const router = createBrowserRouter([
               },
             ],
           },
-        ],
-      },
-      // Member routes render without the dashboard shell.
-      {
-        element: <ProjectPermissionGuard permissions={["board.read"]} />,
-        children: [
           {
-            path: "/projects/:id/boards",
-            element: <WithSuspense Component={BoardPages.TeamBoard} />,
+            element: <ProjectPermissionGuard permissions={["board.read"]} />,
+            children: [
+              {
+                path: "/projects/:id/boards",
+                element: <WithSuspense Component={BoardPages.TeamBoard} />,
+              },
+            ],
           },
         ],
       },
+      // Member routes render without the dashboard shell.
+
       {
         element: <MemberGuard />,
         children: [

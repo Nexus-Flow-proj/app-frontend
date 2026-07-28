@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://app-backend-production-0e00.up.railway.app",
+        target: "https://app-backend-production-1306.up.railway.app",
         changeOrigin: true,
         secure: true,
       },

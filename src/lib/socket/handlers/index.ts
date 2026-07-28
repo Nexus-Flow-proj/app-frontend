@@ -18,6 +18,6 @@ export function registerAllHandlers(socketManager: SocketManager, qc: QueryClien
     registerCommentHandlers(socketManager, qc);
     registerSubtaskHandlers(socketManager, qc);
     registerPresenceHandlers(socketManager, qc);
-    registerNotificationHandlers(socketManager);
+    registerNotificationHandlers(socketManager, qc);
     registerActivityHandlers(socketManager);
 }

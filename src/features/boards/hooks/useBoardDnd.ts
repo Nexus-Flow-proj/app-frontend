@@ -10,6 +10,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 
 import type { BoardColumn, BoardState, Task } from "../types";
+import { getTaskStatusFromColumnName } from "../utils/task-status";
 
 type BoardStateUpdater = BoardState | ((current: BoardState) => BoardState);
 
@@ -176,6 +177,10 @@ export function useBoardDnd({
         ...activeData.task,
         boardColumnId: targetColumnId,
         columnOrder: newColumnOrder,
+        status: getTaskStatusFromColumnName(
+          boardState.columns[targetColumnId]?.name,
+          activeData.task.status,
+        ),
       };
 
       setBoardState((current) => {

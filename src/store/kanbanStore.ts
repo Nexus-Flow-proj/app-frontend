@@ -14,8 +14,8 @@ import type {
 import {
   TaskPriority,
   TaskSource,
-  TaskStatus,
 } from "@/features/boards/types/enums";
+import { getTaskStatusFromColumnName } from "@/features/boards/utils/task-status";
 
 type BoardStateUpdater = BoardState | ((current: BoardState) => BoardState);
 
@@ -133,6 +133,7 @@ function applyTaskPatch<T extends Task>(task: T, patch: UpdateTaskDto): T {
 
   if (patch.title !== undefined) nextTask.title = patch.title;
   if (patch.description !== undefined) nextTask.description = patch.description;
+  if (patch.status !== undefined) nextTask.status = patch.status;
   if (patch.priority !== undefined) nextTask.priority = patch.priority;
   if (patch.dueDate !== undefined) {
     nextTask.dueDate = patch.dueDate ?? undefined;
@@ -394,7 +395,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       createdBy: "current-user",
       title,
       description: input.description || undefined,
-      status: TaskStatus.TODO,
+      status: getTaskStatusFromColumnName(column.name),
       priority: input.priority ?? TaskPriority.MEDIUM,
       dueDate: input.dueDate ?? undefined,
       boardColumnId: columnId,
@@ -485,6 +486,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         ...movingTask,
         boardColumnId: targetColumnId,
         columnOrder: getNextSortOrder(targetTasks, "columnOrder"),
+        status: getTaskStatusFromColumnName(targetColumn.name, movingTask.status),
         updatedAt: new Date().toISOString(),
       };
 
@@ -505,6 +507,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
                 ...state.drawer.activeTask,
                 boardColumnId: movedTask.boardColumnId,
                 columnOrder: movedTask.columnOrder,
+                status: movedTask.status,
                 updatedAt: movedTask.updatedAt,
               },
             }

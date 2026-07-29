@@ -162,8 +162,8 @@ export interface CreateTaskDto {
     label?: string;
     deadline?: string;
     type: string;
-    status: string;
-    priority: string;
+    status: TaskStatus;
+    priority: TaskPriority;
     assigneeId?: string;
 }
 export interface UpdateTaskDto {

@@ -2,6 +2,55 @@ import type { Socket } from "socket.io-client";
 import { socket } from "./socket-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "./types/events";
 import { SOCKET_EVENTS } from "./constants/socket-events";
+import { SOCKET_OPTIONS, SOCKET_URL } from "./constants/socket-config";
+
+type SocketErrorDetails = {
+    message?: string;
+    description?: unknown;
+    type?: unknown;
+    contextStatus?: unknown;
+    contextResponseText?: unknown;
+    transport?: unknown;
+    socketUrl: string;
+    socketOptions: typeof SOCKET_OPTIONS;
+};
+
+type EngineDiagnostics = {
+    on(event: "packet", listener: (packet: { type: string }) => void): void;
+    on(event: "upgrade_error", listener: (error: unknown) => void): void;
+};
+
+function getSocketErrorDetails(error: unknown): SocketErrorDetails {
+    const details: SocketErrorDetails = {
+        socketUrl: SOCKET_URL || "[same-origin]",
+        socketOptions: SOCKET_OPTIONS,
+    };
+
+    if (!(error instanceof Error)) return details;
+
+    const errorRecord = error as Error & {
+        description?: unknown;
+        type?: unknown;
+        context?: {
+            status?: unknown;
+            responseText?: unknown;
+            response?: unknown;
+        };
+        transport?: unknown;
+    };
+
+    return {
+        ...details,
+        message: error.message,
+        description: errorRecord.description,
+        type: errorRecord.type,
+        contextStatus: errorRecord.context?.status,
+        contextResponseText:
+            errorRecord.context?.responseText ?? errorRecord.context?.response,
+        transport: errorRecord.transport,
+    };
+}
+
 export class SocketManager {
     private static instance: SocketManager
     private isInitialized: boolean = false;
@@ -45,7 +94,7 @@ export class SocketManager {
 
         // Connect Error
         this.socket.on(SOCKET_EVENTS.CONNECTION.CONNECT_ERROR, (error) => {
-            console.error("❌ Connection Error:", error);
+            console.error("❌ Connection Error:", getSocketErrorDetails(error), error);
         });
         // Reconnect Attempt
         this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_ATTEMPT, attempt => {
@@ -58,6 +107,18 @@ export class SocketManager {
         // Reconnect Failed
         this.socket.io.on(SOCKET_EVENTS.CONNECTION.RECONNECT_FAILED, () => {
             console.error("Failed to reconnect.");
+        });
+        const engine = this.socket.io.engine as EngineDiagnostics | undefined;
+        engine?.on("packet", (packet) => {
+            if (packet.type !== "error") return;
+            console.error("❌ Engine.IO error packet:", packet);
+        });
+        engine?.on("upgrade_error", (error) => {
+            console.error(
+                "❌ Engine.IO upgrade error:",
+                getSocketErrorDetails(error),
+                error,
+            );
         });
 
 
@@ -100,6 +161,9 @@ export class SocketManager {
         if (this.activeProjectId && this.activeProjectId !== projectId) this.leaveProject(this.activeProjectId);
         this.socket.emit(SOCKET_EVENTS.PROJECT.JOIN, { projectId });
         this.activeProjectId = projectId;
+        if (import.meta.env.DEV) {
+            console.log("✅ Joined project room", projectId);
+        }
     }
     leaveProject(projectId: string) {
         if (!projectId) throw new Error("Project ID is required");
@@ -135,4 +199,3 @@ export class SocketManager {
         this.socket.once(event, listener as never)
     }
 }
-

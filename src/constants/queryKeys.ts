@@ -16,6 +16,13 @@ export const QUERY_KEYS = {
     activity: (projectId: string) =>
       [...QUERY_KEYS.projects.all, "activity", projectId] as const,
   },
+  drafts: {
+    all: ["drafts"] as const,
+    list: () => [...QUERY_KEYS.drafts.all, "list"] as const,
+    detail: (id: string) => [...QUERY_KEYS.drafts.all, "detail", id] as const,
+    workshop: (id: string) =>
+      [...QUERY_KEYS.drafts.all, "workshop", id] as const,
+  },
   tasks: {
     all: ["tasks"] as const,
     list: (projectId: string) =>

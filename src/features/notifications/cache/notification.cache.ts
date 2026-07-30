@@ -48,7 +48,8 @@ export function addNotificationToCache(
         getNotificationsKey(),
         (old) => {
             if (!old || old.pages.length === 0) return old;
-
+            const existed = old.pages.some(page => page.notifications.some(n => n.id === notification.id))
+            if (existed) return;
             // Prepend to the first page so it appears at the top
             const [firstPage, ...rest] = old.pages;
 

@@ -1,7 +1,6 @@
 // src/lib/socket/constants/socket-config.ts
 
-// export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "http://localhost:3000";
-export const SOCKET_URL = "https://app-backend-production-1306.up.railway.app";
+export const SOCKET_URL = "";
 
 export const SOCKET_OPTIONS = {
     withCredentials: true, // Crucial for HTTP-Only cookie parsing on handshake

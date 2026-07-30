@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
 import type { Subtask, TaskId } from "../../types";
 
 interface SubtaskChecklistProps {
@@ -51,6 +52,12 @@ export function SubtaskChecklist({
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const completed = subtasks.filter((s) => s.completed).length;
+  const highlightedSubtasks = useHighlightStore(
+    state => state.highlighted.get(HighlightEntity.subtask),
+  );
+  const removingSubtasks = useHighlightStore(
+    state => state.removing.get(HighlightEntity.subtask),
+  );
 
   const submit = () => {
     const trimmed = value.trim();
@@ -77,39 +84,48 @@ export function SubtaskChecklist({
       )}
 
       <div className="space-y-0.5">
-        {subtasks.map((subtask) => (
-          <div
-            key={subtask.id}
-            className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors"
-          >
-            <GripVertical className="size-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 shrink-0 cursor-grab" />
-            <Checkbox
-              id={subtask.id}
-              checked={subtask.completed}
-              onCheckedChange={(checked) => onToggle(subtask.id, !!checked)}
-              className="shrink-0"
-            />
-            <label
-              htmlFor={subtask.id}
+        {subtasks.map((subtask) => {
+          const highlighted = highlightedSubtasks?.has(subtask.id) ?? false;
+          const removing = removingSubtasks?.has(subtask.id) ?? false;
+
+          return (
+            <div
+              key={subtask.id}
               className={cn(
-                "flex-1 text-sm cursor-pointer leading-snug",
-                subtask.completed
-                  ? "line-through text-muted-foreground"
-                  : "text-foreground",
+                "group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors",
+                highlighted && "animate-comment-add",
+                removing && "animate-comment-remove",
               )}
             >
-              {subtask.title}
-            </label>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive rounded shrink-0"
-              onClick={() => onDelete(subtask.id)}
-            >
-              <Trash2 className="size-3" />
-            </Button>
-          </div>
-        ))}
+              <GripVertical className="size-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 shrink-0 cursor-grab" />
+              <Checkbox
+                id={subtask.id}
+                checked={subtask.completed}
+                onCheckedChange={(checked) => onToggle(subtask.id, !!checked)}
+                className="shrink-0"
+              />
+              <label
+                htmlFor={subtask.id}
+                className={cn(
+                  "flex-1 text-sm cursor-pointer leading-snug",
+                  subtask.completed
+                    ? "line-through text-muted-foreground"
+                    : "text-foreground",
+                )}
+              >
+                {subtask.title}
+              </label>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive rounded shrink-0"
+                onClick={() => onDelete(subtask.id)}
+              >
+                <Trash2 className="size-3" />
+              </Button>
+            </div>
+          );
+        })}
       </div>
 
       {adding ? (

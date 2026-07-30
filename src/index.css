@@ -74,17 +74,28 @@
   --primary-foreground: oklch(0.99 0.004 293);
 
   /* ── Primary scale — 50 → 950 ── */
-  --primary-50: oklch(0.97 0.03 293); /* #F0EAFF — hover bg, tints          */
-  --primary-100: oklch(0.93 0.06 293); /* #DDD0FB — subtle fills              */
-  --primary-200: oklch(0.86 0.1 293); /* #C4AFF7 — light tints               */
-  --primary-300: oklch(0.76 0.14 293); /* #B089F3 — dark mode primary         */
-  --primary-400: oklch(0.65 0.18 293); /* #9A74EF — hover on primary          */
-  --primary-500: oklch(0.54 0.21 293); /* #9063EB ★ default primary           */
-  --primary-600: oklch(0.46 0.21 293); /* #7A4FD4 — active/focus states       */
-  --primary-700: oklch(0.39 0.2 293); /* #6B3EC7 — pressed states            */
-  --primary-800: oklch(0.3 0.17 293); /* #532F9A — deep emphasis             */
-  --primary-900: oklch(0.22 0.13 293); /* #3D1F7A — deep tints, dark bg       */
-  --primary-950: oklch(0.14 0.08 293); /* #1F0D40 — darkest, near-black       */
+  --primary-50: oklch(0.97 0.03 293);
+  /* #F0EAFF — hover bg, tints          */
+  --primary-100: oklch(0.93 0.06 293);
+  /* #DDD0FB — subtle fills              */
+  --primary-200: oklch(0.86 0.1 293);
+  /* #C4AFF7 — light tints               */
+  --primary-300: oklch(0.76 0.14 293);
+  /* #B089F3 — dark mode primary         */
+  --primary-400: oklch(0.65 0.18 293);
+  /* #9A74EF — hover on primary          */
+  --primary-500: oklch(0.54 0.21 293);
+  /* #9063EB ★ default primary           */
+  --primary-600: oklch(0.46 0.21 293);
+  /* #7A4FD4 — active/focus states       */
+  --primary-700: oklch(0.39 0.2 293);
+  /* #6B3EC7 — pressed states            */
+  --primary-800: oklch(0.3 0.17 293);
+  /* #532F9A — deep emphasis             */
+  --primary-900: oklch(0.22 0.13 293);
+  /* #3D1F7A — deep tints, dark bg       */
+  --primary-950: oklch(0.14 0.08 293);
+  /* #1F0D40 — darkest, near-black       */
 
   /* ── Secondary — soft violet-tinted surface ── */
   --secondary: oklch(0.95 0.025 293);
@@ -107,11 +118,16 @@
   --ring: oklch(0.54 0.21 293);
 
   /* ── Charts — violet → indigo → teal → amber → rose ── */
-  --chart-1: oklch(0.54 0.21 293); /* violet    */
-  --chart-2: oklch(0.52 0.2 260); /* indigo    */
-  --chart-3: oklch(0.6 0.14 195); /* teal      */
-  --chart-4: oklch(0.72 0.16 75); /* amber     */
-  --chart-5: oklch(0.62 0.2 20); /* rose-red  */
+  --chart-1: oklch(0.54 0.21 293);
+  /* violet    */
+  --chart-2: oklch(0.52 0.2 260);
+  /* indigo    */
+  --chart-3: oklch(0.6 0.14 195);
+  /* teal      */
+  --chart-4: oklch(0.72 0.16 75);
+  /* amber     */
+  --chart-5: oklch(0.62 0.2 20);
+  /* rose-red  */
 
   --radius: 0.625rem;
 
@@ -160,11 +176,16 @@
   --ring: oklch(0.68 0.2 293);
 
   /* ── Charts — same hues, lightness tuned for dark bg ── */
-  --chart-1: oklch(0.72 0.2 293); /* violet    */
-  --chart-2: oklch(0.68 0.19 260); /* indigo    */
-  --chart-3: oklch(0.72 0.13 195); /* teal      */
-  --chart-4: oklch(0.8 0.15 75); /* amber     */
-  --chart-5: oklch(0.72 0.19 20); /* rose-red  */
+  --chart-1: oklch(0.72 0.2 293);
+  /* violet    */
+  --chart-2: oklch(0.68 0.19 260);
+  /* indigo    */
+  --chart-3: oklch(0.72 0.13 195);
+  /* teal      */
+  --chart-4: oklch(0.8 0.15 75);
+  /* amber     */
+  --chart-5: oklch(0.72 0.19 20);
+  /* rose-red  */
 
   /* ── Sidebar ── */
   --sidebar: oklch(0.19 0.025 293);
@@ -181,12 +202,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border;
   }
+
   body:hover {
     @apply scrollbar-thumb-muted-foreground/30;
   }
+
   html {
     @apply font-sans;
   }
@@ -200,5 +224,241 @@
 
   .custom-scrollbar:hover {
     @apply scrollbar-thumb-muted-foreground/30;
+  }
+   input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+
+/* ---------- ADD events (task added, column added, comment added) ---------- */
+@keyframes realtime-highlight {
+  0% {
+    transform: translateY(1px) scale(0.995);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  35% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 8px 22px var(--highlight-shadow);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.animate-realtime-highlight {
+  animation: realtime-highlight 850ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- MOVE events (task movement, column reorder) ---------- */
+@keyframes realtime-move {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    opacity: 0.88;
+  }
+
+  45% {
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 6px 18px var(--highlight-shadow);
+    opacity: 1;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.animate-realtime-move {
+  animation: realtime-move 420ms ease-out;
+}
+
+/* ---------- DELETE events (task, column, comment removed) ---------- */
+@keyframes realtime-remove {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    max-height: var(--item-height, 200px);
+    margin-bottom: var(--item-gap, 8px);
+  }
+
+  35% {
+    transform: translateY(0) scale(0.995);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translateY(-2px) scale(0.985);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.animate-realtime-remove {
+  animation: realtime-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Column-level variants (slightly different, since columns are wider) ---------- */
+@keyframes realtime-column-highlight {
+  0% {
+    transform: translateY(3px);
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  35% {
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 10px 26px var(--highlight-shadow);
+  }
+
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.animate-column-add {
+  animation: realtime-column-highlight 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes realtime-column-remove {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translateY(-2px) scale(0.985);
+    opacity: 0;
+    max-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.animate-column-remove {
+  animation: realtime-column-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Comment-level variant (smaller, subtler — it's a nested item) ---------- */
+@keyframes realtime-comment-highlight {
+  0% {
+    transform: translateX(-12px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes realtime-comment-accent {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.35);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+.animate-comment-add {
+  position: relative;
+  animation: realtime-comment-highlight 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-comment-add::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--highlight-ring);
+  transform-origin: center;
+  pointer-events: none;
+  animation: realtime-comment-accent 850ms ease-out forwards;
+}
+
+@keyframes realtime-comment-remove {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: var(--item-height, 200px);
+    margin-bottom: var(--item-gap, 8px);
+  }
+
+  100% {
+    transform: translateX(-8px);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.animate-comment-remove {
+  animation: realtime-comment-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Theme tokens ---------- */
+:root {
+  --highlight-ring: color-mix(in oklch, var(--primary) 60%, transparent);
+  --highlight-shadow: color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+.dark {
+  --highlight-ring: color-mix(in oklch, var(--primary) 55%, transparent);
+  --highlight-shadow: color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-realtime-highlight,
+  .animate-realtime-move,
+  .animate-realtime-remove,
+  .animate-column-add,
+  .animate-column-remove,
+  .animate-comment-add,
+  .animate-comment-remove {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
   }
 }

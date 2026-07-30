@@ -1,4 +1,4 @@
-import { TaskPriority } from "../types/enums";
+import { TaskPriority, TaskStatus } from "../types/enums";
 
 export const DEFAULT_COLUMNS = ["Backlog", "In Progress", "In Review", "Done"];
 export const PROTECTED_COLUMNS = ["Backlog", "Done"];
@@ -31,6 +31,29 @@ export const PRIORITY_CONFIG = {
     bgClass: "bg-accent/60",
     borderClass: "border-accent-foreground/20",
     dotClass: "bg-accent-foreground",
+  },
+} as const;
+
+export const STATUS_CONFIG = {
+  [TaskStatus.BACKLOG]: {
+    label: "Backlog",
+    dotClass: "bg-slate-400",
+  },
+  [TaskStatus.TODO]: {
+    label: "To Do",
+    dotClass: "bg-sky-400",
+  },
+  [TaskStatus.IN_PROGRESS]: {
+    label: "In Progress",
+    dotClass: "bg-violet-400",
+  },
+  [TaskStatus.IN_REVIEW]: {
+    label: "In Review",
+    dotClass: "bg-orange-400",
+  },
+  [TaskStatus.DONE]: {
+    label: "Done",
+    dotClass: "bg-emerald-400",
   },
 } as const;
 

@@ -18,6 +18,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      "/socket.io": {
+        target: "https://app-backend-production-1306.up.railway.app",
+        changeOrigin: true,
+        secure: true,
+        ws: true,
+      },
     },
   },
 });

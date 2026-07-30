@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { SocketManager } from "../socket-manager";
-import { registerActivityHandlers } from "./activity.handlers";
+// import { registerActivityHandlers } from "./activity.handlers";
 import { registerColumnHandlers } from "./column.handlers";
 import { registerCommentHandlers } from "./comment.handlers";
 import { registerNotificationHandlers } from "./notification.handlers";
@@ -19,5 +19,5 @@ export function registerAllHandlers(socketManager: SocketManager, qc: QueryClien
     registerSubtaskHandlers(socketManager, qc);
     registerPresenceHandlers(socketManager, qc);
     registerNotificationHandlers(socketManager, qc);
-    registerActivityHandlers(socketManager);
+    // registerActivityHandlers(socketManager);
 }

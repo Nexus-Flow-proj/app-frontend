@@ -12,7 +12,7 @@ import type {
 import {
     updateTaskInListCache,
     rollbackTaskList,
-    invalidateTaskList,
+    patchTaskInListCache,
 } from "../cache/task-list.cache";
 import {
     snapshotTaskDetail,
@@ -21,6 +21,7 @@ import {
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
 import { mapBoardMember } from "../mappers";
+import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 type TaskUpdatePatch = Partial<TaskUpdatedData> & {
     assigneeId?: string | null;
@@ -38,7 +39,10 @@ export function useUpdateTask(
             taskService.updateTask(taskId, dto),
 
         {
+            showSuccessToast: false,
+
             onMutate: async (dto) => {
+                const syncContext = startBoardSync();
                 const previousTaskDetail = await snapshotTaskDetail(
                     queryClient,
                     taskId,
@@ -60,12 +64,18 @@ export function useUpdateTask(
                 );
 
                 return {
+                    ...syncContext,
                     previousTaskList,
                     previousTaskDetail,
                 };
             },
-            onSuccess: () => {
-                invalidateTaskList(queryClient, projectId);
+            onSuccess: (res) => {
+                patchTaskInListCache(
+                    queryClient,
+                    projectId,
+                    taskId,
+                    (task) => updateTaskList(task, res.data),
+                );
                 invalidateTaskDetail(queryClient, taskId);
             },
 
@@ -85,6 +95,9 @@ export function useUpdateTask(
                         context.previousTaskDetail,
                     );
                 }
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         },
     );
@@ -106,6 +119,7 @@ export function useUpdateTaskById(projectId: string) {
             showSuccessToast: false,
 
             onMutate: async ({ taskId, dto }) => {
+                const syncContext = startBoardSync();
                 const previousTaskDetail = await snapshotTaskDetail(
                     queryClient,
                     taskId,
@@ -126,13 +140,19 @@ export function useUpdateTaskById(projectId: string) {
                 );
 
                 return {
+                    ...syncContext,
                     previousTaskList,
                     previousTaskDetail,
                 };
             },
 
-            onSuccess: (_, { taskId }) => {
-                invalidateTaskList(queryClient, projectId);
+            onSuccess: (res, { taskId }) => {
+                patchTaskInListCache(
+                    queryClient,
+                    projectId,
+                    taskId,
+                    (task) => updateTaskList(task, res.data),
+                );
                 invalidateTaskDetail(queryClient, taskId);
             },
 
@@ -152,6 +172,9 @@ export function useUpdateTaskById(projectId: string) {
                         context.previousTaskDetail,
                     );
                 }
+            },
+            onSettled: (_, error, __, context) => {
+                finishBoardSync(context, !error);
             },
         },
     );

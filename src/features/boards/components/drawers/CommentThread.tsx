@@ -6,6 +6,8 @@ import { formatDistanceToNow } from "date-fns";
 import { Check, Pencil, Send, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
 import type { Comment, BoardMember } from "../../types";
 
 interface CommentThreadProps {
@@ -56,6 +58,12 @@ export function CommentThread({
   const [value, setValue] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const highlightedComments = useHighlightStore(
+    state => state.highlighted.get(HighlightEntity.comment),
+  );
+  const removingComments = useHighlightStore(
+    state => state.removing.get(HighlightEntity.comment),
+  );
 
   const submit = () => {
     const trimmed = value.trim();
@@ -99,9 +107,18 @@ export function CommentThread({
           {comments.map((comment) => {
             const canManage = comment.authorId === currentUser.id;
             const isEditing = editingCommentId === comment.id;
+            const highlighted = highlightedComments?.has(comment.id) ?? false;
+            const removing = removingComments?.has(comment.id) ?? false;
 
             return (
-              <div key={comment.id} className="flex gap-2.5">
+              <div
+                key={comment.id}
+                className={cn(
+                  "flex gap-2.5",
+                  highlighted && "animate-comment-add",
+                  removing && "animate-comment-remove",
+                )}
+              >
                 <Avatar member={comment.author} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">

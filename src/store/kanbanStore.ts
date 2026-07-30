@@ -14,8 +14,8 @@ import type {
 import {
   TaskPriority,
   TaskSource,
-  TaskStatus,
 } from "@/features/boards/types/enums";
+import { getTaskStatusFromColumnName } from "@/features/boards/utils/task-status";
 
 type BoardStateUpdater = BoardState | ((current: BoardState) => BoardState);
 
@@ -25,6 +25,16 @@ interface KanbanDrawerState {
   isSubmittingComment: boolean;
   activeTaskId: TaskId | null;
   activeTask: TaskDetail | null;
+}
+
+export type BoardSyncStatus = "idle" | "syncing" | "success" | "error";
+
+interface BoardSyncState {
+  status: BoardSyncStatus;
+  pendingCount: number;
+  startedAt: number | null;
+  hideTimer: number | null;
+  resultTimer: number | null;
 }
 
 interface AddTaskInput {
@@ -41,12 +51,17 @@ interface KanbanStoreState {
   boardState: BoardState;
   isBoardLoading: boolean;
   boardError: string | null;
+  sync: BoardSyncState;
   drawer: KanbanDrawerState;
 
   initializeBoard: (boardState: BoardState, projectId?: string | null) => void;
   setBoardState: (updater: BoardStateUpdater) => void;
   setBoardLoading: (isLoading: boolean) => void;
   setBoardError: (error: string | null) => void;
+  startSync: () => void;
+  finishSync: (success: boolean) => void;
+  showSyncResult: (success: boolean) => void;
+  clearSyncStatus: () => void;
 
   openTaskDrawer: (task: Task) => void;
   setDrawerTask: (task: TaskDetail | null) => void;
@@ -79,6 +94,18 @@ const initialDrawerState: KanbanDrawerState = {
   activeTask: null,
 };
 
+const initialSyncState: BoardSyncState = {
+  status: "idle",
+  pendingCount: 0,
+  startedAt: null,
+  hideTimer: null,
+  resultTimer: null,
+};
+
+const MIN_SYNC_VISIBLE_MS = 700;
+const SUCCESS_VISIBLE_MS = 1800;
+const ERROR_VISIBLE_MS = 2500;
+
 function getNextSortOrder<T extends { sortOrder?: number; columnOrder?: number }>(
   items: T[],
   key: "sortOrder" | "columnOrder",
@@ -106,6 +133,7 @@ function applyTaskPatch<T extends Task>(task: T, patch: UpdateTaskDto): T {
 
   if (patch.title !== undefined) nextTask.title = patch.title;
   if (patch.description !== undefined) nextTask.description = patch.description;
+  if (patch.status !== undefined) nextTask.status = patch.status;
   if (patch.priority !== undefined) nextTask.priority = patch.priority;
   if (patch.dueDate !== undefined) {
     nextTask.dueDate = patch.dueDate ?? undefined;
@@ -140,16 +168,21 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
   boardState: emptyBoardState,
   isBoardLoading: false,
   boardError: null,
+  sync: initialSyncState,
   drawer: initialDrawerState,
 
   initializeBoard: (boardState, projectId = null) =>
-    set({
+    set((state) => ({
       projectId,
       boardState,
       isBoardLoading: false,
       boardError: null,
+      sync:
+        projectId !== null && state.projectId !== projectId
+          ? initialSyncState
+          : state.sync,
       drawer: initialDrawerState,
-    }),
+    })),
 
   setBoardState: (updater) =>
     set((state) => ({
@@ -159,6 +192,126 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
 
   setBoardLoading: (isBoardLoading) => set({ isBoardLoading }),
   setBoardError: (boardError) => set({ boardError }),
+
+  startSync: () =>
+    set((state) => {
+      if (state.sync.hideTimer) {
+        window.clearTimeout(state.sync.hideTimer);
+      }
+
+      if (state.sync.resultTimer) {
+        window.clearTimeout(state.sync.resultTimer);
+      }
+
+      const isAlreadySyncing = state.sync.status === "syncing";
+
+      return {
+        sync: {
+          status: "syncing",
+          pendingCount: state.sync.pendingCount + 1,
+          startedAt: isAlreadySyncing ? state.sync.startedAt : Date.now(),
+          hideTimer: null,
+          resultTimer: null,
+        },
+      };
+    }),
+
+  finishSync: (success) =>
+    set((state) => {
+      const pendingCount = Math.max(state.sync.pendingCount - 1, 0);
+
+      if (pendingCount > 0) {
+        return {
+          sync: {
+            ...state.sync,
+            status: "syncing",
+            pendingCount,
+          },
+        };
+      }
+
+      const startedAt = state.sync.startedAt ?? Date.now();
+      const elapsed = Date.now() - startedAt;
+      const remainingSyncTime = Math.max(MIN_SYNC_VISIBLE_MS - elapsed, 0);
+
+      if (remainingSyncTime > 0) {
+        const resultTimer = window.setTimeout(() => {
+          useKanbanStore.getState().showSyncResult(success);
+        }, remainingSyncTime);
+
+        return {
+          sync: {
+            ...state.sync,
+            status: "syncing",
+            pendingCount,
+            resultTimer,
+          },
+        };
+      }
+
+      const hideTimer = window.setTimeout(() => {
+        useKanbanStore.getState().clearSyncStatus();
+      }, success ? SUCCESS_VISIBLE_MS : ERROR_VISIBLE_MS);
+
+      return {
+        sync: {
+          status: success ? "success" : "error",
+          pendingCount,
+          startedAt: null,
+          hideTimer,
+          resultTimer: null,
+        },
+      };
+    }),
+
+  showSyncResult: (success) =>
+    set((state) => {
+      if (state.sync.pendingCount > 0) {
+        return {
+          sync: {
+            ...state.sync,
+            status: "syncing",
+          },
+        };
+      }
+
+      if (state.sync.hideTimer) {
+        window.clearTimeout(state.sync.hideTimer);
+      }
+
+      if (state.sync.resultTimer) {
+        window.clearTimeout(state.sync.resultTimer);
+      }
+
+      const hideTimer = window.setTimeout(() => {
+        useKanbanStore.getState().clearSyncStatus();
+      }, success ? SUCCESS_VISIBLE_MS : ERROR_VISIBLE_MS);
+
+      return {
+        sync: {
+          status: success ? "success" : "error",
+          pendingCount: 0,
+          startedAt: null,
+          hideTimer,
+          resultTimer: null,
+        },
+      };
+    }),
+
+  clearSyncStatus: () =>
+    set((state) => {
+      if (state.sync.hideTimer) {
+        window.clearTimeout(state.sync.hideTimer);
+      }
+
+      if (state.sync.resultTimer) {
+        window.clearTimeout(state.sync.resultTimer);
+      }
+
+      return {
+        sync: initialSyncState,
+      };
+    }),
 
   openTaskDrawer: (task) =>
     set({
@@ -242,7 +395,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       createdBy: "current-user",
       title,
       description: input.description || undefined,
-      status: TaskStatus.TODO,
+      status: getTaskStatusFromColumnName(column.name),
       priority: input.priority ?? TaskPriority.MEDIUM,
       dueDate: input.dueDate ?? undefined,
       boardColumnId: columnId,
@@ -333,6 +486,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         ...movingTask,
         boardColumnId: targetColumnId,
         columnOrder: getNextSortOrder(targetTasks, "columnOrder"),
+        status: getTaskStatusFromColumnName(targetColumn.name, movingTask.status),
         updatedAt: new Date().toISOString(),
       };
 
@@ -353,6 +507,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
                 ...state.drawer.activeTask,
                 boardColumnId: movedTask.boardColumnId,
                 columnOrder: movedTask.columnOrder,
+                status: movedTask.status,
                 updatedAt: movedTask.updatedAt,
               },
             }
@@ -509,6 +664,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       boardState: emptyBoardState,
       isBoardLoading: false,
       boardError: null,
+      sync: initialSyncState,
       drawer: initialDrawerState,
     }),
 }));

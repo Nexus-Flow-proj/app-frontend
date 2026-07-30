@@ -4,6 +4,7 @@ import {
   Calendar,
   Check,
   ChartNoAxesColumnDecreasing,
+  CircleDot,
   Pencil,
   Tag,
   User,
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PRIORITY_CONFIG } from "../../constants";
+import { PRIORITY_CONFIG, STATUS_CONFIG } from "../../constants";
 import type {
   BoardColumn,
   BoardMember,
@@ -29,7 +30,8 @@ import { MetaRow } from "./MetaRow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskPriority } from "../../types/enums";
+import { TaskPriority, type TaskStatus } from "../../types/enums";
+import { TASK_STATUSES } from "../../utils/task-status";
 
 interface TaskMetaSectionProps {
   className?: string;
@@ -37,6 +39,7 @@ interface TaskMetaSectionProps {
   columns: BoardColumn[];
   members: BoardMember[];
   onUpdatePriority: (taskId: string, priority: Priority) => void;
+  onUpdateStatus: (taskId: string, status: TaskStatus) => void;
   onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
   onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
   onUpdateLabel: (taskId: string, label: string) => void;
@@ -61,6 +64,7 @@ export function TaskMetaSection({
   columns,
   members,
   onUpdatePriority,
+  onUpdateStatus,
   onUpdateAssignee,
   onUpdateDueDate,
   onUpdateLabel,
@@ -124,6 +128,37 @@ export function TaskMetaSection({
                     value={priority}
                     className="text-sm"
                   >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={cn("size-2 rounded-full", config.dotClass)}
+                      />
+                      {config.label}
+                    </span>
+                  </SelectItem>
+                );
+              })}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </MetaRow>
+
+      <MetaRow icon={CircleDot} label="Status">
+        <Select
+          value={task.status}
+          onValueChange={(value) =>
+            onUpdateStatus(task.id, value as TaskStatus)
+          }
+        >
+          <SelectTrigger className="h-8 text-xs w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {TASK_STATUSES.map((status) => {
+                const config = STATUS_CONFIG[status];
+
+                return (
+                  <SelectItem key={status} value={status} className="text-sm">
                     <span className="flex items-center gap-2">
                       <span
                         className={cn("size-2 rounded-full", config.dotClass)}

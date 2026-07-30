@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { PRIORITY_CONFIG } from "../../../constants";
 import { cn } from "@/lib/utils";
 import type { Priority } from "@/features/boards/types";
+import { TaskPriority } from "@/features/boards/types/enums";
 
 interface TaskCardTagsProps {
   priority: Priority;
@@ -9,7 +10,8 @@ interface TaskCardTagsProps {
 }
 
 function TaskCardTags({ priority, tags }: TaskCardTagsProps) {
-  const priorityStyle = PRIORITY_CONFIG[priority];
+  const priorityStyle =
+    PRIORITY_CONFIG[priority] ?? PRIORITY_CONFIG[TaskPriority.MEDIUM];
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">

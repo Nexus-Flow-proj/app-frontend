@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router";
 import {
+  CalendarDaysIcon,
   ChevronRightIcon,
   FolderKanbanIcon,
   KanbanIcon,
@@ -190,6 +191,16 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         <span>Team Board</span>
                       </DropdownMenuItem>
                     )}
+                    {canOpenBoard && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          openProject(project, ROUTES.CALENDAR(project.id))
+                        }
+                      >
+                        <CalendarDaysIcon className="text-muted-foreground" />
+                        <span>Calendar</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() =>
                         openProject(project, ROUTES.MY_WORKSPACE(project.id))
@@ -275,6 +286,22 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           >
                             <KanbanIcon className="size-3.5" />
                             <span>Team Board</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )}
+                    {canOpenBoard && (
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === ROUTES.CALENDAR(project.id)}
+                        >
+                          <Link
+                            to={ROUTES.CALENDAR(project.id)}
+                            onClick={() => setActiveProject(project)}
+                          >
+                            <CalendarDaysIcon className="size-3.5" />
+                            <span>Calendar</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

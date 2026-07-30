@@ -9,6 +9,7 @@ export function registerNotificationHandlers(socketManager: SocketManager, qc: Q
         addNotificationToCache(qc, payload.notification)
         toast(payload.notification.title, {
             description: payload.notification.message,
+            position: "bottom-right",
         });
         console.log("NOTIFICATION Event With Payload : ", payload);
     });

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 import type Konva from "konva";
 import {
   CANVAS_MAX_SCALE,
@@ -22,7 +22,22 @@ export function useWorkshopStageInteractions({
   const selectObject = useWorkshopStore((s) => s.selectObject);
   const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const addObject = useWorkshopStore((s) => s.addObject);
-  const cancelConnect = useWorkshopStore((s) => s.cancelConnect);
+  const viewportFrameRef = useRef<number | null>(null);
+  const pendingViewportRef = useRef<Partial<typeof viewport> | null>(null);
+
+  const commitViewport = useCallback((next: Partial<typeof viewport>) => {
+    pendingViewportRef.current = next;
+    if (viewportFrameRef.current !== null) return;
+    viewportFrameRef.current = requestAnimationFrame(() => {
+      if (pendingViewportRef.current) setViewport(pendingViewportRef.current);
+      pendingViewportRef.current = null;
+      viewportFrameRef.current = null;
+    });
+  }, [setViewport]);
+
+  useEffect(() => () => {
+    if (viewportFrameRef.current !== null) cancelAnimationFrame(viewportFrameRef.current);
+  }, []);
 
   // zoom in/out: This function runs when user scrolls the mouse wheel on the canvas
   const handleWheel = useCallback(
@@ -56,9 +71,12 @@ export function useWorkshopStageInteractions({
         y: pointer.y - mousePointTo.y * newScale,
       };
 
-      setViewport({ scale: newScale, x: newPos.x, y: newPos.y });
+      stage.scale({ x: newScale, y: newScale });
+      stage.position(newPos);
+      stage.batchDraw();
+      commitViewport({ scale: newScale, x: newPos.x, y: newPos.y });
     },
-    [setViewport, stageRef],
+    [commitViewport, stageRef],
   );
 
   // This runs when dragging the stage ends (The stage is draggable only when: the active tool is "pan")
@@ -83,12 +101,6 @@ export function useWorkshopStageInteractions({
         return;
       }
 
-      // If user clicks empty canvas while connecting, cancel connection
-      if (activeTool === "connect") {
-        cancelConnect();
-        return;
-      }
-
       const kind = TOOL_TO_KIND[activeTool];
       if (!kind) return;
 
@@ -107,7 +119,6 @@ export function useWorkshopStageInteractions({
     [
       activeTool,
       addObject,
-      cancelConnect,
       openObjectDetails,
       selectObject,
       stageRef,
@@ -121,12 +132,11 @@ export function useWorkshopStageInteractions({
     if (
       activeTool === "task" ||
       activeTool === "sticky" ||
+      activeTool === "text" ||
       activeTool === "section"
     ) {
       return "cursor-crosshair";
     }
-
-    if (activeTool === "connect") return "cursor-cell";
 
     return "cursor-default";
   }, [activeTool]);

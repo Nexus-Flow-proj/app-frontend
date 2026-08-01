@@ -64,4 +64,11 @@ export const SOCKET_EVENTS = {
         USER_ONLINE: 'user:online',
         USER_OFFLINE: 'user:offline',
     },
+    AI: {
+        GENERATION_CREATED: 'ai.generation.created',
+        GENERATION_STARTED: 'ai.generation.started',
+        GENERATION_PROGRESS: 'ai.generation.progress',
+        GENERATION_COMPLETED: 'ai.generation.completed',
+        GENERATION_FAILED: 'ai.generation.failed',
+    },
 } as const;

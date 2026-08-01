@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Group, Rect, Text } from "react-konva";
 import type { CanvasObject } from "../../types";
 import { useStickyNoteNode } from "../../hooks/useStickyNoteNode";
@@ -6,7 +7,7 @@ interface Props {
   obj: CanvasObject;
 }
 
-export function StickyNoteNode({ obj }: Props) {
+export const StickyNoteNode = memo(function StickyNoteNode({ obj }: Props) {
   const {
     data,
     isSelected,
@@ -18,6 +19,7 @@ export function StickyNoteNode({ obj }: Props) {
 
   return (
     <Group
+      id={`workshop-object-${obj.id}`}
       x={obj.x}
       y={obj.y}
       rotation={obj.rotation}
@@ -51,4 +53,4 @@ export function StickyNoteNode({ obj }: Props) {
       />
     </Group>
   );
-}
+});

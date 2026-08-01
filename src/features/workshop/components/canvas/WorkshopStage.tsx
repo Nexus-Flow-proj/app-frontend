@@ -1,12 +1,12 @@
 import { useMemo, useRef } from "react";
 import { Layer, Stage } from "react-konva";
 import type Konva from "konva";
-import { ConnectorLayer } from "./ConnectorLayer";
 import { MiniMap } from "./MiniMap";
 import { SectionFrameNode } from "./SectionFrameNode";
 import { StickyNoteNode } from "./StickyNoteNode";
 import { TaskCardNode } from "./TaskCardNode";
 import GridPattern from "./GridPattern";
+import { TextBoxNode } from "./TextBoxNode";
 import { useWorkshopStageInteractions } from "../../hooks/useWorkshopStageInteractions";
 import { useWorkshopStore } from "../../store/workshopStore";
 import { getObjectsByType } from "../../utils/workshopObjectSelectors";
@@ -32,7 +32,7 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
   });
 
   // Filter objects by type
-  const { framesObj, tasksObj, stickiesObj } = useMemo(
+  const { framesObj, tasksObj, stickiesObj, textObj } = useMemo(
     () => getObjectsByType(objects),
     [objects],
   );
@@ -67,17 +67,15 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
           ))}
         </Layer>
 
-        {/* Renders connectors. */}
-        <Layer listening={false}>
-          <ConnectorLayer />
-        </Layer>
-
         <Layer>
           {tasksObj.map((obj) => (
             <TaskCardNode key={obj.id} obj={obj} />
           ))}
           {stickiesObj.map((obj) => (
             <StickyNoteNode key={obj.id} obj={obj} />
+          ))}
+          {textObj.map((obj) => (
+            <TextBoxNode key={obj.id} obj={obj} />
           ))}
         </Layer>
       </Stage>

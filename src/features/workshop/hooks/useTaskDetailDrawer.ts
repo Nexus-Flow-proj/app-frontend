@@ -7,6 +7,7 @@ import type {
   SectionFrameData,
   SectionFrameKind,
   StickyNoteData,
+  TextBoxData,
   StickyNoteKind,
   TaskCardData,
   TaskCardKind,
@@ -22,6 +23,11 @@ export type TaskDetailFormState = {
   assigneeName: string;
   dueDate: string;
   color: string;
+  acceptanceCriteria: string;
+  estimatedComplexity: "S" | "M" | "L" | "XL";
+  taskType: "FEATURE" | "BUG" | "CHORE";
+  sectionPriority: "LOW" | "MEDIUM" | "HIGH";
+  fontSize: number;
 };
 
 const defaultForm: TaskDetailFormState = {
@@ -33,6 +39,11 @@ const defaultForm: TaskDetailFormState = {
   assigneeName: "",
   dueDate: "",
   color: "#FEF08A",
+  acceptanceCriteria: "",
+  estimatedComplexity: "M",
+  taskType: "FEATURE",
+  sectionPriority: "MEDIUM",
+  fontSize: 18,
 };
 
 const TASK_KIND_OPTIONS: TaskCardKind[] = [
@@ -42,7 +53,7 @@ const TASK_KIND_OPTIONS: TaskCardKind[] = [
   "Risk",
 ];
 const STICKY_KIND_OPTIONS: StickyNoteKind[] = ["Note"];
-const SECTION_KIND_OPTIONS: SectionFrameKind[] = ["Project", "Phase"];
+const SECTION_KIND_OPTIONS: SectionFrameKind[] = ["Feature"];
 
 function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
   if (!obj) return defaultForm;
@@ -58,6 +69,11 @@ function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
       assigneeName: data.assigneeName ?? "",
       dueDate: data.dueDate ?? "",
       color: defaultForm.color,
+      acceptanceCriteria: data.acceptanceCriteria?.join("\n") ?? "",
+      estimatedComplexity: data.estimatedComplexity ?? "M",
+      taskType: data.type ?? "FEATURE",
+      sectionPriority: defaultForm.sectionPriority,
+      fontSize: defaultForm.fontSize,
     };
   }
 
@@ -72,14 +88,27 @@ function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
     };
   }
 
+  if (obj.type === CanvasObjectType.TEXT_BOX) {
+    const data = obj.data as TextBoxData;
+    return {
+      ...defaultForm,
+      kind: "Text",
+      title: "Text box",
+      description: data.content,
+      color: data.color ?? "#334155",
+      fontSize: data.fontSize ?? 18,
+    };
+  }
+
   if (obj.type === CanvasObjectType.SECTION_FRAME) {
     const data = obj.data as SectionFrameData;
     return {
       ...defaultForm,
-      kind: data.kind ?? "Phase",
+      kind: "Feature",
       title: data.title,
       description: data.description ?? "",
       color: data.backgroundColor,
+      sectionPriority: data.priority ?? "MEDIUM",
     };
   }
 
@@ -120,6 +149,11 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
           priority: form.priority,
           assigneeName: form.assigneeName.trim() || undefined,
           dueDate: form.dueDate || undefined,
+          taskName: form.title.trim(),
+          taskDescription: form.description.trim() || undefined,
+          acceptanceCriteria: form.acceptanceCriteria.split("\n").map((item) => item.trim()).filter(Boolean),
+          estimatedComplexity: form.estimatedComplexity,
+          type: form.taskType,
         },
       });
     }
@@ -135,6 +169,18 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
       });
     }
 
+    if (obj.type === CanvasObjectType.TEXT_BOX) {
+      updateObject(obj.id, {
+        data: {
+          ...(obj.data as TextBoxData),
+          kind: "Text",
+          content: form.description.trim() || "Text",
+          color: form.color,
+          fontSize: form.fontSize,
+        },
+      });
+    }
+
     if (obj.type === CanvasObjectType.SECTION_FRAME) {
       updateObject(obj.id, {
         data: {
@@ -143,6 +189,8 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
           title: form.title.trim(),
           description: form.description.trim() || undefined,
           backgroundColor: form.color,
+          featureName: form.title.trim(),
+          priority: form.sectionPriority,
         },
       });
     }
@@ -158,6 +206,8 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
 
   const isTask = obj?.type === CanvasObjectType.TASK_CARD;
   const isSticky = obj?.type === CanvasObjectType.STICKY_NOTE;
+  const isText = obj?.type === CanvasObjectType.TEXT_BOX;
+  const isSection = obj?.type === CanvasObjectType.SECTION_FRAME;
   const kindOptions: WorkshopObjectKind[] =
     obj?.type === CanvasObjectType.SECTION_FRAME
       ? SECTION_KIND_OPTIONS
@@ -170,6 +220,8 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
     form,
     isTask,
     isSticky,
+    isText,
+    isSection,
     kindOptions,
     statusCfg: STATUS_CONFIG[form.status] ?? STATUS_CONFIG.BACKLOG,
     priorityCfg: PRIORITY_CONFIG[form.priority] ?? PRIORITY_CONFIG.LOW,

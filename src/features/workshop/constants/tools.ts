@@ -1,11 +1,11 @@
 import type { WorkshopTool } from "../types";
 import {
   Frame,
-  GitBranch,
   Hand,
   MousePointer2,
   SquareDashedMousePointer,
   StickyNote,
+  Type,
 } from "lucide-react";
 
 interface ToolDef {
@@ -41,15 +41,15 @@ export const TOOLS: ToolDef[] = [
     shortcut: "N",
   },
   {
-    tool: "section",
-    icon: Frame,
-    label: "Add section",
-    shortcut: "S",
+    tool: "text",
+    icon: Type,
+    label: "Add text box",
+    shortcut: "X",
   },
   {
-    tool: "connect",
-    icon: GitBranch,
-    label: "Connect",
-    shortcut: "C",
+    tool: "section",
+    icon: Frame,
+    label: "Add feature",
+    shortcut: "S",
   },
 ];

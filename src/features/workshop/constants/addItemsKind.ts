@@ -1,11 +1,11 @@
 import {
-  ClipboardList,
   Diamond,
-  GitBranch,
+  Frame,
   Milestone,
   Plus,
   StickyNote,
   TriangleAlert,
+  Type,
 } from "lucide-react";
 import type { WorkshopObjectKind } from "../types/workshopKinds";
 
@@ -14,10 +14,10 @@ export const ADD_ITEMS: Array<{
   icon: React.ComponentType<{ className?: string }>;
 }> = [
   // SectionFrame
-  { kind: "Project", icon: ClipboardList },
-  { kind: "Phase", icon: GitBranch },
+  { kind: "Feature", icon: Frame },
   // StickyNote
   { kind: "Note", icon: StickyNote },
+  { kind: "Text", icon: Type },
   // TaskCard
   { kind: "Task", icon: Plus },
   { kind: "Milestone", icon: Milestone },

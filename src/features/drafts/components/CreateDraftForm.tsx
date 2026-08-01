@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { Card, CardContent } from "@/components/ui/card";
+import { ROUTES } from "@/constants";
 import { useCreateDraft, useDraft, useUpdateDraft } from "../hooks";
 import { denormalizeDraftPayload } from "../utils/denormalizeDraftPayload";
 import { normalizeDraftPayload } from "../utils/normalizeDraftPayload";
+import type { CreateDraftDto } from "../types";
 import {
   createDraftDefaultValues,
   createDraftSchema,
@@ -21,7 +24,16 @@ interface CreateDraftFormProps {
   draftId?: string;
 }
 
+function areDraftPayloadsEqual(
+  currentPayload: CreateDraftDto,
+  initialPayload: CreateDraftDto | null,
+) {
+  return JSON.stringify(currentPayload) === JSON.stringify(initialPayload);
+}
+
 export function CreateDraftForm({ draftId }: CreateDraftFormProps) {
+  const navigate = useNavigate();
+  const initialDraftPayloadRef = useRef<CreateDraftDto | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const { data: draft, isLoading: isLoadingDraft } = useDraft(draftId);
   const { mutate: createDraft, isPending: isCreatingDraft } = useCreateDraft();
@@ -125,7 +137,10 @@ export function CreateDraftForm({ draftId }: CreateDraftFormProps) {
       return;
     }
 
-    reset(denormalizeDraftPayload(draft));
+    const draftValues = denormalizeDraftPayload(draft);
+
+    initialDraftPayloadRef.current = normalizeDraftPayload(draftValues);
+    reset(draftValues);
   }, [draft, reset]);
 
   async function goNext() {
@@ -152,6 +167,11 @@ export function CreateDraftForm({ draftId }: CreateDraftFormProps) {
     const dto = normalizeDraftPayload(values);
 
     if (draftId) {
+      if (areDraftPayloadsEqual(dto, initialDraftPayloadRef.current)) {
+        navigate(ROUTES.DRAFT_WORKSHOP(draftId), { replace: true });
+        return;
+      }
+
       updateDraft({ draftId, dto });
       return;
     }

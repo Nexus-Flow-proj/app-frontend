@@ -11,6 +11,7 @@ import {
     rollbackTaskDetail,
     updateSubtaskInCache,
 } from "../cache/task-detail.cache";
+import { rollbackTaskListCaches } from "../cache/task-list.cache";
 import type { Subtask } from "../types";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
@@ -66,6 +67,7 @@ export function useCreateSubtask(taskId: string) {
                         context.previousTask,
                     );
                 }
+                rollbackTaskListCaches(queryClient, context?.previousTaskLists);
             },
 
             onSettled: (_, error, __, context) => {

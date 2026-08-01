@@ -44,12 +44,18 @@ interface TaskMetaSectionProps {
   columns: BoardColumn[];
   members: BoardMember[];
   isUpdatingTask?: boolean;
-  onUpdatePriority: (taskId: string, priority: Priority) => void;
-  onUpdateStatus: (taskId: string, status: TaskStatus) => void;
-  onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
-  onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
-  onUpdateDependencies: (taskId: TaskId, dependencyIds: TaskId[]) => void;
-  onUpdateLabel: (taskId: string, label: string) => void;
+  priority: Priority;
+  status: TaskStatus;
+  assigneeId: string | null;
+  dueDate: string;
+  dependencyIds: TaskId[];
+  label: string;
+  onChangePriority: (priority: Priority) => void;
+  onChangeStatus: (status: TaskStatus) => void;
+  onChangeAssignee: (assigneeId: string | null) => void;
+  onChangeDueDate: (dueDate: string) => void;
+  onChangeDependencies: (dependencyIds: TaskId[]) => void;
+  onChangeLabel: (label: string) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
 }
 
@@ -72,16 +78,21 @@ export function TaskMetaSection({
   columns,
   members,
   isUpdatingTask,
-  onUpdatePriority,
-  onUpdateStatus,
-  onUpdateAssignee,
-  onUpdateDueDate,
-  onUpdateDependencies,
-  onUpdateLabel,
+  priority,
+  status,
+  assigneeId,
+  dueDate,
+  dependencyIds,
+  label: currentLabel,
+  onChangePriority,
+  onChangeStatus,
+  onChangeAssignee,
+  onChangeDueDate,
+  onChangeDependencies,
+  onChangeLabel,
   onMoveToColumn,
   className,
 }: TaskMetaSectionProps) {
-  const currentLabel = task.tags?.[0] ?? "";
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [labelDraft, setLabelDraft] = useState<LabelDraft | null>(null);
   const label =
@@ -96,7 +107,7 @@ export function TaskMetaSection({
       setLabelDraft(null);
       return;
     }
-    onUpdateLabel(task.id, trimmedLabel);
+    onChangeLabel(trimmedLabel);
     setIsEditingLabel(false);
     setLabelDraft(null);
   };
@@ -119,10 +130,9 @@ export function TaskMetaSection({
     <div className={cn("space-y-2", className)}>
       <MetaRow icon={ChartNoAxesColumnDecreasing} label="Priority">
         <Select
-          value={task.priority}
-          onValueChange={(value) =>
-            onUpdatePriority(task.id, value as Priority)
-          }
+          value={priority}
+          disabled={isUpdatingTask}
+          onValueChange={(value) => onChangePriority(value as Priority)}
         >
           <SelectTrigger className="h-8 text-xs w-full">
             <SelectValue />
@@ -154,10 +164,9 @@ export function TaskMetaSection({
 
       <MetaRow icon={CircleDot} label="Status">
         <Select
-          value={task.status}
-          onValueChange={(value) =>
-            onUpdateStatus(task.id, value as TaskStatus)
-          }
+          value={status}
+          disabled={isUpdatingTask}
+          onValueChange={(value) => onChangeStatus(value as TaskStatus)}
         >
           <SelectTrigger className="h-8 text-xs w-full">
             <SelectValue />
@@ -185,9 +194,10 @@ export function TaskMetaSection({
 
       <MetaRow icon={User} label="Assignee">
         <Select
-          value={task.assignee?.id ?? "unassigned"}
+          value={assigneeId ?? "unassigned"}
+          disabled={isUpdatingTask}
           onValueChange={(value) =>
-            onUpdateAssignee(task.id, value === "unassigned" ? null : value)
+            onChangeAssignee(value === "unassigned" ? null : value)
           }
         >
           <SelectTrigger className="h-8 text-xs">
@@ -212,10 +222,9 @@ export function TaskMetaSection({
       <MetaRow icon={Calendar} label="Due date">
         <Input
           type="date"
-          value={task.dueDate ? task.dueDate.slice(0, 10) : ""}
-          onChange={(event) =>
-            onUpdateDueDate(task.id, event.target.value || null)
-          }
+          value={dueDate}
+          disabled={isUpdatingTask}
+          onChange={(event) => onChangeDueDate(event.target.value)}
           className="h-8 text-xs scheme-dark"
         />
       </MetaRow>
@@ -240,11 +249,13 @@ export function TaskMetaSection({
 
       <MetaRow icon={GitBranch} label="Depends on">
         <TaskDependencyPicker
-          task={task}
+          task={{ ...task, dependencyIds }}
           tasks={tasks}
           columns={columns}
           isUpdating={isUpdatingTask}
-          onChangeDependencies={onUpdateDependencies}
+          onChangeDependencies={(_, nextDependencyIds) =>
+            onChangeDependencies(nextDependencyIds)
+          }
         />
       </MetaRow>
 
@@ -321,7 +332,7 @@ export function TaskMetaSection({
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
-                onClick={() => onUpdateLabel(task.id, "")}
+                onClick={() => onChangeLabel("")}
               >
                 <X className="size-3.5" />
               </Button>

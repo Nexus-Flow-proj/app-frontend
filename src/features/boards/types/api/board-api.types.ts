@@ -182,7 +182,7 @@ export interface UpdateTaskDto {
 
     label?: string;
 
-    deadline?: string;
+    deadline?: string | null;
 
     status?: TaskStatus;
 

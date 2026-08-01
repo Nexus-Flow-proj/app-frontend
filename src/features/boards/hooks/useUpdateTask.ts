@@ -270,7 +270,7 @@ export function updateTaskDetail(
             dto.priority ?? task.priority,
 
         dueDate:
-            dto.deadline ?? task.dueDate,
+            dto.deadline === undefined ? task.dueDate : dto.deadline ?? undefined,
 
         boardColumnId:
             dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
@@ -311,7 +311,7 @@ export function updateTaskList(
         priority:
             dto.priority ?? task.priority,
         dueDate:
-            dto.deadline ?? task.dueDate,
+            dto.deadline === undefined ? task.dueDate : dto.deadline ?? undefined,
         boardColumnId:
             dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
         columnOrder: dto.columnOrder ?? task.columnOrder,

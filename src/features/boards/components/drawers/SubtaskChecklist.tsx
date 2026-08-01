@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
-import type { Subtask, TaskId } from "../../types";
+import type { Subtask } from "../../types";
 
 interface SubtaskChecklistProps {
-  taskId: TaskId;
   subtasks: Subtask[];
+  disabled?: boolean;
   onToggle: (subtaskId: string, completed: boolean) => void;
+  onTitleChange: (subtaskId: string, title: string) => void;
   onAdd: (title: string) => void;
   onDelete: (subtaskId: string) => void;
 }
@@ -44,7 +45,9 @@ function Progress({ completed, total }: { completed: number; total: number }) {
 
 export function SubtaskChecklist({
   subtasks,
+  disabled,
   onToggle,
+  onTitleChange,
   onAdd,
   onDelete,
 }: SubtaskChecklistProps) {
@@ -101,24 +104,29 @@ export function SubtaskChecklist({
               <Checkbox
                 id={subtask.id}
                 checked={subtask.completed}
+                disabled={disabled}
                 onCheckedChange={(checked) => onToggle(subtask.id, !!checked)}
                 className="shrink-0"
               />
-              <label
-                htmlFor={subtask.id}
+              <Input
+                value={subtask.title}
+                disabled={disabled}
+                onChange={(event) =>
+                  onTitleChange(subtask.id, event.target.value)
+                }
                 className={cn(
-                  "flex-1 text-sm cursor-pointer leading-snug",
+                  "h-8 flex-1 border-transparent bg-transparent px-1 text-sm shadow-none focus-visible:border-input",
                   subtask.completed
                     ? "line-through text-muted-foreground"
                     : "text-foreground",
                 )}
-              >
-                {subtask.title}
-              </label>
+              />
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="size-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive rounded shrink-0"
+                disabled={disabled}
                 onClick={() => onDelete(subtask.id)}
               >
                 <Trash2 className="size-3" />
@@ -133,6 +141,7 @@ export function SubtaskChecklist({
           <Input
             ref={inputRef}
             value={value}
+            disabled={disabled}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") submit();
@@ -145,13 +154,19 @@ export function SubtaskChecklist({
             className="h-8 text-sm flex-1"
             autoFocus
           />
-          <Button size="sm" className="h-8 shrink-0" onClick={submit}>
+          <Button
+            size="sm"
+            className="h-8 shrink-0"
+            disabled={disabled}
+            onClick={submit}
+          >
             Add
           </Button>
           <Button
             size="sm"
             variant="ghost"
             className="h-8 shrink-0"
+            disabled={disabled}
             onClick={() => {
               setAdding(false);
               setValue("");
@@ -169,6 +184,7 @@ export function SubtaskChecklist({
             setAdding(true);
             setTimeout(() => inputRef.current?.focus(), 50);
           }}
+          disabled={disabled}
         >
           <Plus className="size-3.5" /> Add subtask
         </Button>

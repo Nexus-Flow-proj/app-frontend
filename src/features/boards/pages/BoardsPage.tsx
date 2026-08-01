@@ -472,47 +472,25 @@ function BoardsPage() {
         isLoadingTimeLogs={timeLogsQuery.isLoading}
         isSubmittingComment={drawer.isSubmittingComment}
         isDeletingTask={deleteTaskMutation.isPending}
-        isUpdatingTask={updateTaskMutation.isPending}
+        isUpdatingTask={
+          updateTaskMutation.isPending ||
+          createSubtaskMutation.isPending ||
+          updateSubtaskMutation.isPending ||
+          deleteSubtaskMutation.isPending
+        }
         onClose={closeTaskDrawer}
-        onUpdateTitle={(_taskId, title) =>
-          updateTaskMutation.mutate({ title })
-        }
-        onUpdateDescription={(_taskId, description) =>
-          updateTaskMutation.mutate({ description })
-        }
-        onUpdateLabel={(_taskId, label) =>
-          updateTaskMutation.mutate({ label })
-        }
-        onUpdatePriority={(_taskId, priority) =>
-          updateTaskMutation.mutate({ priority })
-        }
-        onUpdateStatus={(_taskId, status) =>
-          updateTaskMutation.mutate({ status })
-        }
-        onUpdateAssignee={(_taskId, assigneeId) =>
-          updateTaskMutation.mutate({ assigneeId })
-        }
-        onUpdateDueDate={(_taskId, date) =>
-          updateTaskMutation.mutate({ deadline: date ?? undefined })
-        }
-        onUpdateDependencies={(_taskId, dependencyIds) =>
-          updateTaskMutation.mutate({ dependencyIds })
-        }
-        onMoveToColumn={handleMoveTaskToColumn}
-        onToggleSubtask={(subtaskId, completed) =>
+        onSaveChanges={(_taskId, dto) => updateTaskMutation.mutate(dto)}
+        onCreateSubtask={(dto) => createSubtaskMutation.mutate(dto)}
+        onUpdateSubtask={(subtaskId, dto) =>
           updateSubtaskMutation.mutate({
             subtaskId,
-            dto: { completed },
-          })
-        }
-        onAddSubtask={(title) =>
-          createSubtaskMutation.mutate({
-            title,
+            dto,
           })
         }
         onDeleteSubtask={(subtaskId) =>
           deleteSubtaskMutation.mutate(subtaskId)
         }
+        onMoveToColumn={handleMoveTaskToColumn}
         onAddComment={(content) =>
           createCommentMutation.mutate({
             body: content,

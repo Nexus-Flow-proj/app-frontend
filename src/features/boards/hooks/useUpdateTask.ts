@@ -20,7 +20,7 @@ import {
     rollbackTaskDetail,
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
-import { mapBoardMember } from "../mappers";
+import { mapBoardMember, normalizeTaskDependencyIds } from "../mappers";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 type TaskUpdatePatch = Partial<TaskUpdatedData> & {
@@ -69,14 +69,30 @@ export function useUpdateTask(
                     previousTaskDetail,
                 };
             },
-            onSuccess: (res) => {
+            onSuccess: (res, dto) => {
+                const taskPatch = {
+                    ...res.data,
+                    dependencyIds:
+                        dto.dependencyIds ??
+                        normalizeTaskDependencyIds(
+                            res.data.dependencyIds ?? res.data.dependencies,
+                        ),
+                };
+
                 patchTaskInListCache(
                     queryClient,
                     projectId,
                     taskId,
-                    (task) => updateTaskList(task, res.data),
+                    (task) => updateTaskList(task, taskPatch),
                 );
-                invalidateTaskDetail(queryClient, taskId);
+                updateTaskDetailCache(
+                    queryClient,
+                    taskId,
+                    (task) => updateTaskDetail(task, taskPatch),
+                );
+                if (dto.dependencyIds === undefined) {
+                    invalidateTaskDetail(queryClient, taskId);
+                }
             },
 
             onError: (_, __, context) => {
@@ -146,14 +162,30 @@ export function useUpdateTaskById(projectId: string) {
                 };
             },
 
-            onSuccess: (res, { taskId }) => {
+            onSuccess: (res, { taskId, dto }) => {
+                const taskPatch = {
+                    ...res.data,
+                    dependencyIds:
+                        dto.dependencyIds ??
+                        normalizeTaskDependencyIds(
+                            res.data.dependencyIds ?? res.data.dependencies,
+                        ),
+                };
+
                 patchTaskInListCache(
                     queryClient,
                     projectId,
                     taskId,
-                    (task) => updateTaskList(task, res.data),
+                    (task) => updateTaskList(task, taskPatch),
                 );
-                invalidateTaskDetail(queryClient, taskId);
+                updateTaskDetailCache(
+                    queryClient,
+                    taskId,
+                    (task) => updateTaskDetail(task, taskPatch),
+                );
+                if (dto.dependencyIds === undefined) {
+                    invalidateTaskDetail(queryClient, taskId);
+                }
             },
 
             onError: (_, { taskId }, context) => {
@@ -226,6 +258,11 @@ export function updateTaskDetail(
 
         title: dto.title ?? task.title,
 
+        dependencyIds:
+            normalizeTaskDependencyIds(
+                dto.dependencyIds ?? dto.dependencies ?? task.dependencyIds,
+            ),
+
         description:
             dto.description ?? task.description,
 
@@ -265,6 +302,10 @@ export function updateTaskList(
     return {
         ...task,
         title: dto.title ?? task.title,
+        dependencyIds:
+            normalizeTaskDependencyIds(
+                dto.dependencyIds ?? dto.dependencies ?? task.dependencyIds,
+            ),
         description:
             dto.description ?? task.description,
         priority:

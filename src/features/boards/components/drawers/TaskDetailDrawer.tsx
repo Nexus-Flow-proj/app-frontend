@@ -297,7 +297,7 @@ export function TaskDetailDrawer({
               onTitleChange={(title) => setDraftValue("title", title)}
             />
 
-            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 pb-0 space-y-5 custom-scrollbar">
               <div className="space-y-2 pt-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -415,7 +415,24 @@ export function TaskDetailDrawer({
                 onDeleteTimeLog={onDeleteTimeLog}
               />
               <ActivityLog events={task.activityLog} />
-              <Separator />
+              {onDeleteTask && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="w-full py-4   justify-center gap-1.5"
+                      isLoading={isDeletingTask}
+                      onClick={() => onDeleteTask(task.id)}
+                    >
+                      <Trash2 className="size-3.5" />
+                      Delete task
+                    </Button>
+                  </div>
+                </>
+              )}
               <div className="sticky bottom-0 -mx-6 flex items-center justify-end gap-2 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
                 <Button
                   type="button"
@@ -442,24 +459,6 @@ export function TaskDetailDrawer({
                   Save changes
                 </Button>
               </div>
-              {onDeleteTask && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="w-full py-4   justify-center gap-1.5"
-                      isLoading={isDeletingTask}
-                      onClick={() => onDeleteTask(task.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                      Delete task
-                    </Button>
-                  </div>
-                </>
-              )}
             </div>
           </>
         )}

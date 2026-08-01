@@ -12,16 +12,19 @@ import { TaskMetaSection } from "./TaskMetaSection";
 import { ActivityLog } from "./ActivityLog";
 import type {
   TaskDetail,
+  Task,
   Priority,
   BoardMember,
   BoardColumn,
   TimeLog,
+  TaskId,
 } from "../../types";
 import type { TaskStatus } from "../../types/enums";
 import { Separator } from "@/components/ui/separator";
 
 interface TaskDetailDrawerProps {
   task: TaskDetail | null;
+  tasks: Task[];
   columns: BoardColumn[];
   members: BoardMember[];
   timeLogs: TimeLog[];
@@ -37,6 +40,7 @@ interface TaskDetailDrawerProps {
   onUpdateStatus: (taskId: string, status: TaskStatus) => void;
   onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
   onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
+  onUpdateDependencies: (taskId: TaskId, dependencyIds: TaskId[]) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
   onToggleSubtask: (subtaskId: string, completed: boolean) => void;
   onAddSubtask: (title: string) => void;
@@ -62,6 +66,7 @@ interface TaskDetailDrawerProps {
 
 export function TaskDetailDrawer({
   task,
+  tasks,
   columns,
   members,
   timeLogs,
@@ -77,6 +82,7 @@ export function TaskDetailDrawer({
   onUpdateStatus,
   onUpdateAssignee,
   onUpdateDueDate,
+  onUpdateDependencies,
   onMoveToColumn,
   onToggleSubtask,
   onAddSubtask,
@@ -186,12 +192,15 @@ export function TaskDetailDrawer({
 
               <TaskMetaSection
                 task={task}
+                tasks={tasks}
                 columns={columns}
                 members={members}
+                isUpdatingTask={isUpdatingTask}
                 onUpdatePriority={onUpdatePriority}
                 onUpdateStatus={onUpdateStatus}
                 onUpdateAssignee={onUpdateAssignee}
                 onUpdateDueDate={onUpdateDueDate}
+                onUpdateDependencies={onUpdateDependencies}
                 onUpdateLabel={onUpdateLabel}
                 onMoveToColumn={onMoveToColumn}
               />

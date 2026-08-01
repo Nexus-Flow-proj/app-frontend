@@ -58,6 +58,13 @@ const BoardPages = {
   TeamBoard: lazy(() => import("@/features/boards/pages/BoardsPage")),
 };
 
+// ** Calendar Pages
+const CalendarPages = {
+  ProjectCalendar: lazy(
+    () => import("@/features/calendar/pages/ProjectCalendarPage"),
+  ),
+};
+
 // ** ───────────────────────────  Router ───────────────────────────
 const router = createBrowserRouter([
   // ── Root redirect
@@ -193,6 +200,12 @@ const router = createBrowserRouter([
               {
                 path: "/projects/:id/boards",
                 element: <WithSuspense Component={BoardPages.TeamBoard} />,
+              },
+              {
+                path: "/projects/:id/calendar",
+                element: (
+                  <WithSuspense Component={CalendarPages.ProjectCalendar} />
+                ),
               },
             ],
           },

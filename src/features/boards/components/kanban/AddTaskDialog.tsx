@@ -26,12 +26,14 @@ import { cn } from "@/lib/utils";
 import { PRIORITY_CONFIG } from "../../constants";
 import { TaskPriority } from "../../types/enums";
 import type { BoardMember, BoardColumn, Priority } from "../../types";
+import type { TaskId } from "../../types";
 
 
 export interface NewTaskFormData {
   title: string;
   description: string;
   priority: Priority;
+  dependencyIds: TaskId[];
   assigneeId: string | null;
   dueDate: string | null;
   tags: string[];
@@ -59,6 +61,7 @@ const DEFAULT_FORM: Omit<NewTaskFormData, "columnId"> = {
   title: "",
   description: "",
   priority: TaskPriority.MEDIUM,
+  dependencyIds: [],
   assigneeId: null,
   dueDate: null,
   tags: [],

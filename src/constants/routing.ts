@@ -20,5 +20,6 @@ export const ROUTES = {
   PROJECT_ROLES: (id: string) => `/projects/${id}/roles`,
   WORKSHOP: (id: string) => `/projects/${id}/workshop`,
   BOARDS: (id: string) => `/projects/${id}/boards`,
+  CALENDAR: (id: string) => `/projects/${id}/calendar`,
   MY_WORKSPACE: (id: string) => `/projects/${id}/my-workshop`,
 } as const;

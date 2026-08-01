@@ -43,6 +43,7 @@ interface AddTaskInput {
   priority?: Task["priority"];
   assignee?: BoardMember | null;
   dueDate?: string | null;
+  dependencyIds?: TaskId[];
   tags?: string[];
 }
 
@@ -394,6 +395,7 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
       projectId: projectId ?? column.projectId,
       createdBy: "current-user",
       title,
+      dependencyIds: input.dependencyIds ?? [],
       description: input.description || undefined,
       status: getTaskStatusFromColumnName(column.name),
       priority: input.priority ?? TaskPriority.MEDIUM,

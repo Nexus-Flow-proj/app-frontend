@@ -51,6 +51,29 @@ export function normalizeTaskSource(source: unknown): TaskSource {
         : BoardTaskSource.MANUAL;
 }
 
+export function normalizeTaskDependencyIds(dependencyIds: unknown): string[] {
+    if (!Array.isArray(dependencyIds)) return [];
+
+    return dependencyIds.flatMap((dependency) => {
+        if (typeof dependency === "string") {
+            const trimmedDependency = dependency.trim();
+            return trimmedDependency ? [trimmedDependency] : [];
+        }
+
+        if (
+            dependency &&
+            typeof dependency === "object" &&
+            "id" in dependency &&
+            typeof dependency.id === "string"
+        ) {
+            const trimmedDependency = dependency.id.trim();
+            return trimmedDependency ? [trimmedDependency] : [];
+        }
+
+        return [];
+    });
+}
+
 export function mapBoardMember(user: ApiUserSummary | null | undefined): BoardMember {
     if (!user) {
         return {
@@ -155,6 +178,9 @@ export function mapTaskSummary(task: ApiTaskSummary): Task {
     return {
         id: task.id,
         projectId: task.projectId,
+        dependencyIds: normalizeTaskDependencyIds(
+            task.dependencyIds ?? task.dependencies,
+        ),
         createdBy: task.createdBy.id,
         title: task.title,
         status: normalizeTaskStatus(task.status),
@@ -185,6 +211,9 @@ export function mapTaskDetail(
     const summary: Task = {
         id: task.id,
         projectId: task.projectId,
+        dependencyIds: normalizeTaskDependencyIds(
+            task.dependencyIds ?? task.dependencies,
+        ),
         createdBy: task.createdBy.id,
         title: task.title,
         description: task.description ?? undefined,

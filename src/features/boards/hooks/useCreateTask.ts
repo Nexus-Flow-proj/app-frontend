@@ -35,6 +35,7 @@ export function useCreateTask(projectId: string) {
                     id: `temp-${crypto.randomUUID()}`,
                     projectId,
                     title: dto.title,
+                    dependencyIds: dto.dependencyIds ?? [],
                     description: dto.description,
                     dueDate: dto.deadline,
                     tags: dto.label ? [dto.label] : [],

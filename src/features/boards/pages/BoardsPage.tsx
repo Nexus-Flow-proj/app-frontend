@@ -158,6 +158,10 @@ function BoardsPage() {
   const deleteSubtaskMutation = useDeleteSubtask(activeTaskId);
 
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+  const tasks = useMemo(
+    () => boardState.columnOrder.flatMap((id) => boardState.tasks[id] ?? []),
+    [boardState],
+  );
   const editingColumn = editingColumnId
     ? boardState.columns[editingColumnId]
     : null;
@@ -292,6 +296,7 @@ function BoardsPage() {
         columnId: data.columnId,
         dto: {
           title: data.title,
+          dependencyIds: data.dependencyIds,
           description: data.description || undefined,
           deadline: data.dueDate ?? undefined,
           label,
@@ -457,6 +462,7 @@ function BoardsPage() {
 
       <TaskDetailDrawer
         task={drawer.activeTask}
+        tasks={tasks}
         columns={columns}
         members={members}
         timeLogs={timeLogsQuery.data?.timeLogs ?? []}
@@ -488,6 +494,9 @@ function BoardsPage() {
         }
         onUpdateDueDate={(_taskId, date) =>
           updateTaskMutation.mutate({ deadline: date ?? undefined })
+        }
+        onUpdateDependencies={(_taskId, dependencyIds) =>
+          updateTaskMutation.mutate({ dependencyIds })
         }
         onMoveToColumn={handleMoveTaskToColumn}
         onToggleSubtask={(subtaskId, completed) =>

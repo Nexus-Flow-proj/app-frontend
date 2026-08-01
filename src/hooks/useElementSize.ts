@@ -1,23 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useElementSize<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  console.log(size);
 
-  useEffect(() => {
-    if (!ref.current) return;
+  const ref = useCallback((element: T | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
 
-    // Browser API: track the size of the element
-    const observer = new ResizeObserver(([entry]) => {
+    if (!element) return;
+
+    const updateSize = (width: number, height: number) => {
       setSize({
-        width: Math.floor(entry.contentRect.width),
-        height: Math.floor(entry.contentRect.height),
+        width: Math.floor(width),
+        height: Math.floor(height),
       });
-    });
+    };
 
-    observer.observe(ref.current);
-    return () => observer.disconnect();
+    const bounds = element.getBoundingClientRect();
+    updateSize(bounds.width, bounds.height);
+
+    observerRef.current = new ResizeObserver(([entry]) => {
+      updateSize(entry.contentRect.width, entry.contentRect.height);
+    });
+    observerRef.current.observe(element);
   }, []);
 
   return [ref, size] as const;

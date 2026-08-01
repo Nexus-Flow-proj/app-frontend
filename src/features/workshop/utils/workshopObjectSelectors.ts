@@ -10,5 +10,6 @@ export function getObjectsByType(objects: CanvasObject[]) {
     stickiesObj: objects.filter(
       (obj) => obj.type === CanvasObjectType.STICKY_NOTE,
     ),
+    textObj: objects.filter((obj) => obj.type === CanvasObjectType.TEXT_BOX),
   };
 }

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Group, Rect, Text } from "react-konva";
 import type { CanvasObject } from "../../types";
 import { useSectionFrameNode } from "../../hooks/useSectionFrameNode";
@@ -6,7 +7,7 @@ interface Props {
   obj: CanvasObject;
 }
 
-export function SectionFrameNode({ obj }: Props) {
+export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
   const {
     data,
     isSelected,
@@ -18,6 +19,7 @@ export function SectionFrameNode({ obj }: Props) {
 
   return (
     <Group
+      id={`workshop-object-${obj.id}`}
       x={obj.x}
       y={obj.y}
       draggable={isDraggable}
@@ -57,4 +59,4 @@ export function SectionFrameNode({ obj }: Props) {
       )}
     </Group>
   );
-}
+});

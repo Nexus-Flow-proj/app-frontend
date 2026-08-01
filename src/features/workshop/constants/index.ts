@@ -9,14 +9,14 @@ export const CANVAS_MIN_SCALE = 0.15;
 export const CANVAS_MAX_SCALE = 3;
 export const CANVAS_ZOOM_FACTOR = 1.08;
 
+// Feature layout keeps task cards clear of the header and fully inside the frame.
+export const FEATURE_TASK_HORIZONTAL_PADDING = 24;
+export const FEATURE_TASK_TOP_OFFSET = 96;
+export const FEATURE_TASK_BOTTOM_PADDING = 32;
+
 // Layout geometry
 export const SIDEBAR_WIDTH = 260; // px — left sidebar
 export const TOOLBAR_WIDTH = 56; // px — vertical icon toolbar
-
-// Connection defaults
-export const CONNECTION_COLOR = "#9063EB"; // primary-500
-export const CONNECTION_STROKE_WIDTH = 2;
-export const CONNECTION_DASH = [6, 4];
 
 // Status badge colors  (bg / text / dot)
 export const STATUS_CONFIG = {
@@ -68,8 +68,9 @@ export const SECTION_PRESETS = [
 
 // Default node sizes (px)
 export const NODE_SIZE = {
-  TASK_CARD: { w: 240, h: 130 },
+  TASK_CARD: { w: 472, h: 110 },
   STICKY_NOTE: { w: 200, h: 200 },
-  SECTION_FRAME: { w: 420, h: 300 },
+  TEXT_BOX: { w: 260, h: 100 },
+  SECTION_FRAME: { w: 520, h: 300 },
   IMAGE_BLOCK: { w: 240, h: 160 },
 } as const;

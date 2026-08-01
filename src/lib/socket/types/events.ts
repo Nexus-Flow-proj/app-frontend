@@ -12,7 +12,13 @@ import type {
 } from "./payloads";
 import type { EventMetadata, ProjectPayload } from "./socket.types";
 import { SOCKET_EVENTS } from "../constants/socket-events";
+import type { AiGenerationEvent } from "@/features/workshop/types";
 export interface ServerToClientEvents {
+    [SOCKET_EVENTS.AI.GENERATION_CREATED]: (payload: AiGenerationEvent) => void;
+    [SOCKET_EVENTS.AI.GENERATION_STARTED]: (payload: AiGenerationEvent) => void;
+    [SOCKET_EVENTS.AI.GENERATION_PROGRESS]: (payload: AiGenerationEvent) => void;
+    [SOCKET_EVENTS.AI.GENERATION_COMPLETED]: (payload: AiGenerationEvent) => void;
+    [SOCKET_EVENTS.AI.GENERATION_FAILED]: (payload: AiGenerationEvent) => void;
     // Task Actions
     [SOCKET_EVENTS.TASK.CREATED]: (payload: TaskCreatedPayload) => void;
     [SOCKET_EVENTS.TASK.UPDATED]: (payload: TaskUpdatedPayload) => void;

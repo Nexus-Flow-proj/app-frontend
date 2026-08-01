@@ -15,7 +15,7 @@ export function WorkshopToolbar() {
     useWorkshopToolbar();
 
   return (
-    <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-md border border-border bg-card/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur">
+    <div className="absolute bottom-5 left-1/2 z-10 max-w-[calc(100%-2rem)] -translate-x-1/2 overflow-x-auto rounded-xl border border-border bg-card/95 px-2 py-1.5 text-[11px] text-muted-foreground shadow-xl backdrop-blur">
       <div className="flex items-center gap-1">
         {TOOLS.map(({ tool, icon: Icon, label, shortcut }) => (
           <ToolbarButton

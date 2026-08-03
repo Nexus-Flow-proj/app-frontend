@@ -5,4 +5,6 @@ export interface AuthResponseData {
   csrfToken?: string;
 }
 
-export type RefreshResponseData = null;
+export interface RefreshResponseData {
+  csrfToken?: string;
+}

@@ -1,5 +1,10 @@
 import type { AxiosRequestConfig } from "axios";
-import { AUTH_REFRESH_PATH, getRequestPath, isPublicAuthPath } from "./routes";
+import {
+  AUTH_ME_PATH,
+  AUTH_REFRESH_PATH,
+  getRequestPath,
+  isPublicAuthPath,
+} from "./routes";
 
 export type RetryableRequestConfig = AxiosRequestConfig & {
   _retry?: boolean;
@@ -20,6 +25,7 @@ export function shouldAttemptRefresh(
     status === 401 &&
     !config._retry &&
     path !== AUTH_REFRESH_PATH &&
+    path !== AUTH_ME_PATH &&
     !isPublicAuthPath(path)
   );
 }

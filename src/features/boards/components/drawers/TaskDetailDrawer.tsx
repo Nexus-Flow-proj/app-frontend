@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Save, Trash2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { SubtaskChecklist } from "./SubtaskChecklist";
 import { CommentThread } from "./CommentThread";
 import { TimeLogSection } from "./TimeLogSection";
@@ -11,6 +10,7 @@ import { TaskDetailHeader } from "./TaskDetailHeader";
 import { TaskMetaSection } from "./TaskMetaSection";
 import { ActivityLog } from "./ActivityLog";
 import { AttachmentSection } from "./AttachmentSection";
+import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
 import type {
   TaskDetail,
   Task,
@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import type {
   ApiTaskAssigneeRecommendation,
   ApiTaskBreakdownSubtask,
+  ApiTaskDescriptionSuggestion,
   CreateSubtaskDto,
   UpdateSubtaskDto,
   UpdateTaskDto,
@@ -42,11 +43,15 @@ interface TaskDetailDrawerProps {
   assigneeRecommendation?: ApiTaskAssigneeRecommendation | null;
   isRecommendingAssignee?: boolean;
   isGeneratingTaskBreakdown?: boolean;
+  isGeneratingTaskDescription?: boolean;
   onClose: () => void;
   onRecommendAssignee?: () => void;
   onClearAssigneeRecommendation?: () => void;
   onGenerateTaskBreakdown?: (
     onSuccess: (subtasks: ApiTaskBreakdownSubtask[]) => void,
+  ) => void;
+  onGenerateTaskDescription?: (
+    onSuccess: (suggestion: ApiTaskDescriptionSuggestion) => void,
   ) => void;
   onSaveChanges: (taskId: string, dto: UpdateTaskDto) => void;
   onCreateSubtask: (dto: CreateSubtaskDto) => void;
@@ -147,6 +152,25 @@ function createSaveDto(draft: TaskDetailsDraft): UpdateTaskDto {
   };
 }
 
+function createMarkdownFromDescriptionSuggestion(
+  suggestion: ApiTaskDescriptionSuggestion,
+) {
+  const description = suggestion.description.trim();
+  const criteria = suggestion.acceptanceCriteria
+    .map((criterion) => criterion.trim())
+    .filter(Boolean);
+
+  if (!criteria.length) return description;
+
+  const criteriaMarkdown = [
+    "## Acceptance Criteria",
+    "",
+    ...criteria.map((criterion) => `- ${criterion.replace(/\s+/g, " ")}`),
+  ].join("\n");
+
+  return [description, criteriaMarkdown].filter(Boolean).join("\n\n");
+}
+
 function createSubtaskChangeSet(task: TaskDetail, draft: TaskDetailsDraft) {
   const currentSubtaskById = new Map(
     task.subtasks.map((subtask) => [subtask.id, subtask]),
@@ -199,10 +223,12 @@ export function TaskDetailDrawer({
   assigneeRecommendation,
   isRecommendingAssignee,
   isGeneratingTaskBreakdown,
+  isGeneratingTaskDescription,
   onClose,
   onRecommendAssignee,
   onClearAssigneeRecommendation,
   onGenerateTaskBreakdown,
+  onGenerateTaskDescription,
   onSaveChanges,
   onCreateSubtask,
   onUpdateSubtask,
@@ -297,7 +323,6 @@ export function TaskDetailDrawer({
       onUpdateSubtask(subtaskId, dto),
     );
     subtaskChanges.deleted.forEach((subtaskId) => onDeleteSubtask(subtaskId));
-    setHasUserEdited(false);
   };
 
   const handleDiscard = () => {
@@ -332,6 +357,15 @@ export function TaskDetailDrawer({
     );
   };
 
+  const handleApplyTaskDescription = (
+    suggestion: ApiTaskDescriptionSuggestion,
+  ) => {
+    setDraftValue(
+      "description",
+      createMarkdownFromDescriptionSuggestion(suggestion),
+    );
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
@@ -351,23 +385,18 @@ export function TaskDetailDrawer({
             />
 
             <div className="flex-1 overflow-y-auto px-6 pb-0 space-y-5 custom-scrollbar">
-              <div className="space-y-2 pt-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Description
-                  </p>
-                </div>
-                <Textarea
-                  value={draft?.description ?? ""}
-                  disabled={isUpdatingTask}
-                  onChange={(event) =>
-                    setDraftValue("description", event.target.value)
-                  }
-                  rows={4}
-                  placeholder="Add a description"
-                  className="resize-none text-sm"
-                />
-              </div>
+              <TaskDescriptionEditor
+                taskId={task.id}
+                value={draft?.description ?? ""}
+                disabled={isUpdatingTask}
+                isGenerating={isGeneratingTaskDescription}
+                onChange={(description) =>
+                  setDraftValue("description", description)
+                }
+                onGenerate={() =>
+                  onGenerateTaskDescription?.(handleApplyTaskDescription)
+                }
+              />
               <Separator />
 
               <TaskMetaSection

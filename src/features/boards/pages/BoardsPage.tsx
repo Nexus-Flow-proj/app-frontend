@@ -28,6 +28,7 @@ import { useBoardDnd } from "../hooks/useBoardDnd";
 import { useBoardState as useRemoteBoardState } from "../hooks/useBoardState";
 import { useAiAssigneeRecommendation } from "../hooks/useAiAssigneeRecommendation";
 import { useAiTaskBreakdown } from "../hooks/useAiTaskBreakdown";
+import { useAiTaskDescription } from "../hooks/useAiTaskDescription";
 import { useCreateBoardColumn } from "../hooks/useCreateBoardColumn";
 import { useCreateComment } from "../hooks/useCreateComment";
 import { useCreateSubtask } from "../hooks/useCreateSubtask";
@@ -160,6 +161,11 @@ function BoardsPage() {
     mutate: generateTaskBreakdown,
     reset: resetTaskBreakdown,
   } = useAiTaskBreakdown(resolvedProjectId, activeTaskId);
+  const {
+    isPending: isGeneratingTaskDescription,
+    mutate: generateTaskDescription,
+    reset: resetTaskDescription,
+  } = useAiTaskDescription(resolvedProjectId, activeTaskId);
   const createColumnMutation = useCreateBoardColumn(resolvedProjectId);
   const updateColumnMutation = useUpdateBoardColumn(
     resolvedProjectId,
@@ -284,7 +290,13 @@ function BoardsPage() {
   useEffect(() => {
     resetAssigneeRecommendation();
     resetTaskBreakdown();
-  }, [activeTaskId, resetAssigneeRecommendation, resetTaskBreakdown]);
+    resetTaskDescription();
+  }, [
+    activeTaskId,
+    resetAssigneeRecommendation,
+    resetTaskBreakdown,
+    resetTaskDescription,
+  ]);
 
   const openDrawerWithBackendDetail = useCallback(
     (task: Task) => {
@@ -509,6 +521,12 @@ function BoardsPage() {
         onGenerateTaskBreakdown={(onSuccess) =>
           generateTaskBreakdown(undefined, {
             onSuccess: (response) => onSuccess(response.data.subtasks),
+          })
+        }
+        isGeneratingTaskDescription={isGeneratingTaskDescription}
+        onGenerateTaskDescription={(onSuccess) =>
+          generateTaskDescription(undefined, {
+            onSuccess: (response) => onSuccess(response.data),
           })
         }
         isSubmittingComment={drawer.isSubmittingComment}

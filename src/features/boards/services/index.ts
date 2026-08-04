@@ -9,6 +9,7 @@ import type {
   ApiTask,
   ApiTaskAssigneeRecommendation,
   ApiTaskBreakdown,
+  ApiTaskDescriptionSuggestion,
   ApiTaskListResponse,
   ApiTaskAttachmentsMutationResponse,
   ApiTimeLog,
@@ -75,6 +76,12 @@ export const taskService = {
       .get<
         ApiResponse<ApiTaskBreakdown>
       >(`/projects/${projectId}/tasks/${taskId}/ai/breakdown`)
+      .then((res) => res.data),
+  getAiTaskDescription: (projectId: string, taskId: string) =>
+    api
+      .get<
+        ApiResponse<ApiTaskDescriptionSuggestion>
+      >(`/projects/${projectId}/tasks/${taskId}/ai/description`)
       .then((res) => res.data),
   createTask: (projectId: string, columnId: string, dto: CreateTaskDto) =>
     api

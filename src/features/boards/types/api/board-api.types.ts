@@ -168,6 +168,11 @@ export interface ApiTaskBreakdown {
     subtasks: ApiTaskBreakdownSubtask[];
 }
 
+export interface ApiTaskDescriptionSuggestion {
+    description: string;
+    acceptanceCriteria: string[];
+}
+
 // Request DTOs
 export interface CreateBoardColumnDto {
     name: string;

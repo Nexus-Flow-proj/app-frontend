@@ -72,6 +72,7 @@ export function useUpdateTask(
             onSuccess: (res, dto) => {
                 const taskPatch = {
                     ...res.data,
+                    ...dto,
                     dependencyIds:
                         dto.dependencyIds ??
                         normalizeTaskDependencyIds(
@@ -165,6 +166,7 @@ export function useUpdateTaskById(projectId: string) {
             onSuccess: (res, { taskId, dto }) => {
                 const taskPatch = {
                     ...res.data,
+                    ...dto,
                     dependencyIds:
                         dto.dependencyIds ??
                         normalizeTaskDependencyIds(

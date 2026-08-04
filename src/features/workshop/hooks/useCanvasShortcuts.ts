@@ -14,7 +14,6 @@ export function useCanvasShortcuts() {
   const deleteObject = useWorkshopStore((s) => s.deleteObject);
   const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
   const setActiveTool = useWorkshopStore((s) => s.setActiveTool);
-  const cancelConnect = useWorkshopStore((s) => s.cancelConnect);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -42,13 +41,12 @@ export function useCanvasShortcuts() {
       if (!ctrl) {
         if (e.key === "v" || e.key === "Escape") {
           setActiveTool("select");
-          cancelConnect();
         }
         if (e.key === "h") setActiveTool("pan");
         if (e.key === "t") setActiveTool("task");
         if (e.key === "n") setActiveTool("sticky");
+        if (e.key === "x") setActiveTool("text");
         if (e.key === "s") setActiveTool("section");
-        if (e.key === "c") setActiveTool("connect");
       }
     };
 
@@ -60,6 +58,5 @@ export function useCanvasShortcuts() {
     deleteObject,
     selectedObjectId,
     setActiveTool,
-    cancelConnect,
   ]);
 }

@@ -5,6 +5,7 @@ import {
   Check,
   ChartNoAxesColumnDecreasing,
   CircleDot,
+  GitBranch,
   Pencil,
   Tag,
   User,
@@ -24,7 +25,9 @@ import type {
   BoardColumn,
   BoardMember,
   Priority,
+  Task,
   TaskDetail,
+  TaskId,
 } from "../../types";
 import { MetaRow } from "./MetaRow";
 import { Badge } from "@/components/ui/badge";
@@ -32,16 +35,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskPriority, type TaskStatus } from "../../types/enums";
 import { TASK_STATUSES } from "../../utils/task-status";
+import { TaskDependencyPicker } from "./TaskDependencyPicker";
 
 interface TaskMetaSectionProps {
   className?: string;
   task: TaskDetail;
+  tasks: Task[];
   columns: BoardColumn[];
   members: BoardMember[];
+  isUpdatingTask?: boolean;
   onUpdatePriority: (taskId: string, priority: Priority) => void;
   onUpdateStatus: (taskId: string, status: TaskStatus) => void;
   onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
   onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
+  onUpdateDependencies: (taskId: TaskId, dependencyIds: TaskId[]) => void;
   onUpdateLabel: (taskId: string, label: string) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
 }
@@ -61,12 +68,15 @@ interface LabelDraft {
 
 export function TaskMetaSection({
   task,
+  tasks,
   columns,
   members,
+  isUpdatingTask,
   onUpdatePriority,
   onUpdateStatus,
   onUpdateAssignee,
   onUpdateDueDate,
+  onUpdateDependencies,
   onUpdateLabel,
   onMoveToColumn,
   className,
@@ -226,6 +236,16 @@ export function TaskMetaSection({
             ))}
           </SelectContent>
         </Select>
+      </MetaRow>
+
+      <MetaRow icon={GitBranch} label="Depends on">
+        <TaskDependencyPicker
+          task={task}
+          tasks={tasks}
+          columns={columns}
+          isUpdating={isUpdatingTask}
+          onChangeDependencies={onUpdateDependencies}
+        />
       </MetaRow>
 
       <MetaRow icon={Tag} label="Label">

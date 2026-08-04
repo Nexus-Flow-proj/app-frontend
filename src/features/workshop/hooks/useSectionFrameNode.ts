@@ -4,13 +4,12 @@ import type { CanvasObject, SectionFrameData } from "../types";
 
 export function useSectionFrameNode(obj: CanvasObject) {
   const data = obj.data as SectionFrameData;
-  const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
+  const isSelected = useWorkshopStore((s) => s.selectedObjectId === obj.id);
   const activeTool = useWorkshopStore((s) => s.activeTool);
   const selectObject = useWorkshopStore((s) => s.selectObject);
   const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const moveObject = useWorkshopStore((s) => s.moveObject);
 
-  const isSelected = selectedObjectId === obj.id;
   const isDraggable = activeTool === "select";
 
   const handleClick = () => {

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { QUERY_KEYS, ROUTES } from "@/constants";
 import { getApiErrorMessages } from "@/lib/api/Messages";
+import { setCsrfToken } from "@/lib/api/csrf";
 import { markSessionActive } from "@/lib/api/session";
 import { useAuthStore } from "@/store";
 import type { ApiError } from "@/types";
@@ -24,10 +25,11 @@ export function useLogin(options: UseLoginOptions = {}) {
   return useApiMutation((dto: LoginDto) => authService.login(dto), {
     showSuccessToast: false,
     onSuccess: async (res) => {
-      const { user } = res.data;
+      const { user, csrfToken } = res.data;
       const displayName = user.firstName + " " + user.lastName;
 
       markSessionActive();
+      setCsrfToken(csrfToken);
       setAuth(user);
       queryClient.setQueryData(QUERY_KEYS.auth.me, res);
 

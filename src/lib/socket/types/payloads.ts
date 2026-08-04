@@ -217,6 +217,7 @@ export interface TaskUpdatedPayload {
         id?: string;
         title?: string;
         projectId?: string;
+        dependencyIds?: string[];
         columnOrder?: number;
         status?: TaskStatus;
         priority?: TaskPriority;

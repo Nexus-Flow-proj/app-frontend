@@ -33,6 +33,7 @@ export interface Task {
   id: TaskId;
   title: string;
   projectId: string;
+  dependencyIds: TaskId[];
   columnOrder: number;
   status: TaskStatus;
   priority: Priority;
@@ -130,12 +131,14 @@ export interface MoveColumnDto {
 export interface CreateTaskDto {
   columnId: ColumnId;
   title: string;
+  dependencyIds?: TaskId[];
   priority?: Priority;
 }
 
 export interface UpdateTaskDto {
   title?: string;
   description?: string;
+  dependencyIds?: TaskId[];
   status?: TaskStatus;
   priority?: Priority;
   assigneeId?: string | null;

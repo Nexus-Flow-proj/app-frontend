@@ -1,31 +1,27 @@
 import { create } from "zustand";
-import {
-  mockCanvasConnections,
-  mockCanvasObjects,
-  mockViewport,
-} from "../data/workshop-mock";
 import type {
-  CanvasConnection,
   CanvasObject,
   CanvasViewport,
   WorkshopSnapshot,
   WorkshopTool,
 } from "../types";
 import { cloneSnapshot, pushUndo } from "../utils/cloneSnapshotCanvas";
+import {
+  FEATURE_TASK_BOTTOM_PADDING,
+  FEATURE_TASK_HORIZONTAL_PADDING,
+  FEATURE_TASK_TOP_OFFSET,
+} from "../constants";
 
 // Define the shape of the workshop Data (This describes the data stored inside Zustand.
 export interface WorkshopState {
   canvasId: Nullable<string>;
   objects: CanvasObject[];
-  connections: CanvasConnection[];
   viewport: CanvasViewport;
   isDirty: boolean; // indicates if the canvas has unsaved changes
   activeTool: WorkshopTool;
   selectedObjectId: Nullable<string>;
   detailsObjectId: Nullable<string>; // The object currently open in the details drawer. UI-only, never persisted.
   hoveredObjectId: Nullable<string>; // The object currently under the mouse. Used for hover styling.
-  isConnecting: boolean; // True when the user has clicked a source node and is hovering over the canvas to select a target node.
-  connectFromId: Nullable<string>; // The ID of the source node when isConnecting is true. Used to create a new connection when the user clicks a target node.
   undoStack: WorkshopSnapshot[];
   redoStack: WorkshopSnapshot[];
 }
@@ -45,38 +41,26 @@ interface WorkshopActions {
   moveObject: (id: string, { x, y }: Coordinates) => void;
   deleteObject: (id: string) => void;
 
-  // Connection CRUD.
-  addConnection: (conn: CanvasConnection) => void;
-  deleteConnection: (id: string) => void;
-
-  // Connection workflow.
-  startConnect: (fromId: string) => void;
-  finishConnect: (toId: string) => void;
-  cancelConnect: () => void;
-
   // History operations (Undo and redo canvas changes)
   undo: () => void;
   redo: () => void;
 
   markClean: () => void; // Mark canvas as saved (Ex. after successful backend save later)
+  resetCanvas: () => void;
   loadCanvas: (
     // Load a full canvas. Later, when backend is ready, this will be useful after fetching data
     canvasId: string,
     objects: CanvasObject[],
-    connections: CanvasConnection[],
     viewport: CanvasViewport,
   ) => void;
 }
 
 export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
   (set) => ({
-    //** state
-    // This is the initial state of the store. Later, when backend is ready, this will be replaced with data fetched from the backend.
-    // For now, we use mock data.
-    canvasId: "mock-canvas-01",
-    objects: mockCanvasObjects,
-    connections: mockCanvasConnections,
-    viewport: mockViewport,
+    // Persisted canvas state is loaded from the draft workshop endpoint.
+    canvasId: null,
+    objects: [],
+    viewport: { x: 32, y: 32, scale: 0.82 },
 
     isDirty: false, // At first, nothing changed
 
@@ -87,70 +71,21 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
     detailsObjectId: null,
     hoveredObjectId: null,
 
-    // At first, user is not creating a connection.
-    isConnecting: false,
-    connectFromId: null,
-
     // At first, there is no undo/redo history.
     undoStack: [],
     redoStack: [],
 
     //** actions
-    setActiveTool: (tool) =>
-      set({
-        activeTool: tool,
-        // If the user changes to any tool except "connect", it cancels connection mode.
-        ...(tool !== "connect"
-          ? { isConnecting: false, connectFromId: null }
-          : null),
-      }),
+    setActiveTool: (tool) => set({ activeTool: tool }),
 
-    selectObject: (id) => set({ selectedObjectId: id }),
+    selectObject: (id) => set((state) =>
+      state.selectedObjectId === id ? state : { selectedObjectId: id },
+    ),
     openObjectDetails: (id) => set({ detailsObjectId: id }),
     closeObjectDetails: () => set({ detailsObjectId: null }),
-    setHoveredObject: (id) => set({ hoveredObjectId: id }), // This is UI-only state. It should never be saved to backend
-
-    startConnect: (fromId) =>
-      set({ isConnecting: true, connectFromId: fromId }),
-    cancelConnect: () => set({ isConnecting: false, connectFromId: null }),
-    finishConnect: (toId) =>
-      set((state) => {
-        // Case 1: no source, or source equals target: This prevents invalid connections
-        if (!state.connectFromId || state.connectFromId === toId) {
-          return { isConnecting: false, connectFromId: null };
-        }
-
-        // Case 2: duplicate connection: This prevents duplicate arrows.
-        const exists = state.connections.some(
-          (conn) =>
-            conn.fromObjectId === state.connectFromId &&
-            conn.toObjectId === toId,
-        );
-        if (exists) return { isConnecting: false, connectFromId: null };
-
-        return {
-          connections: [
-            // This is immutable update. We do not mutate the old array.
-            ...state.connections,
-            {
-              // newConnection
-              id: `conn-${Date.now()}`,
-              fromObjectId: state.connectFromId,
-              toObjectId: toId,
-              style: {
-                color: "#9063EB",
-                strokeWidth: 2,
-                type: "ARROW",
-              },
-            },
-          ],
-          undoStack: pushUndo(state),
-          redoStack: [],
-          isDirty: true,
-          isConnecting: false,
-          connectFromId: null,
-        };
-      }),
+    setHoveredObject: (id) => set((state) =>
+      state.hoveredObjectId === id ? state : { hoveredObjectId: id },
+    ),
 
     addObject: (obj) =>
       set((state) => ({
@@ -198,19 +133,74 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
      * one drag would create dozens or hundreds of undo entries.
      */
     moveObject: (id, { x, y }) =>
-      set((state) => ({
-        objects: state.objects.map((obj) =>
-          obj.id === id ? { ...obj, x, y } : obj,
-        ),
-        isDirty: true,
-      })),
+      set((state) => {
+        const moving = state.objects.find((obj) => obj.id === id);
+        if (!moving) return {};
+        const dx = x - moving.x;
+        const dy = y - moving.y;
+        const frames = state.objects.filter((obj) => obj.type === "SECTION_FRAME");
+        const containingFrame = moving.type !== "TASK_CARD"
+          ? null
+          : frames
+              .filter((frame) => {
+                const centerX = x + moving.width / 2;
+                return centerX >= frame.x &&
+                  centerX <= frame.x + frame.width &&
+                  y >= frame.y &&
+                  y <= frame.y + frame.height;
+              })
+              .sort((a, b) => b.zIndex - a.zIndex)[0];
+
+        const minTaskX = containingFrame
+          ? containingFrame.x + FEATURE_TASK_HORIZONTAL_PADDING
+          : x;
+        const maxTaskX = containingFrame
+          ? containingFrame.x + containingFrame.width - moving.width - FEATURE_TASK_HORIZONTAL_PADDING
+          : x;
+        const nextX = containingFrame
+          ? maxTaskX >= minTaskX
+            ? Math.min(Math.max(x, minTaskX), maxTaskX)
+            : containingFrame.x + Math.max(0, (containingFrame.width - moving.width) / 2)
+          : x;
+        const nextY = containingFrame
+          ? Math.max(y, containingFrame.y + FEATURE_TASK_TOP_OFFSET)
+          : y;
+
+        return {
+          objects: state.objects.map((obj) => {
+            if (obj.id === id) {
+              return {
+                ...obj,
+                x: nextX,
+                y: nextY,
+                parentFrameId:
+                  obj.type === "SECTION_FRAME"
+                    ? obj.parentFrameId
+                    : containingFrame?.id ?? null,
+              };
+            }
+            if (moving.type === "SECTION_FRAME" && obj.parentFrameId === id) {
+              return { ...obj, x: obj.x + dx, y: obj.y + dy };
+            }
+            if (obj.id === containingFrame?.id) {
+              const requiredHeight = nextY + moving.height + FEATURE_TASK_BOTTOM_PADDING - obj.y;
+              return requiredHeight > obj.height
+                ? { ...obj, height: requiredHeight }
+                : obj;
+            }
+            return obj;
+          }),
+          undoStack: pushUndo(state),
+          redoStack: [],
+          isDirty: true,
+        };
+      }),
 
     deleteObject: (id) =>
       set((state) => ({
-        objects: state.objects.filter((obj) => obj.id !== id),
-        connections: state.connections.filter(
-          (conn) => conn.fromObjectId !== id && conn.toObjectId !== id,
-        ),
+        objects: state.objects
+          .filter((obj) => obj.id !== id)
+          .map((obj) => (obj.parentFrameId === id ? { ...obj, parentFrameId: null } : obj)),
         selectedObjectId:
           state.selectedObjectId === id ? null : state.selectedObjectId,
         detailsObjectId:
@@ -220,24 +210,15 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         isDirty: true,
       })),
 
-    addConnection: (newConnection) =>
-      set((state) => ({
-        connections: [...state.connections, newConnection],
-        undoStack: pushUndo(state),
-        redoStack: [],
-        isDirty: true,
-      })),
-
-    deleteConnection: (id) =>
-      set((state) => ({
-        connections: state.connections.filter((conn) => conn.id !== id),
-        undoStack: pushUndo(state),
-        redoStack: [],
-        isDirty: true,
-      })),
-
     setViewport: (vp) =>
-      set((state) => ({ viewport: { ...state.viewport, ...vp } })),
+      set((state) => {
+        const viewport = { ...state.viewport, ...vp };
+        return viewport.x === state.viewport.x &&
+          viewport.y === state.viewport.y &&
+          viewport.scale === state.viewport.scale
+          ? state
+          : { viewport };
+      }),
 
     undo: () =>
       set((state) => {
@@ -246,15 +227,14 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         if (!snapshot) return {};
 
         return {
-          // Restores old objects and connections.
+          // Restore the previous object snapshot.
           objects: snapshot.objects,
-          connections: snapshot.connections,
           //Removes the snapshot we just used.
           undoStack: state.undoStack.slice(0, -1),
           // Pushes the current state to redo stack, so we can redo it later.
           redoStack: [
             ...state.redoStack,
-            cloneSnapshot(state.objects, state.connections),
+            cloneSnapshot(state.objects),
           ],
           isDirty: true,
         };
@@ -266,11 +246,10 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         if (!snapshot) return {};
         return {
           objects: snapshot.objects,
-          connections: snapshot.connections,
           redoStack: state.redoStack.slice(0, -1),
           undoStack: [
             ...state.undoStack,
-            cloneSnapshot(state.objects, state.connections),
+            cloneSnapshot(state.objects),
           ],
           isDirty: true,
         };
@@ -278,11 +257,21 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     markClean: () => set({ isDirty: false }),
 
-    loadCanvas: (canvasId, objects, connections, viewport) =>
+    resetCanvas: () => set({
+      canvasId: null,
+      objects: [],
+      viewport: { x: 32, y: 32, scale: 0.82 },
+      isDirty: false,
+      selectedObjectId: null,
+      detailsObjectId: null,
+      undoStack: [],
+      redoStack: [],
+    }),
+
+    loadCanvas: (canvasId, objects, viewport) =>
       set({
         canvasId,
         objects,
-        connections,
         viewport,
         isDirty: false,
         undoStack: [],

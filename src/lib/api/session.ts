@@ -1,6 +1,7 @@
 import type { Query, QueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/constants";
 import type { ApiResponse } from "@/types";
+import { clearCsrfToken } from "./csrf";
 
 let sessionInvalid = false;
 
@@ -26,6 +27,7 @@ export function markSessionActive(): void {
 
 export async function clearSessionCache(queryClient: QueryClient): Promise<void> {
   sessionInvalid = true;
+  clearCsrfToken();
   await queryClient.cancelQueries();
   queryClient.removeQueries({
     predicate: (query) => !isAuthSessionQuery(query),

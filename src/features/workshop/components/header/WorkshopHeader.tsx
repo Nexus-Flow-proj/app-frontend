@@ -1,74 +1,72 @@
-import { Crosshair, Maximize2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Check, CloudAlert, LoaderCircle, PanelLeft, Save } from "lucide-react";
+import { Link } from "react-router";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ADD_ITEMS } from "../../constants/addItemsKind";
-import { useWorkshopHeader } from "../../hooks/useWorkshopHeader";
+import type { DraftSummary } from "@/features/drafts/types";
 
 interface WorkshopHeaderProps {
-  stageSize: {
-    width: number;
-    height: number;
-  };
+  draft?: DraftSummary;
+  isDirty: boolean;
+  isSaving: boolean;
+  isGenerating: boolean;
+  isSubmitting: boolean;
+  canSubmit: boolean;
+  hasCanvas: boolean;
+  onSave: () => void;
+  onSubmit: () => void;
+  onOpenExplorer?: () => void;
 }
 
-function WorkshopHeader({ stageSize }: WorkshopHeaderProps) {
-  const {
-    projectId,
-    isDirty,
-    handleAddItem,
-    handleFitView,
-    handleResetView,
-  } = useWorkshopHeader(stageSize);
-
+export default function WorkshopHeader({
+  draft,
+  isDirty,
+  isSaving,
+  isGenerating,
+  isSubmitting,
+  canSubmit,
+  hasCanvas,
+  onSave,
+  onSubmit,
+  onOpenExplorer,
+}: WorkshopHeaderProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border bg-card px-4 py-3">
-      {/* Canvas Project Info */}
+    <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-background/95 px-3 py-2 backdrop-blur md:px-5">
+      <Button variant="ghost" size="icon" asChild aria-label="Back to draft">
+        <Link to={draft?.id ? `/drafts/${draft.id}` : "/dashboard"}>
+          <ArrowLeft />
+        </Link>
+      </Button>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <Crosshair className="h-4 w-4 text-primary" />
-          <h1 className="truncate text-sm font-semibold">Main Workshop</h1>
-          {isDirty && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-              Local edits
-            </span>
-          )}
+          <h1 className="truncate text-sm font-semibold md:text-base">
+            {draft?.projectInfo.name || "Onboarding Workshop"}
+          </h1>
+          {isGenerating ? (
+            <Badge variant="secondary" className="gap-1"><LoaderCircle className="size-3 animate-spin" /> AI planning</Badge>
+          ) : isSaving ? (
+            <Badge variant="secondary" className="gap-1"><LoaderCircle className="size-3 animate-spin" /> Saving</Badge>
+          ) : isDirty ? (
+            <Badge variant="outline" className="gap-1 border-amber-500/40 text-amber-600"><CloudAlert className="size-3" /> Unsaved</Badge>
+          ) : hasCanvas ? (
+            <Badge variant="outline" className="gap-1 text-emerald-600"><Check className="size-3" /> Saved</Badge>
+          ) : null}
         </div>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Mock canvas for project {projectId ?? "planning"}.
-        </p>
+        <p className="hidden text-xs text-muted-foreground sm:block">Onboarding Workshop · Shape the plan before creating the project</p>
       </div>
 
-      <div className="ml-auto flex flex-wrap items-center gap-1.5">
-        {ADD_ITEMS.map(({ kind, icon: Icon }) => (
-          <Button
-            key={kind}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            onClick={() => handleAddItem(kind)}
-          >
-            <Icon className="" />
-            {kind}
-          </Button>
-        ))}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleFitView}
-          aria-label="Fit workshop view"
-        >
-          <Maximize2 className="h-4 w-4" />
+      <div className="ml-auto flex items-center gap-2">
+        {onOpenExplorer ? (
+          <Button variant="outline" size="icon" className="md:hidden" onClick={onOpenExplorer} aria-label="Open canvas explorer"><PanelLeft /></Button>
+        ) : null}
+        <Button variant="outline" size="sm" className="gap-2" disabled={!isDirty || isSaving || isGenerating || !hasCanvas} onClick={onSave}>
+          {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
+          <span className="hidden sm:inline">Save</span>
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleResetView}
-          aria-label="Reset workshop view"
-        >
-          <RotateCcw className="h-4 w-4" />
+        <Button size="sm" disabled={!canSubmit || isSubmitting} onClick={onSubmit}>
+          {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
+          Create project
         </Button>
       </div>
-    </div>
+    </header>
   );
 }
-
-export default WorkshopHeader;

@@ -32,6 +32,8 @@ export interface ApiTaskSummary {
     id: string;
     title: string;
     projectId: string;
+    dependencyIds?: string[];
+    dependencies?: Array<string | { id: string }>;
     columnOrder: number;
     status: TaskStatus;
     priority: TaskPriority;
@@ -54,6 +56,8 @@ export interface ApiTask {
     id: string;
     title: string;
     projectId: string;
+    dependencyIds?: string[];
+    dependencies?: Array<string | { id: string }>;
     columnOrder: number;
     status: TaskStatus;
     priority: TaskPriority;
@@ -113,6 +117,8 @@ export interface TaskUpdatedData {
     id?: string;
     title?: string;
     projectId?: string;
+    dependencyIds?: string[];
+    dependencies?: Array<string | { id: string }>;
     columnOrder?: number;
     status?: TaskStatus;
     priority?: TaskPriority;
@@ -158,6 +164,7 @@ export interface ReorderBoardColumnsDto {
 
 export interface CreateTaskDto {
     title: string;
+    dependencyIds?: string[];
     description?: string;
     label?: string;
     deadline?: string;
@@ -170,6 +177,8 @@ export interface UpdateTaskDto {
     title?: string;
 
     description?: string;
+
+    dependencyIds?: string[];
 
     label?: string;
 

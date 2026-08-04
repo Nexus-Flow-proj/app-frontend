@@ -183,6 +183,11 @@ export class SocketManager {
         return this.socket.id;
     }
 
+    onConnect(listener: () => void): () => void {
+        this.socket.on("connect", listener);
+        return () => this.socket.off("connect", listener);
+    }
+
 
 
     /**

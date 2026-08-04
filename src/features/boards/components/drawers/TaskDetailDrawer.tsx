@@ -10,6 +10,7 @@ import { DrawerSkeleton } from "./DrawerSkeleton";
 import { TaskDetailHeader } from "./TaskDetailHeader";
 import { TaskMetaSection } from "./TaskMetaSection";
 import { ActivityLog } from "./ActivityLog";
+import { AttachmentSection } from "./AttachmentSection";
 import type {
   TaskDetail,
   Task,
@@ -51,6 +52,8 @@ interface TaskDetailDrawerProps {
     note?: string;
   }) => void;
   onDeleteTimeLog: (timeLogId: string) => void;
+  onUploadAttachments: (files: File[]) => void;
+  onDeleteAttachment: (attachmentId: string) => void;
   onDeleteTask?: (taskId: string) => void;
   isSubmittingComment?: boolean;
   isUpdatingComment?: boolean;
@@ -58,6 +61,8 @@ interface TaskDetailDrawerProps {
   isUpdatingTask?: boolean;
   isSubmittingTimeLog?: boolean;
   isDeletingTimeLog?: boolean;
+  isUploadingAttachments?: boolean;
+  isDeletingAttachment?: boolean;
   isDeletingTask?: boolean;
 }
 
@@ -192,6 +197,8 @@ export function TaskDetailDrawer({
   onDeleteComment,
   onAddTimeLog,
   onDeleteTimeLog,
+  onUploadAttachments,
+  onDeleteAttachment,
   onDeleteTask,
   isSubmittingComment,
   isUpdatingComment,
@@ -199,6 +206,8 @@ export function TaskDetailDrawer({
   isUpdatingTask,
   isSubmittingTimeLog,
   isDeletingTimeLog,
+  isUploadingAttachments,
+  isDeletingAttachment,
   isDeletingTask,
 }: TaskDetailDrawerProps) {
   const [draft, setDraft] = useState<TaskDetailsDraft | null>(() =>
@@ -207,6 +216,8 @@ export function TaskDetailDrawer({
   const [hasUserEdited, setHasUserEdited] = useState(false);
 
   useEffect(() => {
+    // The drawer keeps a local editable draft that must reset when a new task is opened.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft((currentDraft) => {
       if (!task) {
         setHasUserEdited(false);
@@ -344,6 +355,14 @@ export function TaskDetailDrawer({
                 }
                 onChangeLabel={(label) => setDraftValue("label", label)}
                 onMoveToColumn={onMoveToColumn}
+              />
+              <Separator />
+              <AttachmentSection
+                attachments={task.attachments}
+                isUploading={isUploadingAttachments}
+                isDeleting={isDeletingAttachment}
+                onUploadAttachments={onUploadAttachments}
+                onDeleteAttachment={onDeleteAttachment}
               />
               <Separator />
               <SubtaskChecklist

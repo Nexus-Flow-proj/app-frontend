@@ -2,8 +2,8 @@ import { api } from "@/lib/api/axios";
 import type { ApiResponse } from "@/types";
 import type {
     ApiBoardColumn, ApiComment, ApiCommentListResponse, ApiMessageResponse,
-    ApiSubtask, ApiTask, ApiTaskListResponse,
-    ApiTimeLog, ApiTimeLogListResponse,
+    ApiSubtask, ApiTask, ApiTaskAssigneeRecommendation, ApiTaskListResponse,
+    ApiTaskAttachmentsMutationResponse, ApiTimeLog, ApiTimeLogListResponse,
     CreateBoardColumnDto, CreateCommentDto,
     CreateSubtaskDto, CreateTaskDto, CreateTimeLogDto,
     ReorderBoardColumnsDto, UpdateBoardColumnDto, UpdateCommentDto,
@@ -52,6 +52,12 @@ export const taskService = {
         api
             .get<ApiResponse<ApiTask>>(`/tasks/${taskId}`)
             .then(res => res.data),
+    getAiAssigneeRecommendation: (projectId: string, taskId: string) =>
+        api
+            .get<ApiResponse<ApiTaskAssigneeRecommendation>>(
+                `/projects/${projectId}/tasks/${taskId}/ai/assign`,
+            )
+            .then(res => res.data),
     createTask: (projectId: string, columnId: string, dto: CreateTaskDto) =>
         api
             .post<ApiResponse<ApiTask>>(`/projects/${projectId}/tasks/${columnId}`, dto)
@@ -64,6 +70,28 @@ export const taskService = {
     deleteTask: (taskId: string) =>
         api
             .delete<ApiResponse<ApiMessageResponse>>(`/tasks/${taskId}`)
+            .then(res => res.data),
+    uploadAttachments: (taskId: string, files: File[]) => {
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+
+        return api
+            .post<ApiResponse<ApiTaskAttachmentsMutationResponse>>(
+                `/tasks/${taskId}/attachments`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                },
+            )
+            .then(res => res.data);
+    },
+    deleteAttachment: (taskId: string, attachmentId: string) =>
+        api
+            .delete<ApiResponse<ApiTaskAttachmentsMutationResponse>>(
+                `/tasks/${taskId}/attachments/${attachmentId}`,
+            )
             .then(res => res.data),
 
     // ── Comments ───────────────────────────────────────────────────────

@@ -20,7 +20,7 @@ import {
     rollbackTaskDetail,
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
-import { mapBoardMember, normalizeTaskDependencyIds } from "../mappers";
+import { mapBoardMember, mapTaskAttachment, normalizeTaskDependencyIds } from "../mappers";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 type TaskUpdatePatch = Partial<TaskUpdatedData> & {
@@ -277,7 +277,8 @@ export function updateTaskDetail(
         columnOrder: dto.columnOrder ?? task.columnOrder,
         updatedAt: dto.updated_at ?? task.updatedAt,
         status: dto.status ?? task.status,
-        attachmentsCount: task.attachmentsCount,
+        attachmentsCount:
+            dto.attachments?.length ?? dto.attachmentsCount ?? task.attachmentsCount,
         source: dto.source ?? task.source,
         assignee: dto.assignee === undefined
             ? task.assignee
@@ -288,7 +289,11 @@ export function updateTaskDetail(
             dto.label !== undefined
                 ? dto.label ? [dto.label] : []
                 : task.tags,
-        attachments: dto.attachments ?? task.attachments,
+        attachments: dto.attachments
+            ? dto.attachments.map((attachment) =>
+                mapTaskAttachment(attachment, task.id),
+            )
+            : task.attachments,
     };
 
 

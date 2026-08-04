@@ -35,6 +35,7 @@ import { useDeleteBoardColumn } from "../hooks/useDeleteBoardColumn";
 import { useDeleteComment } from "../hooks/useDeleteComment";
 import { useDeleteSubtask } from "../hooks/useDeleteSubtask";
 import { useDeleteTask } from "../hooks/useDeleteTask";
+import { useDeleteTaskAttachment } from "../hooks/useDeleteTaskAttachment";
 import { useDeleteTimeLog } from "../hooks/useDeleteTimeLog";
 import { useTask } from "../hooks/useTask";
 import { useTimeLogs } from "../hooks/useTimeLogs";
@@ -45,6 +46,7 @@ import {
 import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
 import { useUpdateComment } from "../hooks/useUpdateComment";
 import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
+import { useUploadTaskAttachments } from "../hooks/useUploadTaskAttachments";
 import type { BoardMember, Task } from "../types";
 import { TaskStatus, TaskType, type TaskStatus as TaskStatusValue } from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
@@ -196,6 +198,14 @@ function BoardsPage() {
     currentBoardUser,
   );
   const deleteTimeLogMutation = useDeleteTimeLog(activeTaskId);
+  const uploadAttachmentsMutation = useUploadTaskAttachments(
+    resolvedProjectId,
+    activeTaskId,
+  );
+  const deleteAttachmentMutation = useDeleteTaskAttachment(
+    resolvedProjectId,
+    activeTaskId,
+  );
 
   const boardDnd = useBoardDnd({
     boardState,
@@ -509,6 +519,14 @@ function BoardsPage() {
         onDeleteTimeLog={(timeLogId) => deleteTimeLogMutation.mutate(timeLogId)}
         isSubmittingTimeLog={createTimeLogMutation.isPending}
         isDeletingTimeLog={deleteTimeLogMutation.isPending}
+        onUploadAttachments={(files) =>
+          uploadAttachmentsMutation.mutate({ files })
+        }
+        isUploadingAttachments={uploadAttachmentsMutation.isPending}
+        onDeleteAttachment={(attachmentId) =>
+          deleteAttachmentMutation.mutate(attachmentId)
+        }
+        isDeletingAttachment={deleteAttachmentMutation.isPending}
         onDeleteTask={handleDeleteTask}
       />
     </div>

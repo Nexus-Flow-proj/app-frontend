@@ -173,17 +173,18 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
   drawer: initialDrawerState,
 
   initializeBoard: (boardState, projectId = null) =>
-    set((state) => ({
-      projectId,
-      boardState,
-      isBoardLoading: false,
-      boardError: null,
-      sync:
-        projectId !== null && state.projectId !== projectId
-          ? initialSyncState
-          : state.sync,
-      drawer: initialDrawerState,
-    })),
+    set((state) => {
+      const isProjectChange = projectId !== null && state.projectId !== projectId;
+
+      return {
+        projectId,
+        boardState,
+        isBoardLoading: false,
+        boardError: null,
+        sync: isProjectChange ? initialSyncState : state.sync,
+        drawer: isProjectChange ? initialDrawerState : state.drawer,
+      };
+    }),
 
   setBoardState: (updater) =>
     set((state) => ({

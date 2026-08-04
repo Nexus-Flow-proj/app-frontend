@@ -7,6 +7,7 @@ import {
   CircleDot,
   GitBranch,
   Pencil,
+  Sparkles,
   Tag,
   User,
   X,
@@ -33,9 +34,18 @@ import { MetaRow } from "./MetaRow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { TaskPriority, type TaskStatus } from "../../types/enums";
 import { TASK_STATUSES } from "../../utils/task-status";
 import { TaskDependencyPicker } from "./TaskDependencyPicker";
+import type { ApiTaskAssigneeRecommendation } from "../../types/api/board-api.types";
 
 interface TaskMetaSectionProps {
   className?: string;
@@ -47,12 +57,16 @@ interface TaskMetaSectionProps {
   priority: Priority;
   status: TaskStatus;
   assigneeId: string | null;
+  assigneeRecommendation?: ApiTaskAssigneeRecommendation | null;
+  isRecommendingAssignee?: boolean;
   dueDate: string;
   dependencyIds: TaskId[];
   label: string;
   onChangePriority: (priority: Priority) => void;
   onChangeStatus: (status: TaskStatus) => void;
   onChangeAssignee: (assigneeId: string | null) => void;
+  onRecommendAssignee?: () => void;
+  onClearAssigneeRecommendation?: () => void;
   onChangeDueDate: (dueDate: string) => void;
   onChangeDependencies: (dependencyIds: TaskId[]) => void;
   onChangeLabel: (label: string) => void;
@@ -72,6 +86,11 @@ interface LabelDraft {
   value: string;
 }
 
+interface AssigneePopoverState {
+  taskId: string;
+  isOpen: boolean;
+}
+
 export function TaskMetaSection({
   task,
   tasks,
@@ -81,12 +100,16 @@ export function TaskMetaSection({
   priority,
   status,
   assigneeId,
+  assigneeRecommendation,
+  isRecommendingAssignee,
   dueDate,
   dependencyIds,
   label: currentLabel,
   onChangePriority,
   onChangeStatus,
   onChangeAssignee,
+  onRecommendAssignee,
+  onClearAssigneeRecommendation,
   onChangeDueDate,
   onChangeDependencies,
   onChangeLabel,
@@ -94,11 +117,15 @@ export function TaskMetaSection({
   className,
 }: TaskMetaSectionProps) {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [assigneePopover, setAssigneePopover] =
+    useState<AssigneePopoverState | null>(null);
   const [labelDraft, setLabelDraft] = useState<LabelDraft | null>(null);
   const label =
     labelDraft?.taskId === task.id && labelDraft.sourceLabel === currentLabel
       ? labelDraft.value
       : currentLabel;
+  const isAssigneePopoverOpen =
+    assigneePopover?.taskId === task.id && assigneePopover.isOpen;
 
   const submitLabel = () => {
     const trimmedLabel = label.trim();
@@ -124,6 +151,24 @@ export function TaskMetaSection({
   const cancelEditingLabel = () => {
     setIsEditingLabel(false);
     setLabelDraft(null);
+  };
+
+  const handleRecommendAssignee = () => {
+    setAssigneePopover({ taskId: task.id, isOpen: true });
+    onRecommendAssignee?.();
+  };
+
+  const handleAcceptAssigneeRecommendation = () => {
+    if (!assigneeRecommendation) return;
+
+    onChangeAssignee(assigneeRecommendation.recommendedUserId);
+    onClearAssigneeRecommendation?.();
+    setAssigneePopover({ taskId: task.id, isOpen: false });
+  };
+
+  const handleDeclineAssigneeRecommendation = () => {
+    onClearAssigneeRecommendation?.();
+    setAssigneePopover({ taskId: task.id, isOpen: false });
   };
 
   return (
@@ -193,30 +238,117 @@ export function TaskMetaSection({
       </MetaRow>
 
       <MetaRow icon={User} label="Assignee">
-        <Select
-          value={assigneeId ?? "unassigned"}
-          disabled={isUpdatingTask}
-          onValueChange={(value) =>
-            onChangeAssignee(value === "unassigned" ? null : value)
-          }
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Unassigned" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem
-              value="unassigned"
-              className="text-sm text-muted-foreground"
-            >
-              Unassigned
-            </SelectItem>
-            {members.map((member) => (
-              <SelectItem key={member.id} value={member.id} className="text-sm">
-                {member.name}
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Select
+            value={assigneeId ?? "unassigned"}
+            disabled={isUpdatingTask}
+            onValueChange={(value) =>
+              onChangeAssignee(value === "unassigned" ? null : value)
+            }
+          >
+            <SelectTrigger className="h-8 min-w-0 flex-1 text-xs">
+              <SelectValue placeholder="Unassigned" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="unassigned"
+                className="text-sm text-muted-foreground"
+              >
+                Unassigned
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              {members.map((member) => (
+                <SelectItem
+                  key={member.id}
+                  value={member.id}
+                  className="text-sm"
+                >
+                  {member.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Popover
+            open={isAssigneePopoverOpen}
+            onOpenChange={(isOpen) =>
+              setAssigneePopover({ taskId: task.id, isOpen })
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="soft"
+                size="icon-sm"
+                className="shrink-0 text-primary"
+                disabled={isUpdatingTask || !onRecommendAssignee}
+                isLoading={isRecommendingAssignee}
+                onClick={handleRecommendAssignee}
+                aria-label="Recommend assignee with AI"
+              >
+                <Sparkles className="size-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80">
+              <PopoverHeader>
+                <PopoverTitle>AI recommendation</PopoverTitle>
+                <PopoverDescription>
+                  Review the suggested assignee before changing the draft.
+                </PopoverDescription>
+              </PopoverHeader>
+
+              {isRecommendingAssignee ? (
+                <p className="text-xs text-muted-foreground">
+                  Finding the best fit for this task...
+                </p>
+              ) : assigneeRecommendation ? (
+                <>
+                  <div className="rounded-md border border-border bg-muted/30 p-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {assigneeRecommendation.recommendedUserName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {Math.round(
+                            assigneeRecommendation.confidenceScore * 100,
+                          )}
+                          % confidence
+                        </p>
+                      </div>
+                      <Badge variant="secondary" size="sm" shape="pill">
+                        Best fit
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {assigneeRecommendation.explanation}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDeclineAssigneeRecommendation}
+                    >
+                      Decline
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAcceptAssigneeRecommendation}
+                    >
+                      Accept
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Click the sparkle button to ask AI for a candidate.
+                </p>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
       </MetaRow>
 
       <MetaRow icon={Calendar} label="Due date">

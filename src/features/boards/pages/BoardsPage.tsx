@@ -26,6 +26,8 @@ import {
 } from "../hooks/useBoardFilters";
 import { useBoardDnd } from "../hooks/useBoardDnd";
 import { useBoardState as useRemoteBoardState } from "../hooks/useBoardState";
+import { useAiAssigneeRecommendation } from "../hooks/useAiAssigneeRecommendation";
+import { useAiTaskBreakdown } from "../hooks/useAiTaskBreakdown";
 import { useCreateBoardColumn } from "../hooks/useCreateBoardColumn";
 import { useCreateComment } from "../hooks/useCreateComment";
 import { useCreateSubtask } from "../hooks/useCreateSubtask";
@@ -144,6 +146,20 @@ function BoardsPage() {
   const activeTaskId = drawer.activeTaskId ?? "";
   const taskDetailQuery = useTask(activeTaskId);
   const timeLogsQuery = useTimeLogs(activeTaskId);
+  const {
+    data: aiAssigneeRecommendationResponse,
+    isPending: isRecommendingAssignee,
+    mutate: recommendAssignee,
+    reset: resetAssigneeRecommendation,
+  } = useAiAssigneeRecommendation(
+    resolvedProjectId,
+    activeTaskId,
+  );
+  const {
+    isPending: isGeneratingTaskBreakdown,
+    mutate: generateTaskBreakdown,
+    reset: resetTaskBreakdown,
+  } = useAiTaskBreakdown(resolvedProjectId, activeTaskId);
   const createColumnMutation = useCreateBoardColumn(resolvedProjectId);
   const updateColumnMutation = useUpdateBoardColumn(
     resolvedProjectId,
@@ -264,6 +280,11 @@ function BoardsPage() {
     setDrawerTask(taskDetailQuery.data);
     setDrawerLoading(false);
   }, [setDrawerLoading, setDrawerTask, taskDetailQuery.data]);
+
+  useEffect(() => {
+    resetAssigneeRecommendation();
+    resetTaskBreakdown();
+  }, [activeTaskId, resetAssigneeRecommendation, resetTaskBreakdown]);
 
   const openDrawerWithBackendDetail = useCallback(
     (task: Task) => {
@@ -480,6 +501,16 @@ function BoardsPage() {
         isOpen={drawer.isOpen}
         isLoading={drawer.isLoading}
         isLoadingTimeLogs={timeLogsQuery.isLoading}
+        assigneeRecommendation={aiAssigneeRecommendationResponse?.data}
+        isRecommendingAssignee={isRecommendingAssignee}
+        onRecommendAssignee={() => recommendAssignee()}
+        onClearAssigneeRecommendation={resetAssigneeRecommendation}
+        isGeneratingTaskBreakdown={isGeneratingTaskBreakdown}
+        onGenerateTaskBreakdown={(onSuccess) =>
+          generateTaskBreakdown(undefined, {
+            onSuccess: (response) => onSuccess(response.data.subtasks),
+          })
+        }
         isSubmittingComment={drawer.isSubmittingComment}
         isDeletingTask={deleteTaskMutation.isPending}
         isUpdatingTask={

@@ -22,6 +22,8 @@ import type {
 } from "../../types";
 import { Separator } from "@/components/ui/separator";
 import type {
+  ApiTaskAssigneeRecommendation,
+  ApiTaskBreakdownSubtask,
   CreateSubtaskDto,
   UpdateSubtaskDto,
   UpdateTaskDto,
@@ -37,7 +39,15 @@ interface TaskDetailDrawerProps {
   isOpen: boolean;
   isLoading?: boolean;
   isLoadingTimeLogs?: boolean;
+  assigneeRecommendation?: ApiTaskAssigneeRecommendation | null;
+  isRecommendingAssignee?: boolean;
+  isGeneratingTaskBreakdown?: boolean;
   onClose: () => void;
+  onRecommendAssignee?: () => void;
+  onClearAssigneeRecommendation?: () => void;
+  onGenerateTaskBreakdown?: (
+    onSuccess: (subtasks: ApiTaskBreakdownSubtask[]) => void,
+  ) => void;
   onSaveChanges: (taskId: string, dto: UpdateTaskDto) => void;
   onCreateSubtask: (dto: CreateSubtaskDto) => void;
   onUpdateSubtask: (subtaskId: string, dto: UpdateSubtaskDto) => void;
@@ -186,7 +196,13 @@ export function TaskDetailDrawer({
   isOpen,
   isLoading = false,
   isLoadingTimeLogs,
+  assigneeRecommendation,
+  isRecommendingAssignee,
+  isGeneratingTaskBreakdown,
   onClose,
+  onRecommendAssignee,
+  onClearAssigneeRecommendation,
+  onGenerateTaskBreakdown,
   onSaveChanges,
   onCreateSubtask,
   onUpdateSubtask,
@@ -290,6 +306,32 @@ export function TaskDetailDrawer({
     setDraft(createDraftFromTask(task));
   };
 
+  const handleAddTaskBreakdown = (
+    suggestedSubtasks: ApiTaskBreakdownSubtask[],
+  ) => {
+    const sortedSuggestedSubtasks = [...suggestedSubtasks].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+    if (!sortedSuggestedSubtasks.length) return;
+
+    setHasUserEdited(true);
+    setDraft((current) =>
+      current
+        ? {
+          ...current,
+          subtasks: [
+            ...current.subtasks,
+            ...sortedSuggestedSubtasks.map((subtask) => ({
+              id: `draft-${crypto.randomUUID()}`,
+              title: subtask.title,
+              completed: false,
+            })),
+          ],
+        }
+        : current,
+    );
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
@@ -347,6 +389,10 @@ export function TaskDetailDrawer({
                 onChangeAssignee={(assigneeId) =>
                   setDraftValue("assigneeId", assigneeId)
                 }
+                assigneeRecommendation={assigneeRecommendation}
+                isRecommendingAssignee={isRecommendingAssignee}
+                onRecommendAssignee={onRecommendAssignee}
+                onClearAssigneeRecommendation={onClearAssigneeRecommendation}
                 onChangeDueDate={(dueDate) =>
                   setDraftValue("dueDate", dueDate)
                 }
@@ -376,6 +422,10 @@ export function TaskDetailDrawer({
                   updatedAt: "",
                 }))}
                 disabled={isUpdatingTask}
+                isGeneratingBreakdown={isGeneratingTaskBreakdown}
+                onGenerateAiBreakdown={() =>
+                  onGenerateTaskBreakdown?.(handleAddTaskBreakdown)
+                }
                 onToggle={(subtaskId, completed) =>
                   setDraftValue(
                     "subtasks",

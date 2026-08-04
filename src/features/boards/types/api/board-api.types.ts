@@ -159,6 +159,15 @@ export interface ApiTaskAssigneeRecommendation {
     explanation: string;
 }
 
+export interface ApiTaskBreakdownSubtask {
+    title: string;
+    sortOrder: number;
+}
+
+export interface ApiTaskBreakdown {
+    subtasks: ApiTaskBreakdownSubtask[];
+}
+
 // Request DTOs
 export interface CreateBoardColumnDto {
     name: string;

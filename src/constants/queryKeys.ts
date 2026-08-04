@@ -72,4 +72,7 @@ export const QUERY_KEYS = {
     activity: () => [...QUERY_KEYS.dashboard.all, "activity"] as const,
     deadlines: () => [...QUERY_KEYS.dashboard.all, "deadlines"] as const,
   },
+  profile: {
+    me: () => ["profile", "me"] as const,
+  }
 } as const;

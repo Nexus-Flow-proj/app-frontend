@@ -6,9 +6,10 @@ interface GridPatternProps {
   width: number;
   height: number;
   viewport: CanvasViewport;
+  dark: boolean;
 }
 
-function GridPattern({ width, height, viewport }: GridPatternProps) {
+function GridPattern({ width, height, viewport, dark }: GridPatternProps) {
   const step = CANVAS_GRID_SIZE;
   const left = -viewport.x / viewport.scale;
   const top = -viewport.y / viewport.scale;
@@ -24,8 +25,8 @@ function GridPattern({ width, height, viewport }: GridPatternProps) {
     <Shape
       listening={false}
       perfectDrawEnabled={false}
-      fill="#CBD5E1"
-      opacity={0.7}
+      fill={dark ? "#4c3c70" : "#cbd5e1"}
+      opacity={dark ? 0.55 : 0.7}
       sceneFunc={(context, shape) => {
         const radius = 1 / viewport.scale;
         context.beginPath();

@@ -2,6 +2,7 @@ import { ArrowLeft, Check, CloudAlert, LoaderCircle, PanelLeft, Save } from "luc
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ModeToggle from "@/components/shared/ModeToggle";
 import type { DraftSummary } from "@/features/drafts/types";
 
 interface WorkshopHeaderProps {
@@ -55,6 +56,7 @@ export default function WorkshopHeader({
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <ModeToggle />
         {onOpenExplorer ? (
           <Button variant="outline" size="icon" className="md:hidden" onClick={onOpenExplorer} aria-label="Open canvas explorer"><PanelLeft /></Button>
         ) : null}

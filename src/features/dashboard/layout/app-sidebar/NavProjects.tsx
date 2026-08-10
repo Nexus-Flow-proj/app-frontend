@@ -83,9 +83,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>
-        Projects
-      </SidebarGroupLabel>
+      <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {projects.length === 0 && (
           <SidebarMenuItem>
@@ -207,12 +205,15 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       }
                     >
                       <StickyNoteIcon className="text-muted-foreground" />
-                      <span>My Workspace</span>
+                      <span>My Workshop</span>
                     </DropdownMenuItem>
                     {canOpenWorkshop && (
                       <DropdownMenuItem
                         onClick={() =>
-                          openProject(project, ROUTES.WORKSHOP(project.id))
+                          openProject(
+                            project,
+                            ROUTES.WORKSHOP(project.draftId ?? project.id),
+                          )
                         }
                       >
                         <Wand2Icon className="text-muted-foreground" />
@@ -265,7 +266,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           isActive={pathname === ROUTES.WORKSHOP(project.id)}
                         >
                           <Link
-                            to={ROUTES.WORKSHOP(project.id)}
+                            to={ROUTES.WORKSHOP(project.draftId ?? project.id)}
                             onClick={() => setActiveProject(project)}
                           >
                             <Wand2Icon className="size-3.5" />

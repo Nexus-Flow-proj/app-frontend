@@ -7,6 +7,7 @@ export interface ProjectListItem {
   description?: string | null;
   deadline?: string | null;
   status: ProjectStatus;
+  draftId: string | null;
   adminId?: string;
   memberCount: number;
   color?: string | null;

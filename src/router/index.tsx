@@ -224,13 +224,13 @@ const router = createBrowserRouter([
         ],
       },
       {
-        element: <ProjectPermissionGuard permissions={["workshop.read"]} />,
-        children: [
-          {
-            path: "/projects/:id/workshop",
-            element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
-          },
-        ],
+        // element: <ProjectPermissionGuard permissions={["workshop.read"]} />,
+        // children: [
+        //   {
+        path: "/projects/:id/workshop",
+        element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
+        //   },
+        // ],
       },
       {
         path: "/drafts/:id/workshop",

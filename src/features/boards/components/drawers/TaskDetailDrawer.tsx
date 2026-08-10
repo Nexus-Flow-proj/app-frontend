@@ -25,7 +25,7 @@ import type {
   ApiTaskAssigneeRecommendation,
   ApiTaskBreakdownSubtask,
   ApiTaskDescriptionSuggestion,
-  CreateSubtaskDto,
+  CreateSubtasksDto,
   UpdateSubtaskDto,
   UpdateTaskDto,
 } from "../../types/api/board-api.types";
@@ -54,7 +54,7 @@ interface TaskDetailDrawerProps {
     onSuccess: (suggestion: ApiTaskDescriptionSuggestion) => void,
   ) => void;
   onSaveChanges: (taskId: string, dto: UpdateTaskDto) => void;
-  onCreateSubtask: (dto: CreateSubtaskDto) => void;
+  onCreateSubtask: (dto: CreateSubtasksDto) => void;
   onUpdateSubtask: (subtaskId: string, dto: UpdateSubtaskDto) => void;
   onDeleteSubtask: (subtaskId: string) => void;
   onMoveToColumn: (taskId: string, columnId: string) => void;
@@ -182,9 +182,15 @@ function createSubtaskChangeSet(task: TaskDetail, draft: TaskDetailsDraft) {
   );
 
   return {
-    created: draft.subtasks
-      .filter((subtask) => !subtask.sourceId && subtask.title.trim())
-      .map((subtask) => ({ title: subtask.title.trim() })),
+    created: {
+      subtasks: draft.subtasks
+        .map((subtask, index) => ({ subtask, sortOrder: index + 1 }))
+        .filter(({ subtask }) => !subtask.sourceId && subtask.title.trim())
+        .map(({ subtask, sortOrder }) => ({
+          title: subtask.title.trim(),
+          sortOrder,
+        })),
+    },
     updated: draft.subtasks
       .filter((subtask) => {
         if (!subtask.sourceId) return false;
@@ -318,7 +324,9 @@ export function TaskDetailDrawer({
       onSaveChanges(task.id, createSaveDto(draft));
     }
 
-    subtaskChanges.created.forEach((dto) => onCreateSubtask(dto));
+    if (subtaskChanges.created.subtasks.length) {
+      onCreateSubtask(subtaskChanges.created);
+    }
     subtaskChanges.updated.forEach(({ subtaskId, dto }) =>
       onUpdateSubtask(subtaskId, dto),
     );

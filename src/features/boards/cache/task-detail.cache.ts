@@ -331,6 +331,25 @@ export async function addOptimisticSubtaskToCache(
     return { previousTask, previousTaskLists };
 }
 
+export async function addOptimisticSubtasksToCache(
+    qc: QueryClient,
+    taskId: string,
+    newSubtasks: Subtask[],
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+    const previousTaskLists = snapshotTaskListCaches(qc);
+
+    newSubtasks.forEach((newSubtask) => {
+        addSubtaskToCache(qc, taskId, newSubtask);
+    });
+
+    return { previousTask, previousTaskLists };
+}
+
 export async function removeSubtaskFromCache(
     qc: QueryClient,
     taskId: string,

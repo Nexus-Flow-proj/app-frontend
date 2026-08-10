@@ -16,7 +16,7 @@ import type {
   ApiTimeLogListResponse,
   CreateBoardColumnDto,
   CreateCommentDto,
-  CreateSubtaskDto,
+  CreateSubtasksDto,
   CreateTaskDto,
   CreateTimeLogDto,
   ReorderBoardColumnsDto,
@@ -38,14 +38,21 @@ export const boardService = {
       .post<ApiResponse<ApiBoardColumn>>(`/projects/${projectId}/boards`, dto)
       .then((res) => res.data),
 
-  updateColumn: (columnId: string, dto: UpdateBoardColumnDto) =>
+  updateColumn: (
+    projectId: string,
+    columnId: string,
+    dto: UpdateBoardColumnDto,
+  ) =>
     api
-      .patch<ApiResponse<ApiBoardColumn>>(`/boards/${columnId}`, dto)
+      .patch<ApiResponse<ApiBoardColumn>>(
+        `/projects/${projectId}/boards/${columnId}`,
+        dto,
+      )
       .then((res) => res.data),
 
-  deleteColumn: (columnId: string) =>
+  deleteColumn: (projectId: string, columnId: string) =>
     api
-      .delete<ApiResponse<ApiMessageResponse>>(`/boards/${columnId}`)
+      .delete<ApiResponse<null>>(`/projects/${projectId}/boards/${columnId}`)
       .then((res) => res.data),
 
   reorderColumns: (projectId: string, dto: ReorderBoardColumnsDto) =>
@@ -145,9 +152,9 @@ export const taskService = {
 
   // ── Subtasks ──────────────────────────────────────────────────────
 
-  createSubtask: (taskId: string, dto: CreateSubtaskDto) =>
+  createSubtask: (taskId: string, dto: CreateSubtasksDto) =>
     api
-      .post<ApiResponse<ApiSubtask>>(`/tasks/${taskId}/subtasks`, dto)
+      .post<ApiResponse<ApiSubtask[]>>(`/tasks/${taskId}/subtasks`, dto)
       .then((r) => r.data),
 
   deleteSubtask: (taskId: string, subtaskId: string) =>

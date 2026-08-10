@@ -238,8 +238,11 @@ export interface UpdateCommentDto {
 }
 
 
-export interface CreateSubtaskDto {
-    title: string;
+export interface CreateSubtasksDto {
+    subtasks: {
+        title: string;
+        sortOrder: number;
+    }[];
 }
 export interface UpdateSubtaskDto {
     title?: string;

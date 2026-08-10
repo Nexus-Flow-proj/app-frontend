@@ -12,6 +12,7 @@ import type {
   ProjectListItem,
   ProjectMemberSummary,
   ProjectRoleDefinition,
+  ProjectSummary,
   SendProjectInviteDto,
   UpdateProjectMemberRoleDto,
   UpdateProjectRoleDto,
@@ -28,6 +29,13 @@ export const projectService = {
   getProject: (projectId: string) =>
     api
       .get<ApiResponse<ProjectDetails>>(`/projects/${projectId}`)
+      .then((r) => r.data),
+
+  getProjectSummary: (projectId: string) =>
+    api
+      .get<ApiResponse<ProjectSummary>>(
+        `/projects/${projectId}/ai/overview-summary`,
+      )
       .then((r) => r.data),
 
   getProjectMembers: (projectId: string) =>

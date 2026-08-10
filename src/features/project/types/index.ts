@@ -13,7 +13,7 @@ export type {
   SendProjectInviteDto,
 } from "./project-invite";
 export type { ProjectMemberSummary } from "./project-member";
-export type { ProjectDetails, ProjectListItem } from "./project";
+export type { ProjectDetails, ProjectListItem, ProjectSummary } from "./project";
 export type {
   CreateProjectRoleDto,
   PermissionGroupKey,

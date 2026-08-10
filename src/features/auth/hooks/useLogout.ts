@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useApiMutation } from "@/hooks/useApiMutation";
+import { clearCsrfToken } from "@/lib/api/csrf";
 import { clearSessionCache } from "@/lib/api/session";
 import { useAuthStore } from "@/store";
 import { authService } from "../services";
@@ -14,6 +15,7 @@ export function useLogout() {
     showSuccessToast: false,
     showErrorToast: false,
     onSettled: async () => {
+      clearCsrfToken();
       logout();
       await clearSessionCache(queryClient);
       navigate("/login", { replace: true });

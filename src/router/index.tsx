@@ -198,10 +198,6 @@ const router = createBrowserRouter([
             element: <ProjectPermissionGuard permissions={["board.read"]} />,
             children: [
               {
-                path: "/projects/:id/boards",
-                element: <WithSuspense Component={BoardPages.TeamBoard} />,
-              },
-              {
                 path: "/projects/:id/calendar",
                 element: (
                   <WithSuspense Component={CalendarPages.ProjectCalendar} />
@@ -214,10 +210,15 @@ const router = createBrowserRouter([
       // Member routes render without the dashboard shell.
 
       {
+        path: "/projects/:id/boards",
+        element: <WithSuspense Component={BoardPages.TeamBoard} />,
+      },
+
+      {
         element: <MemberGuard />,
         children: [
           {
-            path: "/projects/:id/my-workspace",
+            path: "/projects/:id/my-workshop",
             element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
           },
         ],

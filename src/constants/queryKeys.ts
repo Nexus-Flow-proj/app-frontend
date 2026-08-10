@@ -6,6 +6,8 @@ export const QUERY_KEYS = {
     all: ["projects"] as const,
     list: () => [...QUERY_KEYS.projects.all, "list"] as const,
     detail: (id: string) => [...QUERY_KEYS.projects.all, "detail", id] as const,
+    summary: (id: string) =>
+      [...QUERY_KEYS.projects.all, "summary", id] as const,
     members: (id: string) =>
       [...QUERY_KEYS.projects.all, "members", id] as const,
     roles: (id: string) => [...QUERY_KEYS.projects.all, "roles", id] as const,

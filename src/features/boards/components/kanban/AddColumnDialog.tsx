@@ -12,15 +12,23 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const COLUMN_COLORS = [
-  { label: "Purple",  value: "var(--primary)" },
-  { label: "Blue",    value: "var(--chart-1)" },
-  { label: "Teal",    value: "var(--chart-2)" },
-  { label: "Green",   value: "var(--chart-3)" },
-  { label: "Amber",   value: "var(--chart-4)" },
-  { label: "Red",     value: "var(--chart-5)" },
+  { label: "Purple", value: "#8b5cf6" },
+  { label: "Blue", value: "#3b82f6" },
+  { label: "Teal", value: "#14b8a6" },
+  { label: "Green", value: "#22c55e" },
+  { label: "Amber", value: "#f59e0b" },
+  { label: "Red", value: "#ef4444" },
 ] as const;
 
 const DEFAULT_COLOR = COLUMN_COLORS[0].value;
+const COLUMN_NAME_MAX_LENGTH = 100;
+const COLUMN_COLOR_MAX_LENGTH = 20;
+
+function normalizeColumnColor(color?: string) {
+  return color && color.length <= COLUMN_COLOR_MAX_LENGTH
+    ? color
+    : DEFAULT_COLOR;
+}
 
 
 export interface NewColumnData {
@@ -49,7 +57,9 @@ export function AddColumnDialog({
   isSubmitting = false,
 }: AddColumnDialogProps) {
   const [name, setName] = useState(initialData?.name ?? "");
-  const [color, setColor] = useState<string>(initialData?.color ?? DEFAULT_COLOR);
+  const [color, setColor] = useState<string>(
+    normalizeColumnColor(initialData?.color),
+  );
 
   const reset = () => {
     setName("");
@@ -80,6 +90,7 @@ export function AddColumnDialog({
             autoFocus
             placeholder="Column name…"
             value={name}
+            maxLength={COLUMN_NAME_MAX_LENGTH}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSubmit();

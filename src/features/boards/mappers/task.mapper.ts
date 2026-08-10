@@ -2,6 +2,7 @@ import type {
     ApiComment,
     ApiSubtask,
     ApiTask,
+    ApiTaskAttachment,
     ApiTaskSummary,
     ApiTimeLog,
     ApiUserSummary,
@@ -12,6 +13,7 @@ import type {
     Comment,
     Subtask,
     Task,
+    TaskAttachment,
     TaskDetail,
     TimeLog,
 } from "../types/index";
@@ -137,22 +139,47 @@ export function mapSubtask(subtask: ApiSubtask, taskId: string): Subtask {
     }
 }
 
-// function mapAttachment(attachment: TaskAttachment, taskId: string): TaskAttachment {
-//     return {
-//         id: attachment.id,
-//         taskId,
-//         name: attachment.fileName,
-//         url: attachment.fileUrl,
-//         mimeType: attachment.mimeType,
-//         size: attachment.size,
-//         uploadedBy: {
-//             id: attachment.uploadedBy.id,
-//             name: attachment.uploadedBy.firstName + " " + attachment.uploadedBy.lastName,
-//             avatar: attachment.uploadedBy.avatarUrl ?? undefined,
-//         },
-//         createdAt: attachment.created_at,
-//     }
-// }
+export function mapTaskAttachment(
+    attachment: ApiTaskAttachment | TaskAttachment,
+    taskId: string,
+): TaskAttachment {
+    const uploadedBy = "uploadedBy" in attachment
+        ? attachment.uploadedBy
+        : undefined;
+    const mappedUploader = uploadedBy && "avatarUrl" in uploadedBy
+        ? mapBoardMember(uploadedBy)
+        : uploadedBy;
+    const name = "fileName" in attachment
+        ? attachment.fileName ?? attachment.name ?? "Attachment"
+        : attachment.name ?? "Attachment";
+    const url = "fileUrl" in attachment
+        ? attachment.fileUrl ?? attachment.url ?? ""
+        : attachment.url ?? "";
+    const uploaderAvatar =
+        mappedUploader && "avatarUrl" in mappedUploader
+            ? mappedUploader.avatarUrl ?? undefined
+            : mappedUploader && "avatar" in mappedUploader
+                ? mappedUploader.avatar
+                : undefined;
+    const createdAt = "created_at" in attachment
+        ? attachment.created_at ?? attachment.createdAt ?? new Date().toISOString()
+        : attachment.createdAt ?? new Date().toISOString();
+
+    return {
+        id: attachment.id,
+        taskId: attachment.taskId ?? taskId,
+        name,
+        url,
+        mimeType: attachment.mimeType ?? "application/octet-stream",
+        size: attachment.size ?? 0,
+        uploadedBy: {
+            id: mappedUploader?.id ?? "unknown-user",
+            name: mappedUploader?.name ?? "Unknown user",
+            avatar: uploaderAvatar,
+        },
+        createdAt,
+    };
+}
 export function mapTimeLog(
     timeLog: ApiTimeLog,
     taskId: string,
@@ -247,7 +274,9 @@ export function mapTaskDetail(
             mapSubtask(subtask, task.id),
         ),
 
-        attachments: task.attachments,
+        attachments: task.attachments.map((attachment) =>
+            mapTaskAttachment(attachment, task.id),
+        ),
 
         activityLog: [],// TODO: Confirm with backend whether activity log is a separate endpoint or the same as time logs.
     };

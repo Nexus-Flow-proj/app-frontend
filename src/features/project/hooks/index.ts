@@ -13,6 +13,7 @@ export { useProjectInvites } from "./useProjectInvites";
 export { useProjectInvitation } from "./useProjectInvitation";
 export { useProjectMembers } from "./useProjectMembers";
 export { useProjectRoles } from "./useProjectRoles";
+export { useProjectSummary } from "./useProjectSummary";
 export { useProjects } from "./useProjects";
 export { useRemoveProjectMember } from "./useRemoveProjectMember";
 export { useRevokeProjectInvite } from "./useRevokeProjectInvite";

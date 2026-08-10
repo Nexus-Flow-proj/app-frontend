@@ -1,6 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Comment, Subtask, TaskDetail } from "../types";
 import { QUERY_KEYS } from "@/constants";
+import {
+    invalidateTaskListCaches,
+    patchTaskInAllListCaches,
+    snapshotTaskListCaches,
+} from "./task-list.cache";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -66,10 +71,16 @@ export function addCommentToCache(
     taskId: string,
     newComment: Comment,
 ) {
+    let shouldIncrementListCount = false;
+
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
         (old) => {
-            if (!old) return old;
+            if (!old) {
+                shouldIncrementListCount = true;
+                return old;
+            }
+
             const existed = old.comments.some(comment => comment.id === newComment.id);
             if (existed) return old;
             const optimisticComment = old.comments.find(
@@ -89,6 +100,8 @@ export function addCommentToCache(
                 };
             }
 
+            shouldIncrementListCount = true;
+
             return {
                 ...old,
                 comments: [...old.comments, newComment],
@@ -96,6 +109,13 @@ export function addCommentToCache(
             };
         },
     );
+
+    if (shouldIncrementListCount) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            commentsCount: (task.commentsCount ?? 0) + 1,
+        }));
+    }
 }
 
 export async function addOptimisticCommentToCache(
@@ -108,10 +128,11 @@ export async function addOptimisticCommentToCache(
     const previousTask = qc.getQueryData<TaskDetail>(
         getDetailKey(taskId),
     );
+    const previousTaskLists = snapshotTaskListCaches(qc);
 
     addCommentToCache(qc, taskId, newComment);
 
-    return { previousTask };
+    return { previousTask, previousTaskLists };
 }
 
 export async function removeCommentFromCache(
@@ -124,11 +145,25 @@ export async function removeCommentFromCache(
     const previousTask = qc.getQueryData<TaskDetail>(
         getDetailKey(taskId),
     );
+    const previousTaskLists = snapshotTaskListCaches(qc);
+    let shouldDecrementListCount = false;
 
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
         (old) => {
-            if (!old) return old;
+            if (!old) {
+                shouldDecrementListCount = true;
+                return old;
+            }
+
+            const existed = old.comments.some(
+                (comment) => comment.id === commentId,
+            );
+
+            if (!existed) return old;
+
+            shouldDecrementListCount = true;
+
             return {
                 ...old,
                 comments: old.comments.filter(
@@ -142,7 +177,14 @@ export async function removeCommentFromCache(
         },
     );
 
-    return { previousTask };
+    if (shouldDecrementListCount) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            commentsCount: Math.max((task.commentsCount ?? 0) - 1, 0),
+        }));
+    }
+
+    return { previousTask, previousTaskLists };
 }
 
 export function updateCommentInCache(
@@ -210,10 +252,16 @@ export function addSubtaskToCache(
     taskId: string,
     newSubtask: Subtask,
 ) {
+    let shouldIncrementListCount = false;
+
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
         (old) => {
-            if (!old) return old;
+            if (!old) {
+                shouldIncrementListCount = true;
+                return old;
+            }
+
             const existed = old.subtasks.some(subtask => subtask.id === newSubtask.id);
             if (existed) return old;
             const optimisticSubtask = old.subtasks.find(
@@ -241,6 +289,8 @@ export function addSubtaskToCache(
                 };
             }
 
+            shouldIncrementListCount = true;
+
             return {
                 ...old,
                 subtasks: [...old.subtasks, newSubtask],
@@ -252,6 +302,16 @@ export function addSubtaskToCache(
             };
         },
     );
+
+    if (shouldIncrementListCount) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            subtasksCount: (task.subtasksCount ?? 0) + 1,
+            completedSubtasksCount:
+                (task.completedSubtasksCount ?? 0) +
+                Number(newSubtask.completed),
+        }));
+    }
 }
 
 export async function addOptimisticSubtaskToCache(
@@ -264,10 +324,30 @@ export async function addOptimisticSubtaskToCache(
     const previousTask = qc.getQueryData<TaskDetail>(
         getDetailKey(taskId),
     );
+    const previousTaskLists = snapshotTaskListCaches(qc);
 
     addSubtaskToCache(qc, taskId, newSubtask);
 
-    return { previousTask };
+    return { previousTask, previousTaskLists };
+}
+
+export async function addOptimisticSubtasksToCache(
+    qc: QueryClient,
+    taskId: string,
+    newSubtasks: Subtask[],
+) {
+    await qc.cancelQueries({ queryKey: getDetailKey(taskId) });
+
+    const previousTask = qc.getQueryData<TaskDetail>(
+        getDetailKey(taskId),
+    );
+    const previousTaskLists = snapshotTaskListCaches(qc);
+
+    newSubtasks.forEach((newSubtask) => {
+        addSubtaskToCache(qc, taskId, newSubtask);
+    });
+
+    return { previousTask, previousTaskLists };
 }
 
 export async function removeSubtaskFromCache(
@@ -280,6 +360,9 @@ export async function removeSubtaskFromCache(
     const previousTask = qc.getQueryData<TaskDetail>(
         getDetailKey(taskId),
     );
+    const previousTaskLists = snapshotTaskListCaches(qc);
+    let deletedSubtaskCompleted = false;
+    let shouldDecrementListCount = false;
 
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
@@ -290,6 +373,12 @@ export async function removeSubtaskFromCache(
                 (subtask) => subtask.id === subtaskId,
 
             );
+
+            if (!deletedSubtask) return old;
+
+            deletedSubtaskCompleted = deletedSubtask.completed;
+            shouldDecrementListCount = true;
+
             return {
                 ...old,
                 subtasks: old.subtasks.filter(
@@ -314,7 +403,21 @@ export async function removeSubtaskFromCache(
         },
     );
 
-    return { previousTask };
+    if (!previousTask) {
+        shouldDecrementListCount = true;
+    }
+
+    if (shouldDecrementListCount) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            subtasksCount: Math.max((task.subtasksCount ?? 0) - 1, 0),
+            completedSubtasksCount: deletedSubtaskCompleted
+                ? Math.max((task.completedSubtasksCount ?? 0) - 1, 0)
+                : task.completedSubtasksCount,
+        }));
+    }
+
+    return { previousTask, previousTaskLists };
 }
 
 export function updateSubtaskInCache(
@@ -323,15 +426,24 @@ export function updateSubtaskInCache(
     updatedSubtask: Subtask,
     targetSubtaskId = updatedSubtask.id,
 ) {
+    let completedDelta = 0;
+    let shouldInvalidateLists = false;
+
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
         (old) => {
-            if (!old) return old;
+            if (!old) {
+                shouldInvalidateLists = true;
+                return old;
+            }
             const previous = old.subtasks.find(
                 (subtask) => subtask.id === targetSubtaskId,
             );
 
-            if (!previous) return old;
+            if (!previous) {
+                shouldInvalidateLists = true;
+                return old;
+            }
 
             let completed = old.completedSubtasksCount ?? old.subtasks.filter(
                 (subtask) => subtask.completed,
@@ -339,10 +451,12 @@ export function updateSubtaskInCache(
 
             if (!previous.completed && updatedSubtask.completed) {
                 completed++;
+                completedDelta = 1;
             }
 
             if (previous.completed && !updatedSubtask.completed) {
                 completed--;
+                completedDelta = -1;
             }
 
             return {
@@ -356,6 +470,18 @@ export function updateSubtaskInCache(
             };
         },
     );
+
+    if (completedDelta !== 0) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            completedSubtasksCount: Math.max(
+                (task.completedSubtasksCount ?? 0) + completedDelta,
+                0,
+            ),
+        }));
+    } else if (shouldInvalidateLists) {
+        invalidateTaskListCaches(qc);
+    }
 }
 
 export async function updateSubtaskInCacheOptimistically(
@@ -369,6 +495,8 @@ export async function updateSubtaskInCacheOptimistically(
     const previousTask = qc.getQueryData<TaskDetail>(
         getDetailKey(taskId),
     );
+    const previousTaskLists = snapshotTaskListCaches(qc);
+    let completedDelta = 0;
 
     qc.setQueryData<TaskDetail>(
         getDetailKey(taskId),
@@ -389,10 +517,12 @@ export async function updateSubtaskInCacheOptimistically(
 
             if (!previousSubtask.completed && nextCompleted) {
                 completedSubtasksCount++;
+                completedDelta = 1;
             }
 
             if (previousSubtask.completed && !nextCompleted) {
                 completedSubtasksCount--;
+                completedDelta = -1;
             }
 
             return {
@@ -411,5 +541,15 @@ export async function updateSubtaskInCacheOptimistically(
         },
     );
 
-    return { previousTask };
+    if (completedDelta !== 0) {
+        patchTaskInAllListCaches(qc, taskId, (task) => ({
+            ...task,
+            completedSubtasksCount: Math.max(
+                (task.completedSubtasksCount ?? 0) + completedDelta,
+                0,
+            ),
+        }));
+    }
+
+    return { previousTask, previousTaskLists };
 }

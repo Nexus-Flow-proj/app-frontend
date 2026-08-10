@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import type { Task, TaskList } from "../types";
 import { QUERY_KEYS } from "@/constants";
 
@@ -7,6 +7,12 @@ import { QUERY_KEYS } from "@/constants";
 function getListKey(projectId: string) {
   return QUERY_KEYS.tasks.list(projectId);
 }
+
+function isTaskListQueryKey(queryKey: QueryKey) {
+    return queryKey[0] === "tasks" && queryKey[1] === "list";
+}
+
+export type TaskListCacheSnapshot = Array<[QueryKey, TaskList | undefined]>;
 
 function sortTasksByBoardPosition(tasks: Task[]) {
     return [...tasks].sort((a, b) => {
@@ -205,6 +211,63 @@ export function patchTaskInListCache(
             };
         },
     );
+}
+
+export function patchTaskInAllListCaches(
+    qc: QueryClient,
+    taskId: string,
+    applyUpdate: (task: Task) => Task,
+) {
+    qc.getQueryCache()
+        .findAll({ queryKey: QUERY_KEYS.tasks.all })
+        .filter((query) => isTaskListQueryKey(query.queryKey))
+        .forEach((query) => {
+            qc.setQueryData<TaskList>(
+                query.queryKey,
+                (old) => {
+                    if (!old) return old;
+
+                    return {
+                        ...old,
+                        tasks: sortTasksByBoardPosition(
+                            old.tasks.map((task) =>
+                                task.id === taskId ? applyUpdate(task) : task,
+                            ),
+                        ),
+                    };
+                },
+            );
+        });
+}
+
+export function snapshotTaskListCaches(
+    qc: QueryClient,
+): TaskListCacheSnapshot {
+    return qc.getQueryCache()
+        .findAll({ queryKey: QUERY_KEYS.tasks.all })
+        .filter((query) => isTaskListQueryKey(query.queryKey))
+        .map((query) => [
+            query.queryKey,
+            query.state.data as TaskList | undefined,
+        ]);
+}
+
+export function rollbackTaskListCaches(
+    qc: QueryClient,
+    snapshot: TaskListCacheSnapshot | undefined,
+) {
+    snapshot?.forEach(([queryKey, data]) => {
+        qc.setQueryData(queryKey, data);
+    });
+}
+
+export function invalidateTaskListCaches(qc: QueryClient) {
+    qc.getQueryCache()
+        .findAll({ queryKey: QUERY_KEYS.tasks.all })
+        .filter((query) => isTaskListQueryKey(query.queryKey))
+        .forEach((query) => {
+            qc.invalidateQueries({ queryKey: query.queryKey });
+        });
 }
 
 export function removeOptimisticCreatedTaskFromListCache(

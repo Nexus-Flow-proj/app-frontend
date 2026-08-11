@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import MyAvatar from "@/components/shared/MyAvatar";
+import UserLink from "@/components/shared/UserLink";
 import { Button } from "@/components/ui/button";
 import type { RecentActivityItem } from "../types";
 import { formatRelativeTime } from "../utils/format";
@@ -90,12 +91,12 @@ function ActivityList({
               DOT_COLORS[index % DOT_COLORS.length]
             }`}
           />
-          <Avatar className={`${avatarClassName} shrink-0`}>
-            <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
-            <AvatarFallback className="text-xs">
-              {item.actor.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <MyAvatar
+            name={item.actor.name}
+            avatarUrl={item.actor.avatar}
+            userId={item.actor.id}
+            className={`${avatarClassName} shrink-0`}
+          />
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-start justify-between gap-3">
               <p
@@ -104,7 +105,7 @@ function ActivityList({
                   truncate ? `${item.actor.name} ${item.message}` : undefined
                 }
               >
-                <span className="font-medium">{item.actor.name}</span>{" "}
+                <UserLink userId={item.actor.id} name={item.actor.name} className="font-medium" />{" "}
                 {item.message}
               </p>
               <span className="shrink-0 pt-0.5 text-sm text-muted-foreground">

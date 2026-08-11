@@ -28,6 +28,14 @@ const DashboardPages = {
   Dashboard: lazy(() => import("@/features/dashboard/pages/DashboardPage")),
 };
 
+// ** Profile Pages
+const ProfilePages = {
+  Profile: lazy(() => import("@/features/profile/pages/ProfilePage")),
+  UserProfile: lazy(
+    () => import("@/features/profile/pages/UserProfilePage"),
+  ),
+};
+
 // ** Draft Pages
 const DraftPages = {
   Create: lazy(() => import("@/features/drafts/pages/CreateDraftPage")),
@@ -125,6 +133,14 @@ const router = createBrowserRouter([
             path: "/dashboard",
             index: true,
             element: <WithSuspense Component={DashboardPages.Dashboard} />,
+          },
+          {
+            path: "/profile",
+            element: <WithSuspense Component={ProfilePages.Profile} />,
+          },
+          {
+            path: "/users/:userId",
+            element: <WithSuspense Component={ProfilePages.UserProfile} />,
           },
           {
             path: "/projects/new",

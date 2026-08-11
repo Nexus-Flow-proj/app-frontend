@@ -41,6 +41,22 @@ export interface UserProfile {
 }
 
 /**
+ * GET /users/:id — read-only public view of any user.
+ */
+export interface PublicUserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  title: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  skills: string[];
+  createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+}
+
+/**
  * PATCH /users/me — request body.
  */
 export interface UpdateProfileDto {

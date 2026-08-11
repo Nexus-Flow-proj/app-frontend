@@ -74,5 +74,6 @@ export const QUERY_KEYS = {
   },
   profile: {
     me: () => ["profile", "me"] as const,
+    user: (userId: string) => ["profile", "user", userId] as const,
   }
 } as const;

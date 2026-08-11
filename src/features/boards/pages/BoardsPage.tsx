@@ -51,12 +51,13 @@ import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
 import { useAuthStore } from "@/store/authStore";
-import { useProjectMembers } from "@/features/project/hooks";
+import { useProject, useProjectMembers } from "@/features/project/hooks";
 import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
 import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
 import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
 import { getTaskStatusFromColumnName } from "../utils/task-status";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -123,6 +124,7 @@ function BoardsPage() {
   const activeCount = useActiveFilterCount();
   const remoteBoard = useRemoteBoardState(resolvedProjectId);
   const projectMembersQuery = useProjectMembers(resolvedProjectId);
+  const projectQuery = useProject(resolvedProjectId);
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -362,6 +364,11 @@ function BoardsPage() {
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
           <BoardInfo />
           <BoardSyncIndicator status={syncStatus} />
+          <ProjectWorkspaceNavigation
+            projectId={resolvedProjectId}
+            draftId={projectQuery.data?.draftId}
+            current="board"
+          />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
             <BoardSearchBar

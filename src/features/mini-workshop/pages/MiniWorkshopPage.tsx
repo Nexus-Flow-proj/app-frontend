@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MyEmpty } from "@/components/shared/feedback/MyEmpty";
 import ModeToggle from "@/components/shared/ModeToggle";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import { useProjectTasks } from "@/features/boards/hooks/useProjectTasks";
 import type { BoardMember, Task } from "@/features/boards/types";
 import { useProject } from "@/features/project/hooks";
@@ -315,6 +316,11 @@ function MiniWorkshopPage() {
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <ProjectWorkspaceNavigation
+            projectId={id}
+            draftId={projectQuery.data?.draftId}
+            current="mini-workshop"
+          />
           <Input
             ref={imageInputRef}
             type="file"

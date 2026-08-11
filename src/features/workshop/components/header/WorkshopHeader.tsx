@@ -10,7 +10,9 @@ import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ModeToggle from "@/components/shared/ModeToggle";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import type { DraftSummary } from "@/features/drafts/types";
+import { useProjects } from "@/features/project/hooks";
 
 interface WorkshopHeaderProps {
   draft?: DraftSummary;
@@ -39,6 +41,11 @@ export default function WorkshopHeader({
   onOpenExplorer,
   isCompleted,
 }: WorkshopHeaderProps) {
+  const projectsQuery = useProjects();
+  const projectId = projectsQuery.data?.find(
+    (project) => project.draftId === draft?.id,
+  )?.id;
+
   return (
     <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-background/95 px-3 py-2 backdrop-blur md:px-5">
       <Button variant="ghost" size="icon" asChild aria-label="Back to draft">
@@ -78,6 +85,11 @@ export default function WorkshopHeader({
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <ProjectWorkspaceNavigation
+          projectId={projectId}
+          draftId={draft?.id}
+          current="workshop"
+        />
         <ModeToggle />
         {onOpenExplorer ? (
           <Button

@@ -21,7 +21,7 @@ export const profileService = {
 
   uploadAvatar: (file: File): Promise<ApiResponse<AvatarUploadResponse>> => {
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("file", file);
 
     return api
       .post<ApiResponse<AvatarUploadResponse>>("/users/me/avatar", formData, {

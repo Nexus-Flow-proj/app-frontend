@@ -1,8 +1,15 @@
-import { useParams } from "react-router";
+import { ArrowRight } from "lucide-react";
+import { Link, useParams } from "react-router";
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/constants";
 import { CreateDraftForm } from "../components/CreateDraftForm";
+import { useDraft } from "../hooks/useDraft";
 
 export default function CreateDraftPage() {
   const { id: draftId } = useParams();
+  const draftQuery = useDraft(draftId);
+  const canStartWorkshop =
+    !!draftId && draftQuery.data?.status?.toLowerCase() !== "converted";
 
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-6 px-1 py-1">
@@ -35,6 +42,14 @@ export default function CreateDraftPage() {
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               The next screen is where features and tasks start taking shape.
             </p>
+            {canStartWorkshop ? (
+              <Button asChild size="sm" className="mt-4 w-full">
+                <Link to={ROUTES.DRAFT_WORKSHOP(draftId)}>
+                  Start Workshop
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>

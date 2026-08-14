@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { AtSign, Camera, FileText, Layers, ScanSearch, Wrench } from "lucide-react";
+import { AtSign, Camera, FileText, Layers, Loader2, Pencil, ScanSearch, Wrench } from "lucide-react";
+import { ProfileEditSheet } from "./ProfileEditSheet";
 import {
   Avatar,
   AvatarFallback,
@@ -41,6 +42,7 @@ interface ProfileAvatarCardProps {
 export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const { mutate: uploadAvatar, isPending } = useUploadAvatar();
 
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
@@ -76,28 +78,35 @@ export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCa
       title={readonly ? "View photo" : "Avatar options"}
       disabled={!readonly && isPending}
     >
-      <Avatar className="size-full transition-all duration-300 group-hover:scale-105 group-hover:blur-[1.5px]">
+      <Avatar className={`size-full transition-all duration-300 ${isPending ? "blur-[2px] scale-105" : "group-hover:scale-105 group-hover:blur-[1.5px]"}`}>
         <AvatarImage src={profile.avatarUrl ?? undefined} alt={fullName} />
         <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/15 to-primary/30 text-primary">
           {initials}
         </AvatarFallback>
       </Avatar>
-      {/* Hover overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 opacity-0 backdrop-blur-[1.5px] transition-all duration-300 group-hover:opacity-100 rounded-full">
-        {readonly ? (
-          <>
-            <ScanSearch className="size-5 text-white" />
-            <span className="mt-0.5 text-[9px] font-bold tracking-widest text-white uppercase">View</span>
-          </>
-        ) : (
-          <>
-            <Camera className="size-5 text-white" />
-            <span className="mt-0.5 text-[9px] font-bold tracking-widest text-white uppercase">
-              {isPending ? "Uploading…" : "Options"}
-            </span>
-          </>
-        )}
-      </div>
+
+      {/* Upload spinner overlay — always shown while uploading */}
+      {isPending ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/55 rounded-full backdrop-blur-[1px]">
+          <Loader2 className="size-7 text-white animate-spin" />
+          <span className="mt-1 text-[9px] font-bold tracking-widest text-white/90 uppercase">Uploading</span>
+        </div>
+      ) : (
+        /* Hover overlay */
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 opacity-0 backdrop-blur-[1.5px] transition-all duration-300 group-hover:opacity-100 rounded-full">
+          {readonly ? (
+            <>
+              <ScanSearch className="size-5 text-white" />
+              <span className="mt-0.5 text-[9px] font-bold tracking-widest text-white uppercase">View</span>
+            </>
+          ) : (
+            <>
+              <Camera className="size-5 text-white" />
+              <span className="mt-0.5 text-[9px] font-bold tracking-widest text-white uppercase">Options</span>
+            </>
+          )}
+        </div>
+      )}
     </button>
   );
 
@@ -172,7 +181,28 @@ export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCa
                 <span className="text-xs text-muted-foreground/60 italic">No title set</span>
               )}
             </div>
+
+            {/* Edit Profile button — only for own profile */}
+            {!readonly && (
+              <button
+                type="button"
+                onClick={() => setIsEditOpen(true)}
+                className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+              >
+                <Pencil className="size-3" />
+                Edit Profile
+              </button>
+            )}
           </div>
+
+          {/* Edit sheet — only mounted for own profile */}
+          {!readonly && (
+            <ProfileEditSheet
+              profile={profile as import('../types').UserProfile}
+              open={isEditOpen}
+              onOpenChange={setIsEditOpen}
+            />
+          )}
 
           <Separator className="mb-5" />
 

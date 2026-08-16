@@ -146,6 +146,7 @@ function BoardsPage() {
   const setDrawerLoading = useKanbanStore((state) => state.setDrawerLoading);
   const closeTaskDrawer = useKanbanStore((state) => state.closeTaskDrawer);
   const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
+  const recordLocalTaskMove = useKanbanStore((state) => state.recordLocalTaskMove);
   const activeTaskId = drawer.activeTaskId ?? "";
   const taskDetailQuery = useTask(activeTaskId);
   const timeLogsQuery = useTimeLogs(activeTaskId);
@@ -238,16 +239,23 @@ function BoardsPage() {
       const movingTask = boardState.tasks[sourceColId]?.find(
         (task) => task.id === taskId,
       );
+      const status = getColumnTaskStatus(
+        boardState,
+        targetColId,
+        movingTask?.status ?? TaskStatus.TODO,
+      );
+
+      recordLocalTaskMove(taskId, {
+        boardColumnId: targetColId,
+        columnOrder: newPositionFloat,
+        status,
+      });
 
       updateTaskByIdMutation.mutate({
         taskId,
         dto: {
           columnOrder: newPositionFloat,
-          status: getColumnTaskStatus(
-            boardState,
-            targetColId,
-            movingTask?.status ?? TaskStatus.TODO,
-          ),
+          status,
           ...(sourceColId !== targetColId
             ? { boardColumnId: targetColId }
             : {}),
@@ -383,22 +391,28 @@ function BoardsPage() {
           (max, task) => Math.max(max, task.columnOrder ?? 0),
           0,
         ) + 1;
+      const status = getColumnTaskStatus(
+        boardState,
+        targetColumnId,
+        movingTask?.status ?? TaskStatus.TODO,
+      );
 
       moveTaskToColumn(taskId, targetColumnId);
+      recordLocalTaskMove(taskId, {
+        boardColumnId: targetColumnId,
+        columnOrder: newColumnOrder,
+        status,
+      });
       updateTaskByIdMutation.mutate({
         taskId,
         dto: {
           boardColumnId: targetColumnId,
           columnOrder: newColumnOrder,
-          status: getColumnTaskStatus(
-            boardState,
-            targetColumnId,
-            movingTask?.status ?? TaskStatus.TODO,
-          ),
+          status,
         },
       });
     },
-    [boardState, moveTaskToColumn, updateTaskByIdMutation],
+    [boardState, moveTaskToColumn, recordLocalTaskMove, updateTaskByIdMutation],
   );
 
   return (

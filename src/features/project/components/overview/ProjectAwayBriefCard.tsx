@@ -1,4 +1,3 @@
-import { formatDistanceStrict } from "date-fns";
 import {
   AlertTriangleIcon,
   BotIcon,
@@ -23,12 +22,37 @@ import { Separator } from "@/components/ui/separator";
 import type { ProjectSummary } from "../../types";
 
 const AWAY_PROMPT_THRESHOLD_MS = 1000 * 60 * 60 * 2;
+const MINUTE_MS = 1000 * 60;
+const HOUR_MS = MINUTE_MS * 60;
+const DAY_MS = HOUR_MS * 24;
 
 interface ProjectAwayBriefCardProps {
   lastVisitedAt?: string | null;
   summary?: ProjectSummary;
   isGenerating: boolean;
   onGenerateBrief: () => void;
+}
+
+function formatAwayDuration(elapsedMs: number) {
+  const safeElapsedMs = Math.max(0, elapsedMs);
+  const days = Math.floor(safeElapsedMs / DAY_MS);
+  const hours = Math.floor((safeElapsedMs % DAY_MS) / HOUR_MS);
+  const minutes = Math.max(1, Math.floor((safeElapsedMs % HOUR_MS) / MINUTE_MS));
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days} ${days === 1 ? "day" : "days"}`);
+  }
+
+  if (hours > 0) {
+    parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
+  }
+
+  if (parts.length === 0) {
+    parts.push(`${minutes} ${minutes === 1 ? "minute" : "minutes"}`);
+  }
+
+  return parts.join(" and ");
 }
 
 function getAwayState(lastVisitedAt?: string | null) {
@@ -52,9 +76,7 @@ function getAwayState(lastVisitedAt?: string | null) {
   }
 
   const elapsedMs = Date.now() - visitedAtMs;
-  const awayLabel = formatDistanceStrict(visitedAt, new Date(), {
-    addSuffix: false,
-  });
+  const awayLabel = formatAwayDuration(elapsedMs);
 
   return {
     shouldPrompt: elapsedMs >= AWAY_PROMPT_THRESHOLD_MS,

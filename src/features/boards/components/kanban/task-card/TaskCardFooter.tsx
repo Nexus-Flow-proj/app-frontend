@@ -38,6 +38,7 @@ function TaskCardFooter({
           name={assignee.name}
           avatarUrl={assignee.avatarUrl}
           isActive={assignee.isActive}
+          userId={assignee.id}
         />
       )}
     </div>

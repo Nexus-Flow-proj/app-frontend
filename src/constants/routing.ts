@@ -7,6 +7,8 @@ export const ROUTES = {
   PROJECT_INVITATION: (token: string) => `/project/invitation/${token}`,
 
   DASHBOARD: "/dashboard",
+  PROFILE: "/profile",
+  USER_PROFILE: (userId: string) => `/users/${userId}`,
 
   PROJECT_NEW: "/drafts/new",
   DRAFT_NEW: "/drafts/new",

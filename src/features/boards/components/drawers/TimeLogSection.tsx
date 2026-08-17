@@ -5,6 +5,7 @@ import { Clock, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import UserLink from "@/components/shared/UserLink";
 import type { TimeLog } from "../../types";
 
 interface NewTimeLogData {
@@ -111,7 +112,12 @@ export function TimeLogSection({
                     {formatMinutes(log.minutes)}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    by {log.user?.name ?? "Unknown user"}
+                    by{" "}
+                    <UserLink
+                      userId={log.userId ?? log.user?.id}
+                      name={log.user?.name ?? "Unknown user"}
+                      className="text-xs text-muted-foreground font-medium"
+                    />
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {format(new Date(log.loggedAt), "MMM d, yyyy")}

@@ -22,9 +22,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/authStore";
 import NavUserInfo from "./NavUserInfo";
+import { useNavigate } from "react-router";
+import { ROUTES } from "@/constants";
 import { useLogout } from "@/features/auth/hooks";
 
 export function NavUser() {
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
@@ -65,7 +68,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="bg-sidebar-accent border-sidebar-accent-foreground text-sidebar-accent-foreground ">
-            <DropdownMenuLabel>
+            <DropdownMenuLabel onClick={() => navigate(ROUTES.PROFILE)} className="hover:cursor-pointer" >
               <div className="flex items-center gap-2 text-left text-sm">
                 <NavUserInfo
                   avatarUrl={user.avatar}
@@ -87,9 +90,9 @@ export function NavUser() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(ROUTES.PROFILE)}>
                 <BadgeCheckIcon />
-                Account
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <BellIcon />

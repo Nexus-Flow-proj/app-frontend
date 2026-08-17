@@ -44,7 +44,7 @@ export function ProjectMemberRow({
         <div className="flex min-w-0 items-center gap-3">
           <MyAvatar
             name={memberName}
-            avatarUrl={member.avatarUrl}
+            avatarUrl={member.avatarUrl ?? undefined}
             userId={member.userId ?? member.id}
           />
           <div className="min-w-0">

@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import MyAvatar from "@/components/shared/MyAvatar";
+import UserLink from "@/components/shared/UserLink";
 import { Badge } from "@/components/ui/badge";
-import { formatInitials } from "@/lib/format/text";
 import type { ProjectMemberSummary, ProjectRoleDefinition } from "../../types";
 import { getProjectMemberName } from "./member-display";
 import { ProjectMemberRoleSelect } from "./ProjectMemberRoleSelect";
@@ -42,17 +42,18 @@ export function ProjectMemberRow({
     <tr className="bg-card">
       <td className="px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Avatar>
-            {member.avatarUrl && (
-              <AvatarImage src={member.avatarUrl} alt={memberName} />
-            )}
-            <AvatarFallback>{formatInitials(memberName)}</AvatarFallback>
-          </Avatar>
+          <MyAvatar
+            name={memberName}
+            avatarUrl={member.avatarUrl ?? undefined}
+            userId={member.userId ?? member.id}
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="truncate font-semibold text-foreground">
-                {memberName}
-              </p>
+              <UserLink
+                userId={member.userId ?? member.id}
+                name={memberName}
+                className="truncate font-semibold text-foreground block"
+              />
               {isCurrentUser && (
                 <Badge variant="outline" size="sm">
                   You

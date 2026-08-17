@@ -9,6 +9,7 @@ import {
     rollbackTaskDetail,
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
+import { rollbackTaskListCaches } from "../cache/task-list.cache";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useDeleteSubtask(taskId: string) {
@@ -39,6 +40,7 @@ export function useDeleteSubtask(taskId: string) {
                         context.previousTask,
                     );
                 }
+                rollbackTaskListCaches(queryClient, context?.previousTaskLists);
             },
 
             onSettled: (_, error, __, context) => {

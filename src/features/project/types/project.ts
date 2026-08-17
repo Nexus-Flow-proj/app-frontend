@@ -20,3 +20,13 @@ export interface ProjectDetails extends ProjectListItem {
   taskCount?: number;
   completedTaskCount?: number;
 }
+
+export interface ProjectSummary {
+  statusSummary: string;
+  whoIsDoingWhat: string;
+  remainingTasksSummary: string;
+  bottlenecks: string[];
+  workloadWarnings: string[];
+  highlights?: string[];
+  nextSteps?: string[];
+}

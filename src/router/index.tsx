@@ -28,6 +28,14 @@ const DashboardPages = {
   Dashboard: lazy(() => import("@/features/dashboard/pages/DashboardPage")),
 };
 
+// ** Profile Pages
+const ProfilePages = {
+  Profile: lazy(() => import("@/features/profile/pages/ProfilePage")),
+  UserProfile: lazy(
+    () => import("@/features/profile/pages/UserProfilePage"),
+  ),
+};
+
 // ** Draft Pages
 const DraftPages = {
   Create: lazy(() => import("@/features/drafts/pages/CreateDraftPage")),
@@ -40,6 +48,9 @@ const ProjectPages = {
     () => import("@/features/project/pages/ProjectInvitationPage"),
   ),
   Members: lazy(() => import("@/features/project/pages/ProjectMembersPage")),
+  Knowledge: lazy(
+    () => import("@/features/project/pages/ProjectKnowledgePage"),
+  ),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
   Invites: lazy(() => import("@/features/project/pages/ProjectInvitesPage")),
   Roles: lazy(() => import("@/features/project/pages/ProjectRolesPage")),
@@ -127,6 +138,14 @@ const router = createBrowserRouter([
             element: <WithSuspense Component={DashboardPages.Dashboard} />,
           },
           {
+            path: "/profile",
+            element: <WithSuspense Component={ProfilePages.Profile} />,
+          },
+          {
+            path: "/users/:userId",
+            element: <WithSuspense Component={ProfilePages.UserProfile} />,
+          },
+          {
             path: "/projects/new",
             element: <Navigate to="/drafts/new" replace />,
           },
@@ -144,6 +163,19 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <WithSuspense Component={ProjectPages.Overview} />,
+              },
+              {
+                element: (
+                  <ProjectPermissionGuard permissions={["project.read"]} />
+                ),
+                children: [
+                  {
+                    path: "knowledge",
+                    element: (
+                      <WithSuspense Component={ProjectPages.Knowledge} />
+                    ),
+                  },
+                ],
               },
               {
                 element: <AdminGuard />,

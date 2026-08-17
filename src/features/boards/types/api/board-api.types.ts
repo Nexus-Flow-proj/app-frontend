@@ -10,7 +10,7 @@ export interface ApiUserSummary {
     first_name?: string;
     last_name?: string;
     name?: string;
-    avatarUrl: string | null;
+    avatarUrl?: string | null;
 }
 
 export interface ApiBoardColumn {
@@ -75,7 +75,7 @@ export interface ApiTask {
     description: string | null;
     deadline: string | null;
     type: string;
-    attachments: TaskAttachment[];
+    attachments: ApiTaskAttachment[];
     comments: ApiComment[];
     subtasks: ApiSubtask[];
 }
@@ -102,15 +102,28 @@ export interface ApiTimeLog {
     user?: ApiUserSummary | null;
     created_at: string;
 }
-// export interface ApiAttachment {
-//     id: string;
-//     fileName: string;
-//     fileUrl: string;
-//     mimeType: string;
-//     size: number;
-//     uploadedBy: ApiUserSummary;
-//     created_at: string;
-// }
+export interface ApiTaskAttachment {
+    id: string;
+    taskId?: string;
+    fileName?: string;
+    name?: string;
+    fileUrl?: string;
+    url?: string;
+    mimeType?: string;
+    size?: number;
+    uploadedBy?: ApiUserSummary | TaskAttachment["uploadedBy"] | null;
+    created_at?: string;
+    createdAt?: string;
+}
+
+export interface ApiTaskAttachmentsMutationResponse {
+    newAttachments?: ApiTaskAttachment[];
+    allAttachments?: ApiTaskAttachment[];
+    deletedAttachment?: ApiTaskAttachment;
+    remainingAttachments?: ApiTaskAttachment[];
+    taskId: string;
+    attachmentsCount: number;
+}
 
 
 export interface TaskUpdatedData {
@@ -136,7 +149,28 @@ export interface TaskUpdatedData {
     description?: string | null;
     deadline?: string | null;
     type?: string;
-    attachments?: TaskAttachment[];
+    attachments?: Array<ApiTaskAttachment | TaskAttachment>;
+}
+
+export interface ApiTaskAssigneeRecommendation {
+    recommendedUserId: string;
+    recommendedUserName: string;
+    confidenceScore: number;
+    explanation: string;
+}
+
+export interface ApiTaskBreakdownSubtask {
+    title: string;
+    sortOrder: number;
+}
+
+export interface ApiTaskBreakdown {
+    subtasks: ApiTaskBreakdownSubtask[];
+}
+
+export interface ApiTaskDescriptionSuggestion {
+    description: string;
+    acceptanceCriteria: string[];
 }
 
 // Request DTOs
@@ -182,7 +216,7 @@ export interface UpdateTaskDto {
 
     label?: string;
 
-    deadline?: string;
+    deadline?: string | null;
 
     status?: TaskStatus;
 
@@ -204,8 +238,11 @@ export interface UpdateCommentDto {
 }
 
 
-export interface CreateSubtaskDto {
-    title: string;
+export interface CreateSubtasksDto {
+    subtasks: {
+        title: string;
+        sortOrder: number;
+    }[];
 }
 export interface UpdateSubtaskDto {
     title?: string;

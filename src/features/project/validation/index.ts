@@ -7,6 +7,13 @@ export {
   type InviteMemberFormValues,
 } from "./invite.schema";
 export {
+  knowledgeSchema,
+  knowledgeSearchSchema,
+  knowledgeSourceTypeSchema,
+  type KnowledgeFormValues,
+  type KnowledgeSearchFormValues,
+} from "./knowledge.schema";
+export {
   createProjectRoleSchema,
   updateProjectRoleSchema,
   type CreateProjectRoleFormValues,

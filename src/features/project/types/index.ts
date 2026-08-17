@@ -15,6 +15,15 @@ export type {
 export type { ProjectMemberSummary } from "./project-member";
 export type { ProjectDetails, ProjectListItem, ProjectSummary } from "./project";
 export type {
+  CreateKnowledgeInput,
+  KnowledgeDocument,
+  KnowledgeSearchInput,
+  KnowledgeSearchResult,
+  KnowledgeSourceType,
+  ProjectKnowledgeQuery,
+  UpdateKnowledgeInput,
+} from "./project-knowledge";
+export type {
   CreateProjectRoleDto,
   PermissionGroupKey,
   PermissionKey,

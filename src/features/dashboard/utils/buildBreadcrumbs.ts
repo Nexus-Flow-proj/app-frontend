@@ -16,6 +16,7 @@ export function buildBreadcrumbs(pathname: string): BreadcrumbSegment[] {
     new: "New Project",
     workshop: "Main Workshop",
     boards: "Team Board",
+    knowledge: "Knowledge & AI Rules",
     settings: "Settings",
     "my-workspace": "My Workspace",
   };

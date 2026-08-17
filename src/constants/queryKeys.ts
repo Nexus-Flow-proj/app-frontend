@@ -13,6 +13,20 @@ export const QUERY_KEYS = {
     roles: (id: string) => [...QUERY_KEYS.projects.all, "roles", id] as const,
     invites: (id: string) =>
       [...QUERY_KEYS.projects.all, "invites", id] as const,
+    knowledge: (id: string, sourceType?: string) =>
+      sourceType
+        ? ([...QUERY_KEYS.projects.all, "knowledge", id, sourceType] as const)
+        : ([...QUERY_KEYS.projects.all, "knowledge", id] as const),
+    knowledgeDetail: (projectId: string, chunkId: string) =>
+      [
+        ...QUERY_KEYS.projects.all,
+        "knowledge",
+        projectId,
+        "detail",
+        chunkId,
+      ] as const,
+    knowledgeSearch: (id: string) =>
+      [...QUERY_KEYS.projects.all, "knowledge-search", id] as const,
     invitation: (token: string) =>
       [...QUERY_KEYS.projects.all, "invitation", token] as const,
     activity: (projectId: string) =>

@@ -25,10 +25,12 @@ import NavUserInfo from "./NavUserInfo";
 import { useNavigate } from "react-router";
 import { ROUTES } from "@/constants";
 import { useLogout } from "@/features/auth/hooks";
+import { useMyProfile } from "@/features/profile/hooks";
 
 export function NavUser() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const { data: profile } = useMyProfile();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const plan: string = "Free"; // Replace with actual plan logic if available
@@ -49,6 +51,12 @@ export function NavUser() {
     );
   }
 
+  const firstName = profile?.firstName ?? user.firstName;
+  const lastName = profile?.lastName ?? user.lastName;
+  const name = `${firstName} ${lastName}`.trim();
+  const email = profile?.email ?? user.email;
+  const avatarUrl = profile?.avatarUrl ?? user.avatarUrl ?? user.avatar;
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -59,9 +67,9 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <NavUserInfo
-                avatarUrl={user.avatar}
-                email={user.email}
-                name={`${user.firstName} ${user.lastName}`}
+                avatarUrl={avatarUrl ?? undefined}
+                email={email}
+                name={name}
               />
               <ChevronsUpDownIcon />
             </SidebarMenuButton>
@@ -71,9 +79,9 @@ export function NavUser() {
             <DropdownMenuLabel onClick={() => navigate(ROUTES.PROFILE)} className="hover:cursor-pointer" >
               <div className="flex items-center gap-2 text-left text-sm">
                 <NavUserInfo
-                  avatarUrl={user.avatar}
-                  email={user.email}
-                  name={`${user.firstName} ${user.lastName}`}
+                  avatarUrl={avatarUrl ?? undefined}
+                  email={email}
+                  name={name}
                 />
               </div>
             </DropdownMenuLabel>

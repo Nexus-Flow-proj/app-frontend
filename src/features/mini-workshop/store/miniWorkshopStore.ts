@@ -6,6 +6,7 @@ import type {
   MiniCanvasObject,
   MiniConnection,
   MiniImageAsset,
+  MiniObjectStyle,
   MiniShapeKind,
   MiniTool,
   MiniViewport,
@@ -13,7 +14,7 @@ import type {
   SelectionAlignment,
 } from "../types";
 import { combinedBounds } from "../utils/geometry";
-import { createMiniId } from "../utils/objectFactory";
+import { DEFAULT_STYLE, createMiniId } from "../utils/objectFactory";
 
 interface HistorySnapshot {
   objectsById: Record<string, MiniCanvasObject>;
@@ -27,6 +28,7 @@ interface MiniWorkshopState extends HistorySnapshot {
   selectedIds: string[];
   activeTool: MiniTool;
   activeShape: MiniShapeKind;
+  defaultStyle: MiniObjectStyle;
   connectorRouting: ConnectorRouting;
   connectorSourceId: string | null;
   dirty: boolean;
@@ -38,6 +40,7 @@ interface MiniWorkshopState extends HistorySnapshot {
   setViewport: (viewport: MiniViewport) => void;
   setTool: (tool: MiniTool) => void;
   setShape: (shape: MiniShapeKind) => void;
+  setDefaultStyle: (patch: Partial<MiniObjectStyle>) => void;
   setConnectorRouting: (routing: ConnectorRouting) => void;
   setConnectorSource: (id: string | null) => void;
   select: (ids: string[]) => void;
@@ -64,6 +67,11 @@ interface MiniWorkshopState extends HistorySnapshot {
 }
 
 const EMPTY_VIEWPORT: MiniViewport = { x: 40, y: 40, scale: 1 };
+const DEFAULT_CREATION_STYLE: MiniObjectStyle = {
+  ...DEFAULT_STYLE,
+  fill: "#ede9fe",
+  stroke: "#8b5cf6",
+};
 
 function cloneObjects(objects: Record<string, MiniCanvasObject>) {
   return Object.fromEntries(Object.entries(objects).map(([id, object]) => [id, structuredClone(object)]));
@@ -88,7 +96,7 @@ function zRange(state: MiniWorkshopState) {
 
 export const useMiniWorkshopStore = create<MiniWorkshopState>((set, get) => ({
   objectsById: {}, objectOrder: [], connections: [], assets: {}, viewport: EMPTY_VIEWPORT,
-  selectedIds: [], activeTool: "select", activeShape: "rounded-rectangle", connectorRouting: "curved",
+  selectedIds: [], activeTool: "select", activeShape: "rounded-rectangle", defaultStyle: DEFAULT_CREATION_STYLE, connectorRouting: "curved",
   connectorSourceId: null, dirty: false, undoStack: [], redoStack: [],
 
   loadScene: (scene) => set({
@@ -109,6 +117,7 @@ export const useMiniWorkshopStore = create<MiniWorkshopState>((set, get) => ({
   setViewport: (viewport) => set({ viewport }),
   setTool: (activeTool) => set({ activeTool, connectorSourceId: activeTool === "connector" ? get().connectorSourceId : null }),
   setShape: (activeShape) => set({ activeShape, activeTool: "shape" }),
+  setDefaultStyle: (patch) => set((state) => ({ defaultStyle: { ...state.defaultStyle, ...patch } })),
   setConnectorRouting: (connectorRouting) => set({ connectorRouting }),
   setConnectorSource: (connectorSourceId) => set({ connectorSourceId }),
   select: (selectedIds) => set({ selectedIds }),

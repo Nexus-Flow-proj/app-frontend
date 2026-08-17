@@ -14,6 +14,7 @@ import {
   Trash2,
   Type,
   Ungroup,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ const STROKES = [
   { color: "#8b5cf6", className: "border-violet-500" },
   { color: "#2563eb", className: "border-blue-600" },
   { color: "#16a34a", className: "border-green-600" },
+  { color: "transparent", className: "border-transparent" },
 ] as const;
 
 const FILL_CLASS_BY_COLOR: Record<string, string> = {
@@ -58,7 +60,8 @@ const FILL_CLASS_BY_COLOR: Record<string, string> = {
   "#dcfce7": "bg-green-100",
   "#fef3c7": "bg-amber-100",
   "#ffe4e6": "bg-rose-100",
-  transparent: "bg-[linear-gradient(135deg,transparent_42%,#94a3b8_43%,#94a3b8_57%,transparent_58%)]",
+  transparent:
+    "bg-[linear-gradient(135deg,transparent_42%,#94a3b8_43%,#94a3b8_57%,transparent_58%)]",
   "rgba(139, 92, 246, 0.04)": "bg-violet-100/50",
 };
 
@@ -144,13 +147,17 @@ function ColorPicker({ label, value, onValueChange }: ColorPickerProps) {
               className="size-8"
               aria-label={`${label}: ${displayValue}`}
             >
-              <span
-                className={cn(
-                  "size-4 rounded-full",
-                  isFill ? "border" : "border-2 bg-background",
-                  swatchClass,
-                )}
-              />
+              {!isFill && activeValue === "transparent" ? (
+                <Ban className="size-4 text-muted-foreground" />
+              ) : (
+                <span
+                  className={cn(
+                    "size-4 rounded-full",
+                    isFill ? "border" : "border-2 bg-background",
+                    swatchClass,
+                  )}
+                />
+              )}
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -170,13 +177,17 @@ function ColorPicker({ label, value, onValueChange }: ColorPickerProps) {
               aria-label={`${label} ${color}`}
               className="size-8 justify-center p-0"
             >
-              <span
-                className={cn(
-                  "size-4 rounded-full",
-                  isFill ? "border" : "border-2 bg-background",
-                  className,
-                )}
-              />
+              {!isFill && color === "transparent" ? (
+                <Ban className="size-4 text-muted-foreground" />
+              ) : (
+                <span
+                  className={cn(
+                    "size-4 rounded-full",
+                    isFill ? "border" : "border-2 bg-background",
+                    className,
+                  )}
+                />
+              )}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
@@ -189,7 +200,9 @@ export function SelectionToolbar() {
   const selected = useMiniWorkshopStore((state) => state.selectedIds);
   const objectsById = useMiniWorkshopStore((state) => state.objectsById);
   const connections = useMiniWorkshopStore((state) => state.connections);
-  const connectorRouting = useMiniWorkshopStore((state) => state.connectorRouting);
+  const connectorRouting = useMiniWorkshopStore(
+    (state) => state.connectorRouting,
+  );
   const updateStyle = useMiniWorkshopStore(
     (state) => state.updateSelectedStyle,
   );
@@ -218,7 +231,9 @@ export function SelectionToolbar() {
     return {
       fill: sharedValue(objects.map((object) => object.style.fill)),
       stroke: sharedValue(objects.map((object) => object.style.stroke)),
-      fontSize: sharedValue(objects.map((object) => object.style.fontSize ?? 18)),
+      fontSize: sharedValue(
+        objects.map((object) => object.style.fontSize ?? 18),
+      ),
       fontWeight: sharedValue(
         objects.map((object) => object.style.fontWeight ?? 500),
       ),
@@ -237,11 +252,12 @@ export function SelectionToolbar() {
   const fontSizeLabel = selectionState.fontSize
     ? `${selectionState.fontSize} px`
     : "Mixed";
-  const borderLabel = selectionState.border === "dashed"
-    ? "Dashed"
-    : selectionState.border === "solid"
-      ? "Solid"
-      : "Mixed";
+  const borderLabel =
+    selectionState.border === "dashed"
+      ? "Dashed"
+      : selectionState.border === "solid"
+        ? "Solid"
+        : "Mixed";
   const routingLabel = selectionState.routing
     ? `${selectionState.routing[0].toUpperCase()}${selectionState.routing.slice(1)}`
     : "Mixed";
@@ -311,7 +327,11 @@ export function SelectionToolbar() {
           <DropdownMenuLabel>Text weight</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={selectionState.fontWeight?.toString() ?? ""}
-            onValueChange={(value) => updateStyle({ fontWeight: Number(value) as 400 | 500 | 600 | 700 })}
+            onValueChange={(value) =>
+              updateStyle({
+                fontWeight: Number(value) as 400 | 500 | 600 | 700,
+              })
+            }
           >
             <DropdownMenuRadioItem value="500">Regular</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="700">Bold</DropdownMenuRadioItem>
@@ -320,11 +340,19 @@ export function SelectionToolbar() {
           <DropdownMenuLabel>Text alignment</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={selectionState.textAlign ?? ""}
-            onValueChange={(value) => updateStyle({ textAlign: value as "left" | "center" | "right" })}
+            onValueChange={(value) =>
+              updateStyle({ textAlign: value as "left" | "center" | "right" })
+            }
           >
-            <DropdownMenuRadioItem value="left"><AlignLeft /> Left</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="center"><AlignCenterHorizontal /> Center</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="right"><AlignLeft className="rotate-180" /> Right</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="left">
+              <AlignLeft /> Left
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="center">
+              <AlignCenterHorizontal /> Center
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="right">
+              <AlignLeft className="rotate-180" /> Right
+            </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -350,7 +378,9 @@ export function SelectionToolbar() {
           <DropdownMenuLabel>Border style</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={selectionState.border ?? ""}
-            onValueChange={(value) => updateStyle({ dash: value === "dashed" ? [8, 6] : [] })}
+            onValueChange={(value) =>
+              updateStyle({ dash: value === "dashed" ? [8, 6] : [] })
+            }
           >
             <DropdownMenuRadioItem value="solid">Solid</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="dashed">Dashed</DropdownMenuRadioItem>
@@ -382,7 +412,9 @@ export function SelectionToolbar() {
             value={selectionState.routing ?? ""}
             onValueChange={(routing) => setRouting(routing as ConnectorRouting)}
           >
-            <DropdownMenuRadioItem value="straight">Straight</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="straight">
+              Straight
+            </DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="curved">Curved</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="elbow">Elbow</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>

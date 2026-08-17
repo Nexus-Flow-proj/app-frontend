@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router";
 import {
+  BrainCircuitIcon,
   CalendarDaysIcon,
   ChevronRightIcon,
   FolderKanbanIcon,
@@ -48,6 +49,7 @@ import {
   canManageProjectSettings,
   canManageRoles,
   canReadBoard,
+  canReadProject,
   canReadWorkshop,
   canRemoveMembers,
 } from "@/features/project/utils/rolePermissions";
@@ -104,6 +106,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           const canOpenWorkshop = currentRole
             ? canReadWorkshop(currentRole)
             : false;
+          const canOpenKnowledge = currentRole
+            ? canReadProject(currentRole)
+            : false;
           const canManageSettings = currentRole
             ? canManageProjectSettings(currentRole)
             : false;
@@ -120,6 +125,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           const overviewPath = ROUTES.PROJECT_OVERVIEW(project.id);
           const settingsPath = ROUTES.PROJECT_SETTINGS(project.id);
           const invitesPath = ROUTES.PROJECT_INVITES(project.id);
+          const knowledgePath = ROUTES.PROJECT_KNOWLEDGE(project.id);
           const rolesPath = ROUTES.PROJECT_ROLES(project.id);
           const isSettingsActive =
             pathname === settingsPath ||
@@ -197,6 +203,14 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                       >
                         <CalendarDaysIcon className="text-muted-foreground" />
                         <span>Calendar</span>
+                      </DropdownMenuItem>
+                    )}
+                    {canOpenKnowledge && (
+                      <DropdownMenuItem
+                        onClick={() => openProject(project, knowledgePath)}
+                      >
+                        <BrainCircuitIcon className="text-muted-foreground" />
+                        <span>Knowledge & AI Rules</span>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem
@@ -303,6 +317,22 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           >
                             <CalendarDaysIcon className="size-3.5" />
                             <span>Calendar</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )}
+                    {canOpenKnowledge && (
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === knowledgePath}
+                        >
+                          <Link
+                            to={knowledgePath}
+                            onClick={() => setActiveProject(project)}
+                          >
+                            <BrainCircuitIcon className="size-3.5" />
+                            <span>Knowledge & AI Rules</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

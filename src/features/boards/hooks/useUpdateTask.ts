@@ -22,11 +22,18 @@ import {
 } from "../cache/task-detail.cache";
 import { mapBoardMember, mapTaskAttachment, normalizeTaskDependencyIds } from "../mappers";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
+import { useKanbanStore } from "@/store";
 
 type TaskUpdatePatch = Partial<TaskUpdatedData> & {
     assigneeId?: string | null;
     boardColumnId?: string;
 };
+
+function isMovementUpdate(dto: UpdateTaskDto) {
+    return dto.boardColumnId !== undefined ||
+        dto.columnOrder !== undefined ||
+        dto.status !== undefined;
+}
 
 export function useUpdateTask(
     projectId: string,
@@ -96,7 +103,11 @@ export function useUpdateTask(
                 }
             },
 
-            onError: (_, __, context) => {
+            onError: (_, dto, context) => {
+                if (isMovementUpdate(dto)) {
+                    useKanbanStore.getState().clearLocalTaskMove(taskId);
+                }
+
                 if (context?.previousTaskList) {
                     rollbackTaskList(
                         queryClient,
@@ -190,7 +201,11 @@ export function useUpdateTaskById(projectId: string) {
                 }
             },
 
-            onError: (_, { taskId }, context) => {
+            onError: (_, { taskId, dto }, context) => {
+                if (isMovementUpdate(dto)) {
+                    useKanbanStore.getState().clearLocalTaskMove(taskId);
+                }
+
                 if (context?.previousTaskList) {
                     rollbackTaskList(
                         queryClient,

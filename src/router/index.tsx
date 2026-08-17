@@ -48,6 +48,9 @@ const ProjectPages = {
     () => import("@/features/project/pages/ProjectInvitationPage"),
   ),
   Members: lazy(() => import("@/features/project/pages/ProjectMembersPage")),
+  Knowledge: lazy(
+    () => import("@/features/project/pages/ProjectKnowledgePage"),
+  ),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
   Invites: lazy(() => import("@/features/project/pages/ProjectInvitesPage")),
   Roles: lazy(() => import("@/features/project/pages/ProjectRolesPage")),
@@ -160,6 +163,19 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <WithSuspense Component={ProjectPages.Overview} />,
+              },
+              {
+                element: (
+                  <ProjectPermissionGuard permissions={["project.read"]} />
+                ),
+                children: [
+                  {
+                    path: "knowledge",
+                    element: (
+                      <WithSuspense Component={ProjectPages.Knowledge} />
+                    ),
+                  },
+                ],
               },
               {
                 element: <AdminGuard />,

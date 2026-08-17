@@ -1,19 +1,25 @@
 import { api } from "@/lib/api/axios";
 import type { ApiResponse, PaginatedResponse } from "@/types";
 import type {
+  CreateKnowledgeInput,
   CreateProjectDto,
   BulkUpdateProjectMemberRolesDto,
   CreateProjectRoleDto,
+  KnowledgeDocument,
+  KnowledgeSearchInput,
+  KnowledgeSearchResult,
   ProjectActivityListResponse,
   ProjectDetails,
   ProjectInviteDetails,
   ProjectInviteListItem,
   ProjectInvitesQuery,
+  ProjectKnowledgeQuery,
   ProjectListItem,
   ProjectMemberSummary,
   ProjectRoleDefinition,
   ProjectSummary,
   SendProjectInviteDto,
+  UpdateKnowledgeInput,
   UpdateProjectMemberRoleDto,
   UpdateProjectRoleDto,
   UpdateProjectDto,
@@ -172,6 +178,60 @@ export const projectService = {
       .get<ApiResponse<ProjectActivityListResponse>>(
         `/projects/${projectId}/activity-logs`,
         { params: { page, limit } },
+      )
+      .then((r) => r.data),
+
+  getKnowledge: (projectId: string, query?: ProjectKnowledgeQuery) =>
+    api
+      .get<ApiResponse<KnowledgeDocument[]>>(
+        `/projects/${projectId}/knowledge`,
+        {
+          params: {
+            sourceType: query?.sourceType,
+          },
+        },
+      )
+      .then((r) => r.data),
+
+  getKnowledgeDocument: (projectId: string, chunkId: string) =>
+    api
+      .get<ApiResponse<KnowledgeDocument>>(
+        `/projects/${projectId}/knowledge/${chunkId}`,
+      )
+      .then((r) => r.data),
+
+  createKnowledge: (projectId: string, dto: CreateKnowledgeInput) =>
+    api
+      .post<ApiResponse<KnowledgeDocument>>(
+        `/projects/${projectId}/knowledge`,
+        dto,
+      )
+      .then((r) => r.data),
+
+  updateKnowledge: (
+    projectId: string,
+    chunkId: string,
+    dto: UpdateKnowledgeInput,
+  ) =>
+    api
+      .patch<ApiResponse<KnowledgeDocument>>(
+        `/projects/${projectId}/knowledge/${chunkId}`,
+        dto,
+      )
+      .then((r) => r.data),
+
+  deleteKnowledge: (projectId: string, chunkId: string) =>
+    api
+      .delete<ApiResponse<{ deleted: true }>>(
+        `/projects/${projectId}/knowledge/${chunkId}`,
+      )
+      .then((r) => r.data),
+
+  searchKnowledge: (projectId: string, dto: KnowledgeSearchInput) =>
+    api
+      .post<ApiResponse<KnowledgeSearchResult[]>>(
+        `/projects/${projectId}/knowledge/search`,
+        dto,
       )
       .then((r) => r.data),
 };

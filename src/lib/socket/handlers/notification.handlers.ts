@@ -12,7 +12,6 @@ export function registerNotificationHandlers(socketManager: SocketManager, qc: Q
         const notif = payload.notification;
         const inviteToken = notif?.metadata?.inviteToken;
         const isInvitation = notif?.type === "INVITATION_RECEIVED";
-
         toast(notif.title, {
             description: notif.message,
             position: "bottom-right",

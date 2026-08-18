@@ -148,8 +148,13 @@ export function NotificationCenter() {
     const projectId = notification.metadata?.projectId;
     const inviteToken = notification.metadata?.inviteToken;
     const type = notification.type;
+    console.log("notification type", notification);
+    console.log("inviteToken", inviteToken);
 
-    if (type === "INVITATION_RECEIVED" && inviteToken) {
+    if (
+      inviteToken &&
+      (type === "INVITATION_RECEIVED" || type === "INVITE_EXPIRED")
+    ) {
       navigate(ROUTES.PROJECT_INVITATION(inviteToken));
       return;
     }

@@ -298,14 +298,14 @@ export function useWorkshopController(draftId: string) {
       toast.error(error instanceof Error ? error.message : errorText(error)),
   });
 
-  useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => {
-      if (!useWorkshopStore.getState().isDirty) return;
-      event.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, []);
+  // useEffect(() => {
+  //   const warn = (event: BeforeUnloadEvent) => {
+  //     if (!useWorkshopStore.getState().isDirty) return;
+  //     event.preventDefault();
+  //   };
+  //   window.addEventListener("beforeunload", warn);
+  //   return () => window.removeEventListener("beforeunload", warn);
+  // }, []);
 
   // Check if messages already has the assistant response for the active generation
   const hasAssistantResponse =
@@ -316,7 +316,9 @@ export function useWorkshopController(draftId: string) {
 
   const effectiveIsTerminal = isLocalTerminal || hasAssistantResponse;
   const effectiveGenerationStatus = effectiveIsTerminal
-    ? (generationStatus === "FAILED" ? "FAILED" : "COMPLETED")
+    ? generationStatus === "FAILED"
+      ? "FAILED"
+      : "COMPLETED"
     : (generationQuery.data?.status ?? generationStatus);
   const effectiveGenerationError =
     generationQuery.data?.errorMessage ??

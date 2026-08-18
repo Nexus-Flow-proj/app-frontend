@@ -40,6 +40,8 @@ import {
   useWorkshopResizableSidebar,
 } from "../hooks/useWorkshopResizableSidebar";
 import { useWorkshopStore } from "../store/workshopStore";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
+import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 
 // function UnsupportedProjectWorkshop() {
 //   return (
@@ -106,6 +108,10 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
     (controller.canvasQuery.error as { statusCode?: number } | null)
       ?.statusCode === 404;
   const fatalError = controller.canvasQuery.isError && !isMissing;
+
+  const { isBlocking, confirmLeave, cancelLeave } = useUnsavedChangesWarning(
+    controller.isDirty,
+  );
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -252,6 +258,12 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         isGenerating={controller.isGenerating}
         isDirty={controller.isDirty}
         onGenerate={controller.generate}
+      />
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirmLeave}
+        onCancel={cancelLeave}
       />
     </div>
   );

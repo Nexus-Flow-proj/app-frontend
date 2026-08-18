@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Bot,
-  LoaderCircle,
-  RefreshCcw,
-  Sparkles,
-  // TriangleAlert,
-} from "lucide-react";
+import { Bot, LoaderCircle, RefreshCcw, Sparkles } from "lucide-react";
 import { useLocation, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -248,6 +242,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         </SheetContent>
       </Sheet>
       <AIFloatingChat
+        isCompleted={isCompleted}
         open={controller.isAiOpen}
         onOpenChange={controller.setAiOpen}
         messages={controller.messages}

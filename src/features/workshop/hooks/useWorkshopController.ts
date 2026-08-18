@@ -15,6 +15,7 @@ import type {
   WorkshopCanvasResponseDto,
 } from "../types";
 import { fromWorkshopDto, toSaveWorkshopDto } from "../utils/workshopMappers";
+import { useBlocker } from "react-router";
 
 function errorText(error: ApiError | null | undefined) {
   const message = error?.message;
@@ -62,6 +63,11 @@ export function useWorkshopController(draftId: string) {
     },
     [loadCanvas],
   );
+
+  useBlocker(({ currentLocation, nextLocation }) => {
+    if (currentLocation.pathname === nextLocation.pathname) return false;
+    return isDirty; // لو فيه تعديلات غير محفوظة، اعمل block
+  });
 
   useEffect(() => {
     resetCanvas();
@@ -144,7 +150,8 @@ export function useWorkshopController(draftId: string) {
       if (generationId && eventId !== generationId) return;
       if (!generationId && eventId) setGenerationId(eventId);
       setGenerationStatus(event.status);
-      if (event.chunk) setStreamedText((current) => current + event.chunk);
+      if (event.progressMessage)
+        setStreamedText((current) => current + event.progressMessage + "\n");
       if (event.error || event.errorMessage)
         setGenerationError(event.error ?? event.errorMessage ?? null);
       if (event.status === "COMPLETED" && event.workshop) {
@@ -196,6 +203,11 @@ export function useWorkshopController(draftId: string) {
 
   useEffect(() => {
     if (!generationQuery.data) return;
+    const status = generationQuery.data.status;
+    if (status === "COMPLETED" || status === "FAILED") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setGenerationStatus(status);
+    }
     if (generationQuery.data.status === "COMPLETED") {
       void refetchCanvas();
       void refetchMessages();

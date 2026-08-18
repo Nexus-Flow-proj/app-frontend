@@ -101,7 +101,11 @@ export interface SaveWorkshopDto {
   connections: WorkshopConnectionDto[];
 }
 
-export type AiGenerationStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type AiGenerationStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED";
 
 export interface AiGeneration {
   id?: string;
@@ -122,7 +126,8 @@ export interface AiMessage {
 
 export interface AiGenerationEvent extends AiGeneration {
   stage?: string;
-  chunk?: string;
+  progressMessage?: string;
+  progressPercent?: number;
   workshop?: WorkshopCanvasResponseDto;
 }
 

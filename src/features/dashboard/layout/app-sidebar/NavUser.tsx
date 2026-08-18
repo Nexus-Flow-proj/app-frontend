@@ -59,7 +59,7 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <NavUserInfo
-                avatarUrl={user.avatar}
+                avatarUrl={user.avatarUrl}
                 email={user.email}
                 name={`${user.firstName} ${user.lastName}`}
               />
@@ -71,7 +71,7 @@ export function NavUser() {
             <DropdownMenuLabel onClick={() => navigate(ROUTES.PROFILE)} className="hover:cursor-pointer" >
               <div className="flex items-center gap-2 text-left text-sm">
                 <NavUserInfo
-                  avatarUrl={user.avatar}
+                  avatarUrl={user.avatarUrl}
                   email={user.email}
                   name={`${user.firstName} ${user.lastName}`}
                 />

@@ -3,24 +3,20 @@ import { QUERY_KEYS } from "@/constants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useAuthStore } from "@/store/authStore";
 import { profileService } from "../services";
-import type { UpdateProfileDto, UserProfile } from "../types";
 
-export function useUpdateProfile() {
+export function useDeleteAvatar() {
   const queryClient = useQueryClient();
 
-  return useApiMutation<UserProfile, UpdateProfileDto>(
-    (dto) => profileService.updateMyProfile(dto),
+  return useApiMutation<null, void>(
+    () => profileService.deleteAvatar(),
     {
-      successMessage: "Profile updated successfully.",
-      onSuccess: (res) => {
-        const updated = res.data;
+      successMessage: "Avatar removed successfully.",
+      onSuccess: () => {
         const currentUser = useAuthStore.getState().user;
-        if (currentUser && updated) {
+        if (currentUser) {
           useAuthStore.getState().setUser({
             ...currentUser,
-            firstName: updated.firstName ?? currentUser.firstName,
-            lastName: updated.lastName ?? currentUser.lastName,
-            name: `${updated.firstName ?? currentUser.firstName} ${updated.lastName ?? currentUser.lastName}`.trim(),
+            avatarUrl: undefined,
           });
         }
 

@@ -182,9 +182,9 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
                   height={stageSize.height}
                 />
               ) : null}
-              {objectCount === 0 ? (
+              {objectCount === 0 && !isCompleted ? (
                 <div className="pointer-events-none absolute inset-0 grid place-items-center p-6">
-                  <Card className="pointer-events-auto max-w-md border-dashed bg-background/90 text-center shadow-xl backdrop-blur">
+                  <Card className="pointer-events-auto w-sm border-dashed bg-background/90 text-center shadow-xl backdrop-blur">
                     <CardHeader>
                       <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                         <Bot />
@@ -219,7 +219,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
                 </div>
               ) : null}
               <CanvasStatus />
-              {!isCompleted && <WorkshopToolbar />}
+              {<WorkshopToolbar isCompleted={isCompleted} />}
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

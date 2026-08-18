@@ -295,7 +295,7 @@ function MiniWorkshopPage() {
   const projectName = projectQuery.data?.name || "Project";
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background font-sans">
-      <header className="z-30 flex min-h-16 shrink-0 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+      <header className="z-30 flex min-h-16 shrink-0 items-center gap-3 border-b bg-sidebar px-4 backdrop-blur">
         <Button
           variant="ghost"
           size="icon"

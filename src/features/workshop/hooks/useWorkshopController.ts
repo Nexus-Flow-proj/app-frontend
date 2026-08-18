@@ -9,12 +9,18 @@ import { SOCKET_EVENTS } from "@/lib/socket/constants/socket-events";
 import type { ApiError } from "@/types";
 import { workshopService } from "../services";
 import { useWorkshopStore } from "../store/workshopStore";
-import type { AiGenerationEvent, AiGenerationStatus, WorkshopCanvasResponseDto } from "../types";
+import type {
+  AiGenerationEvent,
+  AiGenerationStatus,
+  WorkshopCanvasResponseDto,
+} from "../types";
 import { fromWorkshopDto, toSaveWorkshopDto } from "../utils/workshopMappers";
 
 function errorText(error: ApiError | null | undefined) {
   const message = error?.message;
-  return Array.isArray(message) ? message.join(". ") : message ?? "Something went wrong";
+  return Array.isArray(message)
+    ? message.join(". ")
+    : (message ?? "Something went wrong");
 }
 
 export function useWorkshopController(draftId: string) {
@@ -28,7 +34,8 @@ export function useWorkshopController(draftId: string) {
   const canvasId = useWorkshopStore((state) => state.canvasId);
   const [isAiOpen, setAiOpen] = useState(false);
   const [generationId, setGenerationId] = useState<string | null>(null);
-  const [generationStatus, setGenerationStatus] = useState<AiGenerationStatus | null>(null);
+  const [generationStatus, setGenerationStatus] =
+    useState<AiGenerationStatus | null>(null);
   const [streamedText, setStreamedText] = useState("");
   const [generationError, setGenerationError] = useState<string | null>(null);
 
@@ -48,28 +55,49 @@ export function useWorkshopController(draftId: string) {
   const refetchCanvas = canvasQuery.refetch;
   const refetchMessages = messagesQuery.refetch;
 
-  const applyWorkshop = useCallback((dto: WorkshopCanvasResponseDto) => {
-    const canvas = fromWorkshopDto(dto);
-    loadCanvas(canvas.id, canvas.objects, canvas.viewport);
-  }, [loadCanvas]);
+  const applyWorkshop = useCallback(
+    (dto: WorkshopCanvasResponseDto) => {
+      const canvas = fromWorkshopDto(dto);
+      loadCanvas(canvas.id, canvas.objects, canvas.viewport);
+    },
+    [loadCanvas],
+  );
+
+  useEffect(() => {
+    resetCanvas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftId]);
 
   useEffect(() => {
     if (canvasQuery.data?.data && !isDirty) {
       applyWorkshop(canvasQuery.data.data);
       return;
     }
-    if ((canvasQuery.error as ApiError | null)?.statusCode === 404 && !isDirty) {
+    if (
+      (canvasQuery.error as ApiError | null)?.statusCode === 404 &&
+      !isDirty
+    ) {
       resetCanvas();
     }
-  }, [applyWorkshop, canvasQuery.data, canvasQuery.error, isDirty, resetCanvas]);
+  }, [
+    draftId,
+    applyWorkshop,
+    canvasQuery.data,
+    canvasQuery.error,
+    isDirty,
+    resetCanvas,
+  ]);
 
   const saveMutation = useMutation({
     mutationFn: () => {
       const state = useWorkshopStore.getState();
-      return workshopService.saveCanvas(draftId, toSaveWorkshopDto({
-        viewport: state.viewport,
-        objects: state.objects,
-      }));
+      return workshopService.saveCanvas(
+        draftId,
+        toSaveWorkshopDto({
+          viewport: state.viewport,
+          objects: state.objects,
+        }),
+      );
     },
     onSuccess: (response) => {
       if (response.data?.id) {
@@ -84,7 +112,8 @@ export function useWorkshopController(draftId: string) {
   });
 
   const generateMutation = useMutation({
-    mutationFn: (prompt: string) => workshopService.generatePlan(draftId, prompt),
+    mutationFn: (prompt: string) =>
+      workshopService.generatePlan(draftId, prompt),
     onMutate: () => {
       setGenerationStatus("PENDING");
       setGenerationError(null);
@@ -109,27 +138,31 @@ export function useWorkshopController(draftId: string) {
     },
   });
 
-  const handleGenerationEvent = useCallback((event: AiGenerationEvent) => {
-    const eventId = event.generationId ?? event.id;
-    if (generationId && eventId !== generationId) return;
-    if (!generationId && eventId) setGenerationId(eventId);
-    setGenerationStatus(event.status);
-    if (event.chunk) setStreamedText((current) => current + event.chunk);
-    if (event.error || event.errorMessage) setGenerationError(event.error ?? event.errorMessage ?? null);
-    if (event.status === "COMPLETED" && event.workshop) {
-      applyWorkshop(event.workshop);
-      queryClient.setQueryData(QUERY_KEYS.drafts.workshop(draftId), {
-        success: true,
-        message: "Workshop generated",
-        statusCode: 200,
-        data: event.workshop,
-      });
-      setStreamedText("");
-      void queryClient.invalidateQueries({
-        queryKey: [...QUERY_KEYS.drafts.detail(draftId), "ai-messages"],
-      });
-    }
-  }, [applyWorkshop, draftId, generationId, queryClient]);
+  const handleGenerationEvent = useCallback(
+    (event: AiGenerationEvent) => {
+      const eventId = event.generationId ?? event.id;
+      if (generationId && eventId !== generationId) return;
+      if (!generationId && eventId) setGenerationId(eventId);
+      setGenerationStatus(event.status);
+      if (event.chunk) setStreamedText((current) => current + event.chunk);
+      if (event.error || event.errorMessage)
+        setGenerationError(event.error ?? event.errorMessage ?? null);
+      if (event.status === "COMPLETED" && event.workshop) {
+        applyWorkshop(event.workshop);
+        queryClient.setQueryData(QUERY_KEYS.drafts.workshop(draftId), {
+          success: true,
+          message: "Workshop generated",
+          statusCode: 200,
+          data: event.workshop,
+        });
+        setStreamedText("");
+        void queryClient.invalidateQueries({
+          queryKey: [...QUERY_KEYS.drafts.detail(draftId), "ai-messages"],
+        });
+      }
+    },
+    [applyWorkshop, draftId, generationId, queryClient],
+  );
 
   useEffect(() => {
     const manager = SocketManager.getInstance();
@@ -150,7 +183,10 @@ export function useWorkshopController(draftId: string) {
   const generationQuery = useQuery({
     queryKey: ["ai-generation", generationId],
     queryFn: () => workshopService.getGeneration(generationId ?? ""),
-    enabled: !!generationId && generationStatus !== "COMPLETED" && generationStatus !== "FAILED",
+    enabled:
+      !!generationId &&
+      generationStatus !== "COMPLETED" &&
+      generationStatus !== "FAILED",
     refetchInterval: (query) => {
       const status = query.state.data?.data.status;
       return status === "COMPLETED" || status === "FAILED" ? false : 2_500;
@@ -172,9 +208,13 @@ export function useWorkshopController(draftId: string) {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects.all });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.drafts.all });
       toast.success(response.message || "Project created");
-      navigate(ROUTES.PROJECT_OVERVIEW(response.data.projectId), { replace: true });
+      resetCanvas();
+      navigate(ROUTES.PROJECT_OVERVIEW(response.data.projectId), {
+        replace: true,
+      });
     },
-    onError: (error: ApiError | Error) => toast.error(error instanceof Error ? error.message : errorText(error)),
+    onError: (error: ApiError | Error) =>
+      toast.error(error instanceof Error ? error.message : errorText(error)),
   });
 
   useEffect(() => {
@@ -186,10 +226,17 @@ export function useWorkshopController(draftId: string) {
     return () => window.removeEventListener("beforeunload", warn);
   }, []);
 
-  const effectiveGenerationStatus = generationQuery.data?.status ?? generationStatus;
-  const effectiveGenerationError = generationQuery.data?.errorMessage ?? generationQuery.data?.error ?? generationError;
-  const isGenerating = effectiveGenerationStatus === "PENDING" || effectiveGenerationStatus === "PROCESSING";
-  const canSubmit = !isDirty && !!canvasId && !isGenerating && !saveMutation.isPending;
+  const effectiveGenerationStatus =
+    generationQuery.data?.status ?? generationStatus;
+  const effectiveGenerationError =
+    generationQuery.data?.errorMessage ??
+    generationQuery.data?.error ??
+    generationError;
+  const isGenerating =
+    effectiveGenerationStatus === "PENDING" ||
+    effectiveGenerationStatus === "PROCESSING";
+  const canSubmit =
+    !isDirty && !!canvasId && !isGenerating && !saveMutation.isPending;
 
   return {
     draft: draftQuery.data,

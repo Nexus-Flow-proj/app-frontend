@@ -21,27 +21,26 @@ interface CommentThreadProps {
   isDeleting?: boolean;
 }
 
-function Avatar({ member }: { member: BoardMember }) {
+import MyAvatar from "@/components/shared/MyAvatar";
+import UserLink from "@/components/shared/UserLink";
+
+interface AvatarProps {
+  member: BoardMember;
+  userId?: string;
+}
+
+function Avatar({ member, userId }: AvatarProps) {
   const displayName = member.name || "Unknown user";
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  if (member.avatarUrl) {
-    return (
-      <img
-        src={member.avatarUrl}
-        alt={displayName}
-        className="size-7 rounded-full object-cover shrink-0"
-      />
-    );
-  }
+  const avatarUrl = member.avatarUrl || member.avatar;
+  const authorUserId = userId || member.id;
+
   return (
-    <div className="size-7 rounded-full bg-primary/15 ring-1 ring-primary/25 shrink-0 flex items-center justify-center text-[11px] font-semibold text-primary">
-      {initials}
-    </div>
+    <MyAvatar
+      name={displayName}
+      avatarUrl={avatarUrl}
+      userId={authorUserId}
+      size="sm"
+    />
   );
 }
 
@@ -110,6 +109,8 @@ export function CommentThread({
             const highlighted = highlightedComments?.has(comment.id) ?? false;
             const removing = removingComments?.has(comment.id) ?? false;
 
+            const authorId = comment.authorId || comment.author?.id;
+
             return (
               <div
                 key={comment.id}
@@ -119,12 +120,14 @@ export function CommentThread({
                   removing && "animate-comment-remove",
                 )}
               >
-                <Avatar member={comment.author} />
+                <Avatar member={comment.author} userId={authorId} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold text-foreground">
-                      {comment.author.name || "Unknown user"}
-                    </span>
+                    <UserLink
+                      userId={authorId}
+                      name={comment.author.name || "Unknown user"}
+                      className="text-xs font-semibold text-foreground"
+                    />
                     <span className="text-[11px] text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.createdAt), {
                         addSuffix: true,

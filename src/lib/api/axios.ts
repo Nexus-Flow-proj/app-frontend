@@ -1,13 +1,13 @@
 import { BASE_URL, CSRF_TOKEN_HEADER } from "@/constants/BackendApisConfig";
 import { useAuthStore } from "@/store";
-import type { ApiError } from "@/types";
+import type { ApiError, ApiResponse } from "@/types";
 import axios, {
   type AxiosError,
   type AxiosInstance,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios";
-import { getCsrfToken, SAFE_METHODS } from "./csrf";
+import { getCsrfToken, SAFE_METHODS, setCsrfToken } from "./csrf";
 import { normalizeApiError } from "./errors";
 import {
   isTokenRefreshing,
@@ -26,6 +26,10 @@ import {
 } from "./routes";
 import { queryClient } from "../queryClient";
 import { clearSessionCache, isSessionInvalid } from "./session";
+
+type RefreshResponseData = {
+  csrfToken?: string;
+} | null;
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -96,7 +100,10 @@ api.interceptors.response.use(
     setTokenRefreshing(true);
 
     try {
-      await api.post(AUTH_REFRESH_PATH);
+      const refreshResponse =
+        await api.post<ApiResponse<RefreshResponseData>>(AUTH_REFRESH_PATH);
+
+      setCsrfToken(refreshResponse.data.data?.csrfToken);
       processRefreshQueue(null);
       return api(originalRequest);
     } catch (refreshError) {

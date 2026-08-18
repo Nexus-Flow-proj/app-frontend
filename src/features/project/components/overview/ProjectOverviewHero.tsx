@@ -61,7 +61,7 @@ export function ProjectOverviewHero({
           <Button
             size="lg"
             className="justify-center gap-2"
-            onClick={() => onNavigate(ROUTES.WORKSHOP(project.id))}
+            onClick={() => onNavigate(ROUTES.WORKSHOP(project.draftId))}
           >
             <SparklesIcon data-icon="inline-start" className="size-4" />
             <span>Workshop</span>

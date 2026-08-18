@@ -51,6 +51,7 @@ export type CanvasType = (typeof CanvasType)[keyof typeof CanvasType];
 export const CanvasObjectType = {
   TASK_CARD: "TASK_CARD",
   STICKY_NOTE: "STICKY_NOTE",
+  TEXT_BOX: "TEXT_BOX",
   IMAGE_BLOCK: "IMAGE_BLOCK",
   SECTION_FRAME: "SECTION_FRAME",
   SUBTASK_CARD: "SUBTASK_CARD",

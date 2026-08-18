@@ -1,5 +1,9 @@
 import type { AxiosRequestConfig } from "axios";
-import { AUTH_REFRESH_PATH, getRequestPath, isPublicAuthPath } from "./routes";
+import {
+  AUTH_REFRESH_PATH,
+  getRequestPath,
+  isPublicAuthPath,
+} from "./routes";
 
 export type RetryableRequestConfig = AxiosRequestConfig & {
   _retry?: boolean;

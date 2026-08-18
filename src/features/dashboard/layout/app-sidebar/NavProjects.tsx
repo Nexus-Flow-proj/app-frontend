@@ -1,5 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router";
 import {
+  BrainCircuitIcon,
+  CalendarDaysIcon,
   ChevronRightIcon,
   FolderKanbanIcon,
   KanbanIcon,
@@ -47,6 +49,7 @@ import {
   canManageProjectSettings,
   canManageRoles,
   canReadBoard,
+  canReadProject,
   canReadWorkshop,
   canRemoveMembers,
 } from "@/features/project/utils/rolePermissions";
@@ -82,9 +85,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>
-        Projects
-      </SidebarGroupLabel>
+      <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu className="space-y-0.5">
         {projects.length === 0 && (
           <SidebarMenuItem>
@@ -105,6 +106,9 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           const canOpenWorkshop = currentRole
             ? canReadWorkshop(currentRole)
             : false;
+          const canOpenKnowledge = currentRole
+            ? canReadProject(currentRole)
+            : false;
           const canManageSettings = currentRole
             ? canManageProjectSettings(currentRole)
             : false;
@@ -121,6 +125,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           const overviewPath = ROUTES.PROJECT_OVERVIEW(project.id);
           const settingsPath = ROUTES.PROJECT_SETTINGS(project.id);
           const invitesPath = ROUTES.PROJECT_INVITES(project.id);
+          const knowledgePath = ROUTES.PROJECT_KNOWLEDGE(project.id);
           const rolesPath = ROUTES.PROJECT_ROLES(project.id);
           const isSettingsActive =
             pathname === settingsPath ||
@@ -190,18 +195,39 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                         <span>Team Board</span>
                       </DropdownMenuItem>
                     )}
+                    {canOpenBoard && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          openProject(project, ROUTES.CALENDAR(project.id))
+                        }
+                      >
+                        <CalendarDaysIcon className="text-muted-foreground" />
+                        <span>Calendar</span>
+                      </DropdownMenuItem>
+                    )}
+                    {canOpenKnowledge && (
+                      <DropdownMenuItem
+                        onClick={() => openProject(project, knowledgePath)}
+                      >
+                        <BrainCircuitIcon className="text-muted-foreground" />
+                        <span>Knowledge & AI Rules</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() =>
                         openProject(project, ROUTES.MY_WORKSPACE(project.id))
                       }
                     >
                       <StickyNoteIcon className="text-muted-foreground" />
-                      <span>My Workspace</span>
+                      <span>My Workshop</span>
                     </DropdownMenuItem>
                     {canOpenWorkshop && (
                       <DropdownMenuItem
                         onClick={() =>
-                          openProject(project, ROUTES.WORKSHOP(project.id))
+                          openProject(
+                            project,
+                            ROUTES.WORKSHOP(project.draftId ?? project.id),
+                          )
                         }
                       >
                         <Wand2Icon className="text-muted-foreground" />
@@ -254,7 +280,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           isActive={pathname === ROUTES.WORKSHOP(project.id)}
                         >
                           <Link
-                            to={ROUTES.WORKSHOP(project.id)}
+                            to={ROUTES.WORKSHOP(project.draftId ?? project.id)}
                             onClick={() => setActiveProject(project)}
                           >
                             <Wand2Icon className="size-3.5" />
@@ -275,6 +301,38 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
                           >
                             <KanbanIcon className="size-3.5" />
                             <span>Team Board</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )}
+                    {canOpenBoard && (
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === ROUTES.CALENDAR(project.id)}
+                        >
+                          <Link
+                            to={ROUTES.CALENDAR(project.id)}
+                            onClick={() => setActiveProject(project)}
+                          >
+                            <CalendarDaysIcon className="size-3.5" />
+                            <span>Calendar</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )}
+                    {canOpenKnowledge && (
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === knowledgePath}
+                        >
+                          <Link
+                            to={knowledgePath}
+                            onClick={() => setActiveProject(project)}
+                          >
+                            <BrainCircuitIcon className="size-3.5" />
+                            <span>Knowledge & AI Rules</span>
                           </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

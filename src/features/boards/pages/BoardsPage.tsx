@@ -26,6 +26,9 @@ import {
 } from "../hooks/useBoardFilters";
 import { useBoardDnd } from "../hooks/useBoardDnd";
 import { useBoardState as useRemoteBoardState } from "../hooks/useBoardState";
+import { useAiAssigneeRecommendation } from "../hooks/useAiAssigneeRecommendation";
+import { useAiTaskBreakdown } from "../hooks/useAiTaskBreakdown";
+import { useAiTaskDescription } from "../hooks/useAiTaskDescription";
 import { useCreateBoardColumn } from "../hooks/useCreateBoardColumn";
 import { useCreateComment } from "../hooks/useCreateComment";
 import { useCreateSubtask } from "../hooks/useCreateSubtask";
@@ -35,6 +38,7 @@ import { useDeleteBoardColumn } from "../hooks/useDeleteBoardColumn";
 import { useDeleteComment } from "../hooks/useDeleteComment";
 import { useDeleteSubtask } from "../hooks/useDeleteSubtask";
 import { useDeleteTask } from "../hooks/useDeleteTask";
+import { useDeleteTaskAttachment } from "../hooks/useDeleteTaskAttachment";
 import { useDeleteTimeLog } from "../hooks/useDeleteTimeLog";
 import { useTask } from "../hooks/useTask";
 import { useTimeLogs } from "../hooks/useTimeLogs";
@@ -45,18 +49,20 @@ import {
 import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
 import { useUpdateComment } from "../hooks/useUpdateComment";
 import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
+import { useUploadTaskAttachments } from "../hooks/useUploadTaskAttachments";
 import type { BoardMember, Task } from "../types";
 import { TaskStatus, TaskType, type TaskStatus as TaskStatusValue } from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
 import { useAuthStore } from "@/store/authStore";
-import { useProjectMembers } from "@/features/project/hooks";
+import { useProject, useProjectMembers } from "@/features/project/hooks";
 import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
 import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
 import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
 import { getTaskStatusFromColumnName } from "../utils/task-status";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -123,6 +129,7 @@ function BoardsPage() {
   const activeCount = useActiveFilterCount();
   const remoteBoard = useRemoteBoardState(resolvedProjectId);
   const projectMembersQuery = useProjectMembers(resolvedProjectId);
+  const projectQuery = useProject(resolvedProjectId);
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -139,9 +146,29 @@ function BoardsPage() {
   const setDrawerLoading = useKanbanStore((state) => state.setDrawerLoading);
   const closeTaskDrawer = useKanbanStore((state) => state.closeTaskDrawer);
   const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
+  const recordLocalTaskMove = useKanbanStore((state) => state.recordLocalTaskMove);
   const activeTaskId = drawer.activeTaskId ?? "";
   const taskDetailQuery = useTask(activeTaskId);
   const timeLogsQuery = useTimeLogs(activeTaskId);
+  const {
+    data: aiAssigneeRecommendationResponse,
+    isPending: isRecommendingAssignee,
+    mutate: recommendAssignee,
+    reset: resetAssigneeRecommendation,
+  } = useAiAssigneeRecommendation(
+    resolvedProjectId,
+    activeTaskId,
+  );
+  const {
+    isPending: isGeneratingTaskBreakdown,
+    mutate: generateTaskBreakdown,
+    reset: resetTaskBreakdown,
+  } = useAiTaskBreakdown(resolvedProjectId, activeTaskId);
+  const {
+    isPending: isGeneratingTaskDescription,
+    mutate: generateTaskDescription,
+    reset: resetTaskDescription,
+  } = useAiTaskDescription(resolvedProjectId, activeTaskId);
   const createColumnMutation = useCreateBoardColumn(resolvedProjectId);
   const updateColumnMutation = useUpdateBoardColumn(
     resolvedProjectId,
@@ -158,6 +185,10 @@ function BoardsPage() {
   const deleteSubtaskMutation = useDeleteSubtask(activeTaskId);
 
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+  const tasks = useMemo(
+    () => boardState.columnOrder.flatMap((id) => boardState.tasks[id] ?? []),
+    [boardState],
+  );
   const editingColumn = editingColumnId
     ? boardState.columns[editingColumnId]
     : null;
@@ -192,6 +223,14 @@ function BoardsPage() {
     currentBoardUser,
   );
   const deleteTimeLogMutation = useDeleteTimeLog(activeTaskId);
+  const uploadAttachmentsMutation = useUploadTaskAttachments(
+    resolvedProjectId,
+    activeTaskId,
+  );
+  const deleteAttachmentMutation = useDeleteTaskAttachment(
+    resolvedProjectId,
+    activeTaskId,
+  );
 
   const boardDnd = useBoardDnd({
     boardState,
@@ -200,16 +239,23 @@ function BoardsPage() {
       const movingTask = boardState.tasks[sourceColId]?.find(
         (task) => task.id === taskId,
       );
+      const status = getColumnTaskStatus(
+        boardState,
+        targetColId,
+        movingTask?.status ?? TaskStatus.TODO,
+      );
+
+      recordLocalTaskMove(taskId, {
+        boardColumnId: targetColId,
+        columnOrder: newPositionFloat,
+        status,
+      });
 
       updateTaskByIdMutation.mutate({
         taskId,
         dto: {
           columnOrder: newPositionFloat,
-          status: getColumnTaskStatus(
-            boardState,
-            targetColId,
-            movingTask?.status ?? TaskStatus.TODO,
-          ),
+          status,
           ...(sourceColId !== targetColId
             ? { boardColumnId: targetColId }
             : {}),
@@ -250,6 +296,17 @@ function BoardsPage() {
     setDrawerTask(taskDetailQuery.data);
     setDrawerLoading(false);
   }, [setDrawerLoading, setDrawerTask, taskDetailQuery.data]);
+
+  useEffect(() => {
+    resetAssigneeRecommendation();
+    resetTaskBreakdown();
+    resetTaskDescription();
+  }, [
+    activeTaskId,
+    resetAssigneeRecommendation,
+    resetTaskBreakdown,
+    resetTaskDescription,
+  ]);
 
   const openDrawerWithBackendDetail = useCallback(
     (task: Task) => {
@@ -292,6 +349,7 @@ function BoardsPage() {
         columnId: data.columnId,
         dto: {
           title: data.title,
+          dependencyIds: data.dependencyIds,
           description: data.description || undefined,
           deadline: data.dueDate ?? undefined,
           label,
@@ -333,22 +391,28 @@ function BoardsPage() {
           (max, task) => Math.max(max, task.columnOrder ?? 0),
           0,
         ) + 1;
+      const status = getColumnTaskStatus(
+        boardState,
+        targetColumnId,
+        movingTask?.status ?? TaskStatus.TODO,
+      );
 
       moveTaskToColumn(taskId, targetColumnId);
+      recordLocalTaskMove(taskId, {
+        boardColumnId: targetColumnId,
+        columnOrder: newColumnOrder,
+        status,
+      });
       updateTaskByIdMutation.mutate({
         taskId,
         dto: {
           boardColumnId: targetColumnId,
           columnOrder: newColumnOrder,
-          status: getColumnTaskStatus(
-            boardState,
-            targetColumnId,
-            movingTask?.status ?? TaskStatus.TODO,
-          ),
+          status,
         },
       });
     },
-    [boardState, moveTaskToColumn, updateTaskByIdMutation],
+    [boardState, moveTaskToColumn, recordLocalTaskMove, updateTaskByIdMutation],
   );
 
   return (
@@ -357,6 +421,11 @@ function BoardsPage() {
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
           <BoardInfo />
           <BoardSyncIndicator status={syncStatus} />
+          <ProjectWorkspaceNavigation
+            projectId={resolvedProjectId}
+            draftId={projectQuery.data?.draftId}
+            current="board"
+          />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
             <BoardSearchBar
@@ -457,6 +526,7 @@ function BoardsPage() {
 
       <TaskDetailDrawer
         task={drawer.activeTask}
+        tasks={tasks}
         columns={columns}
         members={members}
         timeLogs={timeLogsQuery.data?.timeLogs ?? []}
@@ -464,46 +534,43 @@ function BoardsPage() {
         isOpen={drawer.isOpen}
         isLoading={drawer.isLoading}
         isLoadingTimeLogs={timeLogsQuery.isLoading}
-        isSubmittingComment={drawer.isSubmittingComment}
-        isDeletingTask={deleteTaskMutation.isPending}
-        isUpdatingTask={updateTaskMutation.isPending}
-        onClose={closeTaskDrawer}
-        onUpdateTitle={(_taskId, title) =>
-          updateTaskMutation.mutate({ title })
-        }
-        onUpdateDescription={(_taskId, description) =>
-          updateTaskMutation.mutate({ description })
-        }
-        onUpdateLabel={(_taskId, label) =>
-          updateTaskMutation.mutate({ label })
-        }
-        onUpdatePriority={(_taskId, priority) =>
-          updateTaskMutation.mutate({ priority })
-        }
-        onUpdateStatus={(_taskId, status) =>
-          updateTaskMutation.mutate({ status })
-        }
-        onUpdateAssignee={(_taskId, assigneeId) =>
-          updateTaskMutation.mutate({ assigneeId })
-        }
-        onUpdateDueDate={(_taskId, date) =>
-          updateTaskMutation.mutate({ deadline: date ?? undefined })
-        }
-        onMoveToColumn={handleMoveTaskToColumn}
-        onToggleSubtask={(subtaskId, completed) =>
-          updateSubtaskMutation.mutate({
-            subtaskId,
-            dto: { completed },
+        assigneeRecommendation={aiAssigneeRecommendationResponse?.data}
+        isRecommendingAssignee={isRecommendingAssignee}
+        onRecommendAssignee={() => recommendAssignee()}
+        onClearAssigneeRecommendation={resetAssigneeRecommendation}
+        isGeneratingTaskBreakdown={isGeneratingTaskBreakdown}
+        onGenerateTaskBreakdown={(onSuccess) =>
+          generateTaskBreakdown(undefined, {
+            onSuccess: (response) => onSuccess(response.data.subtasks),
           })
         }
-        onAddSubtask={(title) =>
-          createSubtaskMutation.mutate({
-            title,
+        isGeneratingTaskDescription={isGeneratingTaskDescription}
+        onGenerateTaskDescription={(onSuccess) =>
+          generateTaskDescription(undefined, {
+            onSuccess: (response) => onSuccess(response.data),
+          })
+        }
+        isSubmittingComment={drawer.isSubmittingComment}
+        isDeletingTask={deleteTaskMutation.isPending}
+        isUpdatingTask={
+          updateTaskMutation.isPending ||
+          createSubtaskMutation.isPending ||
+          updateSubtaskMutation.isPending ||
+          deleteSubtaskMutation.isPending
+        }
+        onClose={closeTaskDrawer}
+        onSaveChanges={(_taskId, dto) => updateTaskMutation.mutate(dto)}
+        onCreateSubtask={(dto) => createSubtaskMutation.mutate(dto)}
+        onUpdateSubtask={(subtaskId, dto) =>
+          updateSubtaskMutation.mutate({
+            subtaskId,
+            dto,
           })
         }
         onDeleteSubtask={(subtaskId) =>
           deleteSubtaskMutation.mutate(subtaskId)
         }
+        onMoveToColumn={handleMoveTaskToColumn}
         onAddComment={(content) =>
           createCommentMutation.mutate({
             body: content,
@@ -522,6 +589,14 @@ function BoardsPage() {
         onDeleteTimeLog={(timeLogId) => deleteTimeLogMutation.mutate(timeLogId)}
         isSubmittingTimeLog={createTimeLogMutation.isPending}
         isDeletingTimeLog={deleteTimeLogMutation.isPending}
+        onUploadAttachments={(files) =>
+          uploadAttachmentsMutation.mutate({ files })
+        }
+        isUploadingAttachments={uploadAttachmentsMutation.isPending}
+        onDeleteAttachment={(attachmentId) =>
+          deleteAttachmentMutation.mutate(attachmentId)
+        }
+        isDeletingAttachment={deleteAttachmentMutation.isPending}
         onDeleteTask={handleDeleteTask}
       />
     </div>

@@ -14,7 +14,7 @@ export default function ReactQueryProvider({
   }>>(null);
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
+    if (!import.meta.env.VITE_IS_DEV_MODE) return;
     void import("@tanstack/react-query-devtools").then((m) =>
       setDevtools(() => m.ReactQueryDevtools),
     );

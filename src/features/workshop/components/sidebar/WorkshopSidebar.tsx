@@ -48,6 +48,7 @@ function WorkshopSidebar({
     setTypeFilter,
     setStatusFilter,
     selectObject,
+    openObjectDetails,
   } = useWorkshopSidebar();
 
   if (collapsed) {
@@ -112,12 +113,16 @@ function WorkshopSidebar({
             className="h-8 pl-8 pr-7 text-xs"
           />
           {search && (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-0.5 top-1/2 size-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -137,6 +142,9 @@ function WorkshopSidebar({
             </SelectItem>
             <SelectItem value={CanvasObjectType.SECTION_FRAME}>
               Sections
+            </SelectItem>
+            <SelectItem value={CanvasObjectType.TEXT_BOX}>
+              Text boxes
             </SelectItem>
           </SelectContent>
         </Select>
@@ -171,6 +179,7 @@ function WorkshopSidebar({
                 obj={obj}
                 isSelected={selectedObjectId === obj.id}
                 onClick={() => selectObject(obj.id)}
+                onDoubleClick={() => openObjectDetails(obj.id)}
               />
             ))
           )}

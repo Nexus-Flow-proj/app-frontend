@@ -8,17 +8,24 @@ import type {
 export type CanvasObjectData =
   | TaskCardData
   | StickyNoteData
+  | TextBoxData
   | ImageBlockData
   | SectionFrameData
   | SubtaskCardData;
 
 export interface TaskCardData {
-  taskId: string;
+  taskId?: string;
   kind: TaskCardKind;
   title: string;
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  taskName?: string;
+  taskDescription?: string;
+  acceptanceCriteria?: string[];
+  estimatedComplexity?: "S" | "M" | "L" | "XL";
+  type?: "FEATURE" | "BUG" | "CHORE";
+  assignedTo?: string | null;
   assigneeAvatar?: string;
   assigneeName?: string;
   dueDate?: string;
@@ -32,6 +39,13 @@ export interface StickyNoteData {
   fontSize: number;
 }
 
+export interface TextBoxData {
+  kind?: "Text";
+  content: string;
+  color?: string;
+  fontSize?: number;
+}
+
 export interface ImageBlockData {
   url: string;
   alt?: string;
@@ -43,6 +57,8 @@ export interface SectionFrameData {
   description?: string;
   backgroundColor: string;
   borderColor: string;
+  featureName?: string;
+  priority?: "LOW" | "MEDIUM" | "HIGH";
 }
 
 export interface SubtaskCardData {

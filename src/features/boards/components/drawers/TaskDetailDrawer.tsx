@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { RotateCcw, Save, Trash2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { SubtaskChecklist } from "./SubtaskChecklist";
 import { CommentThread } from "./CommentThread";
 import { TimeLogSection } from "./TimeLogSection";
@@ -10,18 +9,30 @@ import { DrawerSkeleton } from "./DrawerSkeleton";
 import { TaskDetailHeader } from "./TaskDetailHeader";
 import { TaskMetaSection } from "./TaskMetaSection";
 import { ActivityLog } from "./ActivityLog";
+import { AttachmentSection } from "./AttachmentSection";
+import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
 import type {
   TaskDetail,
+  Task,
   Priority,
   BoardMember,
   BoardColumn,
   TimeLog,
+  TaskId,
 } from "../../types";
-import type { TaskStatus } from "../../types/enums";
 import { Separator } from "@/components/ui/separator";
+import type {
+  ApiTaskAssigneeRecommendation,
+  ApiTaskBreakdownSubtask,
+  ApiTaskDescriptionSuggestion,
+  CreateSubtasksDto,
+  UpdateSubtaskDto,
+  UpdateTaskDto,
+} from "../../types/api/board-api.types";
 
 interface TaskDetailDrawerProps {
   task: TaskDetail | null;
+  tasks: Task[];
   columns: BoardColumn[];
   members: BoardMember[];
   timeLogs: TimeLog[];
@@ -29,18 +40,24 @@ interface TaskDetailDrawerProps {
   isOpen: boolean;
   isLoading?: boolean;
   isLoadingTimeLogs?: boolean;
+  assigneeRecommendation?: ApiTaskAssigneeRecommendation | null;
+  isRecommendingAssignee?: boolean;
+  isGeneratingTaskBreakdown?: boolean;
+  isGeneratingTaskDescription?: boolean;
   onClose: () => void;
-  onUpdateTitle: (taskId: string, title: string) => void;
-  onUpdateDescription: (taskId: string, description: string) => void;
-  onUpdateLabel: (taskId: string, label: string) => void;
-  onUpdatePriority: (taskId: string, priority: Priority) => void;
-  onUpdateStatus: (taskId: string, status: TaskStatus) => void;
-  onUpdateAssignee: (taskId: string, assigneeId: string | null) => void;
-  onUpdateDueDate: (taskId: string, dueDate: string | null) => void;
-  onMoveToColumn: (taskId: string, columnId: string) => void;
-  onToggleSubtask: (subtaskId: string, completed: boolean) => void;
-  onAddSubtask: (title: string) => void;
+  onRecommendAssignee?: () => void;
+  onClearAssigneeRecommendation?: () => void;
+  onGenerateTaskBreakdown?: (
+    onSuccess: (subtasks: ApiTaskBreakdownSubtask[]) => void,
+  ) => void;
+  onGenerateTaskDescription?: (
+    onSuccess: (suggestion: ApiTaskDescriptionSuggestion) => void,
+  ) => void;
+  onSaveChanges: (taskId: string, dto: UpdateTaskDto) => void;
+  onCreateSubtask: (dto: CreateSubtasksDto) => void;
+  onUpdateSubtask: (subtaskId: string, dto: UpdateSubtaskDto) => void;
   onDeleteSubtask: (subtaskId: string) => void;
+  onMoveToColumn: (taskId: string, columnId: string) => void;
   onAddComment: (content: string) => void;
   onUpdateComment: (commentId: string, content: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -50,6 +67,8 @@ interface TaskDetailDrawerProps {
     note?: string;
   }) => void;
   onDeleteTimeLog: (timeLogId: string) => void;
+  onUploadAttachments: (files: File[]) => void;
+  onDeleteAttachment: (attachmentId: string) => void;
   onDeleteTask?: (taskId: string) => void;
   isSubmittingComment?: boolean;
   isUpdatingComment?: boolean;
@@ -57,11 +76,149 @@ interface TaskDetailDrawerProps {
   isUpdatingTask?: boolean;
   isSubmittingTimeLog?: boolean;
   isDeletingTimeLog?: boolean;
+  isUploadingAttachments?: boolean;
+  isDeletingAttachment?: boolean;
   isDeletingTask?: boolean;
+}
+
+interface TaskDetailsDraft {
+  taskId: string;
+  title: string;
+  description: string;
+  label: string;
+  priority: Priority;
+  status: Task["status"];
+  assigneeId: string | null;
+  dueDate: string;
+  dependencyIds: TaskId[];
+  subtasks: SubtaskDraft[];
+}
+
+interface SubtaskDraft {
+  id: string;
+  sourceId?: string;
+  title: string;
+  completed: boolean;
+}
+
+function createDraftFromTask(task: TaskDetail): TaskDetailsDraft {
+  return {
+    taskId: task.id,
+    title: task.title,
+    description: task.description ?? "",
+    label: task.tags?.[0] ?? "",
+    priority: task.priority,
+    status: task.status,
+    assigneeId: task.assignee?.id ?? null,
+    dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+    dependencyIds: task.dependencyIds ?? [],
+    subtasks: task.subtasks.map((subtask) => ({
+      id: subtask.id,
+      sourceId: subtask.id,
+      title: subtask.title,
+      completed: subtask.completed,
+    })),
+  };
+}
+
+function normalizeDraft(draft: TaskDetailsDraft) {
+  return {
+    title: draft.title.trim(),
+    description: draft.description.trim(),
+    label: draft.label.trim(),
+    priority: draft.priority,
+    status: draft.status,
+    assigneeId: draft.assigneeId,
+    dueDate: draft.dueDate,
+    dependencyIds: [...draft.dependencyIds].sort(),
+    subtasks: draft.subtasks.map((subtask) => ({
+      sourceId: subtask.sourceId,
+      title: subtask.title.trim(),
+      completed: subtask.completed,
+    })),
+  };
+}
+
+function createSaveDto(draft: TaskDetailsDraft): UpdateTaskDto {
+  return {
+    title: draft.title.trim(),
+    description: draft.description.trim(),
+    label: draft.label.trim(),
+    priority: draft.priority,
+    status: draft.status,
+    assigneeId: draft.assigneeId,
+    deadline: draft.dueDate || null,
+    dependencyIds: draft.dependencyIds,
+  };
+}
+
+function createMarkdownFromDescriptionSuggestion(
+  suggestion: ApiTaskDescriptionSuggestion,
+) {
+  const description = suggestion.description.trim();
+  const criteria = suggestion.acceptanceCriteria
+    .map((criterion) => criterion.trim())
+    .filter(Boolean);
+
+  if (!criteria.length) return description;
+
+  const criteriaMarkdown = [
+    "## Acceptance Criteria",
+    "",
+    ...criteria.map((criterion) => `- ${criterion.replace(/\s+/g, " ")}`),
+  ].join("\n");
+
+  return [description, criteriaMarkdown].filter(Boolean).join("\n\n");
+}
+
+function createSubtaskChangeSet(task: TaskDetail, draft: TaskDetailsDraft) {
+  const currentSubtaskById = new Map(
+    task.subtasks.map((subtask) => [subtask.id, subtask]),
+  );
+  const draftSourceIds = new Set(
+    draft.subtasks
+      .map((subtask) => subtask.sourceId)
+      .filter((sourceId): sourceId is string => !!sourceId),
+  );
+
+  return {
+    created: {
+      subtasks: draft.subtasks
+        .map((subtask, index) => ({ subtask, sortOrder: index + 1 }))
+        .filter(({ subtask }) => !subtask.sourceId && subtask.title.trim())
+        .map(({ subtask, sortOrder }) => ({
+          title: subtask.title.trim(),
+          sortOrder,
+        })),
+    },
+    updated: draft.subtasks
+      .filter((subtask) => {
+        if (!subtask.sourceId) return false;
+
+        const currentSubtask = currentSubtaskById.get(subtask.sourceId);
+
+        return (
+          currentSubtask &&
+          (currentSubtask.title !== subtask.title.trim() ||
+            currentSubtask.completed !== subtask.completed)
+        );
+      })
+      .map((subtask) => ({
+        subtaskId: subtask.sourceId as string,
+        dto: {
+          title: subtask.title.trim(),
+          completed: subtask.completed,
+        },
+      })),
+    deleted: task.subtasks
+      .filter((subtask) => !draftSourceIds.has(subtask.id))
+      .map((subtask) => subtask.id),
+  };
 }
 
 export function TaskDetailDrawer({
   task,
+  tasks,
   columns,
   members,
   timeLogs,
@@ -69,23 +226,27 @@ export function TaskDetailDrawer({
   isOpen,
   isLoading = false,
   isLoadingTimeLogs,
+  assigneeRecommendation,
+  isRecommendingAssignee,
+  isGeneratingTaskBreakdown,
+  isGeneratingTaskDescription,
   onClose,
-  onUpdateTitle,
-  onUpdateDescription,
-  onUpdateLabel,
-  onUpdatePriority,
-  onUpdateStatus,
-  onUpdateAssignee,
-  onUpdateDueDate,
-  onMoveToColumn,
-  onToggleSubtask,
-  onAddSubtask,
+  onRecommendAssignee,
+  onClearAssigneeRecommendation,
+  onGenerateTaskBreakdown,
+  onGenerateTaskDescription,
+  onSaveChanges,
+  onCreateSubtask,
+  onUpdateSubtask,
   onDeleteSubtask,
+  onMoveToColumn,
   onAddComment,
   onUpdateComment,
   onDeleteComment,
   onAddTimeLog,
   onDeleteTimeLog,
+  onUploadAttachments,
+  onDeleteAttachment,
   onDeleteTask,
   isSubmittingComment,
   isUpdatingComment,
@@ -93,16 +254,124 @@ export function TaskDetailDrawer({
   isUpdatingTask,
   isSubmittingTimeLog,
   isDeletingTimeLog,
+  isUploadingAttachments,
+  isDeletingAttachment,
   isDeletingTask,
 }: TaskDetailDrawerProps) {
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [description, setDescription] = useState(task?.description ?? "");
+  const [draft, setDraft] = useState<TaskDetailsDraft | null>(() =>
+    task ? createDraftFromTask(task) : null,
+  );
+  const [hasUserEdited, setHasUserEdited] = useState(false);
 
-  const submitDescription = () => {
-    if (!task || isUpdatingTask) return;
+  useEffect(() => {
+    // The drawer keeps a local editable draft that must reset when a new task is opened.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDraft((currentDraft) => {
+      if (!task) {
+        setHasUserEdited(false);
+        return null;
+      }
 
-    onUpdateDescription(task.id, description.trim());
-    setIsEditingDescription(false);
+      if (!currentDraft || currentDraft.taskId !== task.id || !hasUserEdited) {
+        if (currentDraft?.taskId !== task.id) {
+          setHasUserEdited(false);
+        }
+
+        return createDraftFromTask(task);
+      }
+
+      return currentDraft;
+    });
+  }, [hasUserEdited, task]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!task || !draft) return false;
+
+    return (
+      JSON.stringify(normalizeDraft(draft)) !==
+      JSON.stringify(normalizeDraft(createDraftFromTask(task)))
+    );
+  }, [draft, task]);
+  const hasInvalidSubtasks = draft?.subtasks.some(
+    (subtask) => !subtask.title.trim(),
+  ) ?? false;
+
+  const setDraftValue = <K extends keyof TaskDetailsDraft>(
+    key: K,
+    value: TaskDetailsDraft[K],
+  ) => {
+    setHasUserEdited(true);
+    setDraft((current) => (current ? { ...current, [key]: value } : current));
+  };
+
+  const handleSave = () => {
+    if (!task || !draft || isUpdatingTask || !hasUnsavedChanges) return;
+    if (!draft.title.trim()) return;
+    if (hasInvalidSubtasks) return;
+
+    const taskDraftChanged =
+      JSON.stringify({
+        ...normalizeDraft(draft),
+        subtasks: undefined,
+      }) !==
+      JSON.stringify({
+        ...normalizeDraft(createDraftFromTask(task)),
+        subtasks: undefined,
+      });
+    const subtaskChanges = createSubtaskChangeSet(task, draft);
+
+    if (taskDraftChanged) {
+      onSaveChanges(task.id, createSaveDto(draft));
+    }
+
+    if (subtaskChanges.created.subtasks.length) {
+      onCreateSubtask(subtaskChanges.created);
+    }
+    subtaskChanges.updated.forEach(({ subtaskId, dto }) =>
+      onUpdateSubtask(subtaskId, dto),
+    );
+    subtaskChanges.deleted.forEach((subtaskId) => onDeleteSubtask(subtaskId));
+  };
+
+  const handleDiscard = () => {
+    if (!task) return;
+    setHasUserEdited(false);
+    setDraft(createDraftFromTask(task));
+  };
+
+  const handleAddTaskBreakdown = (
+    suggestedSubtasks: ApiTaskBreakdownSubtask[],
+  ) => {
+    const sortedSuggestedSubtasks = [...suggestedSubtasks].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+    if (!sortedSuggestedSubtasks.length) return;
+
+    setHasUserEdited(true);
+    setDraft((current) =>
+      current
+        ? {
+          ...current,
+          subtasks: [
+            ...current.subtasks,
+            ...sortedSuggestedSubtasks.map((subtask) => ({
+              id: `draft-${crypto.randomUUID()}`,
+              title: subtask.title,
+              completed: false,
+            })),
+          ],
+        }
+        : current,
+    );
+  };
+
+  const handleApplyTaskDescription = (
+    suggestion: ApiTaskDescriptionSuggestion,
+  ) => {
+    setDraftValue(
+      "description",
+      createMarkdownFromDescriptionSuggestion(suggestion),
+    );
   };
 
   return (
@@ -118,90 +387,118 @@ export function TaskDetailDrawer({
             <TaskDetailHeader
               task={task}
               columns={columns}
-              onUpdateTitle={onUpdateTitle}
-              isUpdating={isUpdatingTask}
+              title={draft?.title ?? ""}
+              disabled={isUpdatingTask}
+              onTitleChange={(title) => setDraftValue("title", title)}
             />
 
-            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-5 custom-scrollbar">
-              <div className="space-y-2 pt-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Description
-                  </p>
-                  {!isEditingDescription && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 text-muted-foreground"
-                      onClick={() => {
-                        setDescription(task.description ?? "");
-                        setIsEditingDescription(true);
-                      }}
-                    >
-                      <Pencil className="size-3.5" />
-                    </Button>
-                  )}
-                </div>
-                {isEditingDescription ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={description}
-                      onChange={(event) => setDescription(event.target.value)}
-                      rows={4}
-                      placeholder="Add a description"
-                      className="resize-none text-sm"
-                    />
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => {
-                          setIsEditingDescription(false);
-                          setDescription(task.description ?? "");
-                        }}
-                      >
-                        <X className="size-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        className="size-8"
-                        disabled={isUpdatingTask}
-                        onClick={submitDescription}
-                      >
-                        <Check className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground leading-relaxed text-left">
-                    {task.description || "No description yet."}
-                  </p>
-                )}
-              </div>
+            <div className="flex-1 overflow-y-auto px-6 pb-0 space-y-5 custom-scrollbar">
+              <TaskDescriptionEditor
+                taskId={task.id}
+                value={draft?.description ?? ""}
+                disabled={isUpdatingTask}
+                isGenerating={isGeneratingTaskDescription}
+                onChange={(description) =>
+                  setDraftValue("description", description)
+                }
+                onGenerate={() =>
+                  onGenerateTaskDescription?.(handleApplyTaskDescription)
+                }
+              />
               <Separator />
 
               <TaskMetaSection
                 task={task}
+                tasks={tasks}
                 columns={columns}
                 members={members}
-                onUpdatePriority={onUpdatePriority}
-                onUpdateStatus={onUpdateStatus}
-                onUpdateAssignee={onUpdateAssignee}
-                onUpdateDueDate={onUpdateDueDate}
-                onUpdateLabel={onUpdateLabel}
+                isUpdatingTask={isUpdatingTask}
+                priority={draft?.priority ?? task.priority}
+                status={draft?.status ?? task.status}
+                assigneeId={draft?.assigneeId ?? null}
+                dueDate={draft?.dueDate ?? ""}
+                dependencyIds={draft?.dependencyIds ?? []}
+                label={draft?.label ?? ""}
+                onChangePriority={(priority) =>
+                  setDraftValue("priority", priority)
+                }
+                onChangeStatus={(status) => setDraftValue("status", status)}
+                onChangeAssignee={(assigneeId) =>
+                  setDraftValue("assigneeId", assigneeId)
+                }
+                assigneeRecommendation={assigneeRecommendation}
+                isRecommendingAssignee={isRecommendingAssignee}
+                onRecommendAssignee={onRecommendAssignee}
+                onClearAssigneeRecommendation={onClearAssigneeRecommendation}
+                onChangeDueDate={(dueDate) =>
+                  setDraftValue("dueDate", dueDate)
+                }
+                onChangeDependencies={(dependencyIds) =>
+                  setDraftValue("dependencyIds", dependencyIds)
+                }
+                onChangeLabel={(label) => setDraftValue("label", label)}
                 onMoveToColumn={onMoveToColumn}
               />
               <Separator />
+              <AttachmentSection
+                attachments={task.attachments}
+                isUploading={isUploadingAttachments}
+                isDeleting={isDeletingAttachment}
+                onUploadAttachments={onUploadAttachments}
+                onDeleteAttachment={onDeleteAttachment}
+              />
+              <Separator />
               <SubtaskChecklist
-                taskId={task.id}
-                subtasks={task.subtasks}
-                onToggle={onToggleSubtask}
-                onAdd={onAddSubtask}
-                onDelete={onDeleteSubtask}
+                subtasks={(draft?.subtasks ?? []).map((subtask, index) => ({
+                  id: subtask.id,
+                  taskId: task.id,
+                  title: subtask.title,
+                  completed: subtask.completed,
+                  position: index,
+                  createdAt: "",
+                  updatedAt: "",
+                }))}
+                disabled={isUpdatingTask}
+                isGeneratingBreakdown={isGeneratingTaskBreakdown}
+                onGenerateAiBreakdown={() =>
+                  onGenerateTaskBreakdown?.(handleAddTaskBreakdown)
+                }
+                onToggle={(subtaskId, completed) =>
+                  setDraftValue(
+                    "subtasks",
+                    (draft?.subtasks ?? []).map((subtask) =>
+                      subtask.id === subtaskId
+                        ? { ...subtask, completed }
+                        : subtask,
+                    ),
+                  )
+                }
+                onTitleChange={(subtaskId, title) =>
+                  setDraftValue(
+                    "subtasks",
+                    (draft?.subtasks ?? []).map((subtask) =>
+                      subtask.id === subtaskId ? { ...subtask, title } : subtask,
+                    ),
+                  )
+                }
+                onAdd={(title) =>
+                  setDraftValue("subtasks", [
+                    ...(draft?.subtasks ?? []),
+                    {
+                      id: `draft-${crypto.randomUUID()}`,
+                      title,
+                      completed: false,
+                    },
+                  ])
+                }
+                onDelete={(subtaskId) =>
+                  setDraftValue(
+                    "subtasks",
+                    (draft?.subtasks ?? []).filter(
+                      (subtask) => subtask.id !== subtaskId,
+                    ),
+                  )
+                }
               />
               <Separator />
               <CommentThread
@@ -242,6 +539,32 @@ export function TaskDetailDrawer({
                   </div>
                 </>
               )}
+              <div className="sticky bottom-0 -mx-6 flex items-center justify-end gap-2 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasUnsavedChanges || isUpdatingTask}
+                  onClick={handleDiscard}
+                >
+                  <RotateCcw className="size-3.5" />
+                  Discard
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  isLoading={isUpdatingTask}
+                  disabled={
+                    !hasUnsavedChanges ||
+                    !draft?.title.trim() ||
+                    hasInvalidSubtasks
+                  }
+                  onClick={handleSave}
+                >
+                  <Save className="size-3.5" />
+                  Save changes
+                </Button>
+              </div>
             </div>
           </>
         )}

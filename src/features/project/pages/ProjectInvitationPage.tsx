@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store";
 import { InviteStatus } from "@/types";
 import { QUERY_KEYS } from "@/constants";
 import { authService } from "@/features/auth/services";
+import { setCsrfToken } from "@/lib/api/csrf";
 import {
   useAcceptProjectInvitation,
   useDeclineProjectInvitation,
@@ -52,9 +53,10 @@ export default function ProjectInvitationPage() {
 
   useEffect(() => {
     if (!storedUser && optionalAuthUser?.user) {
+      setCsrfToken(optionalAuthUser.csrfToken);
       setAuth(optionalAuthUser.user);
     }
-  }, [optionalAuthUser?.user, setAuth, storedUser]);
+  }, [optionalAuthUser?.user, optionalAuthUser?.csrfToken, setAuth, storedUser]);
 
   if (isLoading) {
     return <Loading fullPage text="Loading invitation..." />;

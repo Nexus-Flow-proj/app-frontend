@@ -341,14 +341,16 @@ function buildComments(taskId: string): Comment[] {
 // ─── Task cards — counts are derived, never hand-typed ───────────────────────
 type TaskInput = Omit<
   Task,
-  "subtasksCount" | "completedSubtasksCount" | "commentsCount"
->;
+  "dependencyIds" | "subtasksCount" | "completedSubtasksCount" | "commentsCount"
+> &
+  Partial<Pick<Task, "dependencyIds">>;
 
 const createTask = (task: TaskInput): Task => {
   const subtasks = buildSubtasks(task.id);
   const comments = buildComments(task.id);
 
   return {
+    dependencyIds: [],
     ...task,
     subtasksCount: subtasks.length,
     completedSubtasksCount: subtasks.filter((s) => s.completed).length,

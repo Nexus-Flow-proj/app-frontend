@@ -1,5 +1,4 @@
 import type {
-  CanvasConnection,
   CanvasViewport,
   CanvasObject,
   WorkshopTool,
@@ -10,7 +9,6 @@ export interface WorkshopStore {
   // Canvas data (persisted)
   canvasId: Nullable<string>;
   objects: CanvasObject[];
-  connections: CanvasConnection[];
   viewport: CanvasViewport;
 
   // UI state (never persisted)
@@ -18,8 +16,6 @@ export interface WorkshopStore {
   selectedObjectId: Nullable<string>;
   detailsObjectId: Nullable<string>;
   hoveredObjectId: Nullable<string>;
-  isConnecting: boolean;
-  connectFromId: Nullable<string>;
   isDirty: boolean;
 
   // Undo / redo

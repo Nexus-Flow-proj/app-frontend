@@ -1,0 +1,293 @@
+.project-calendar {
+  --fc-border-color: color-mix(in oklab, var(--border) 76%, transparent);
+  --fc-neutral-bg-color: color-mix(in oklab, var(--muted) 72%, var(--card));
+  --fc-page-bg-color: var(--card);
+  --fc-list-event-hover-bg-color: color-mix(
+    in oklab,
+    var(--muted) 70%,
+    transparent
+  );
+  --fc-today-bg-color: color-mix(in oklab, var(--primary) 9%, transparent);
+  --fc-pulse-background: var(--card);
+  --fc-pulse-foreground: var(--card-foreground);
+  --fc-pulse-faint: color-mix(in oklab, var(--muted) 46%, transparent);
+  --fc-pulse-muted: color-mix(in oklab, var(--muted) 74%, transparent);
+  --fc-pulse-strong: color-mix(in oklab, var(--border) 64%, transparent);
+  --fc-pulse-stronger: color-mix(in oklab, var(--border) 82%, transparent);
+  --fc-pulse-strongest: var(--border);
+  --fc-pulse-faint-foreground: color-mix(
+    in oklab,
+    var(--muted-foreground) 68%,
+    transparent
+  );
+  --fc-pulse-muted-foreground: var(--muted-foreground);
+  --fc-pulse-border: color-mix(in oklab, var(--border) 74%, transparent);
+  --fc-pulse-strong-border: var(--border);
+  --fc-pulse-secondary: color-mix(in oklab, var(--muted) 54%, var(--card));
+  --fc-pulse-secondary-over: color-mix(in oklab, var(--muted) 78%, var(--card));
+  --fc-pulse-secondary-down: var(--muted);
+  --fc-pulse-selected: color-mix(in oklab, var(--primary) 13%, var(--card));
+  --fc-pulse-selected-foreground: var(--foreground);
+  --fc-pulse-highlight: color-mix(in oklab, var(--primary) 12%, transparent);
+  background-color: var(--card);
+}
+
+.project-calendar .fc {
+  font-family: inherit;
+  color: var(--foreground);
+}
+
+.project-calendar [data-color-scheme="dark"] {
+  --fc-pulse-background: var(--card);
+  --fc-pulse-foreground: var(--card-foreground);
+  --fc-pulse-faint: color-mix(in oklab, var(--background) 56%, transparent);
+  --fc-pulse-muted: color-mix(in oklab, var(--muted) 72%, transparent);
+  --fc-pulse-strong: color-mix(in oklab, var(--border) 58%, transparent);
+  --fc-pulse-stronger: color-mix(in oklab, var(--border) 78%, transparent);
+  --fc-pulse-strongest: var(--border);
+  --fc-pulse-faint-foreground: color-mix(
+    in oklab,
+    var(--muted-foreground) 76%,
+    transparent
+  );
+  --fc-pulse-muted-foreground: var(--muted-foreground);
+  --fc-pulse-border: color-mix(in oklab, var(--border) 68%, transparent);
+  --fc-pulse-strong-border: var(--border);
+  --fc-pulse-secondary: color-mix(in oklab, var(--secondary) 80%, transparent);
+  --fc-pulse-secondary-over: color-mix(
+    in oklab,
+    var(--secondary) 100%,
+    var(--card)
+  );
+  --fc-pulse-secondary-down: color-mix(
+    in oklab,
+    var(--secondary) 76%,
+    var(--background)
+  );
+  --fc-pulse-selected: color-mix(in oklab, var(--primary) 18%, var(--card));
+  --fc-pulse-selected-foreground: var(--foreground);
+  --fc-pulse-highlight: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+.project-calendar .fc-toolbar {
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.project-calendar .fc-toolbar-title {
+  color: var(--foreground);
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.project-calendar .fc-button {
+  border-radius: var(--radius-md);
+  border-color: color-mix(in oklab, var(--border) 84%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-height: 2.25rem;
+  box-shadow: none;
+}
+
+.project-calendar .fc-button:hover,
+.project-calendar .fc-button:focus-visible {
+  border-color: color-mix(in oklab, var(--primary) 42%, var(--border));
+}
+
+.project-calendar .fc-button:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--ring) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.project-calendar .fc-daygrid-day-number,
+.project-calendar .fc-col-header-cell-cushion,
+.project-calendar .fc-list-day-cushion,
+.project-calendar .fc-list-event-title,
+.project-calendar .fc-list-event-time {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.project-calendar .fc-col-header-cell-cushion {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.project-calendar .fc-scrollgrid {
+  overflow: hidden;
+  border-color: color-mix(in oklab, var(--border) 74%, transparent);
+  border-radius: var(--radius-lg);
+  background-color: var(--card);
+}
+
+.project-calendar .fc-theme-standard td,
+.project-calendar .fc-theme-standard th,
+.project-calendar .fc-scrollgrid-section > * {
+  border-color: color-mix(in oklab, var(--border) 72%, transparent);
+}
+
+.project-calendar .fc-col-header-cell {
+  background-color: color-mix(in oklab, var(--muted) 62%, var(--card));
+}
+
+.project-calendar .fc-daygrid-day,
+.project-calendar .fc-list,
+.project-calendar .fc-list-table,
+.project-calendar .fc-list-day-cushion {
+  background-color: var(--card);
+}
+
+.project-calendar .fc-day-other {
+  background-color: color-mix(in oklab, var(--muted) 32%, var(--card));
+}
+
+.project-calendar .fc-daygrid-day-frame {
+  min-height: 8.75rem;
+  transition: background-color 160ms ease;
+}
+
+.project-calendar .fc-daygrid-day:hover .fc-daygrid-day-frame {
+  background-color: color-mix(in oklab, var(--muted) 42%, transparent);
+}
+
+.project-calendar .fc-daygrid-day-number {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  padding: 0.5rem;
+}
+
+.project-calendar .fc-daygrid-day-events {
+  display: grid;
+  gap: 0.25rem;
+  padding-inline: 0.25rem;
+}
+
+.project-calendar .fc-daygrid-event {
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-top: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  transition:
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    transform 160ms ease;
+}
+
+.project-calendar .fc-daygrid-event:hover {
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.1);
+}
+
+.project-calendar .fc-popover {
+  overflow: hidden;
+  border-color: color-mix(in oklab, var(--border) 76%, transparent);
+  border-radius: var(--radius-lg);
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 18px 45px rgb(15 23 42 / 0.16);
+}
+
+.project-calendar .fc-popover-header {
+  background-color: color-mix(in oklab, var(--muted) 64%, var(--popover));
+  color: var(--popover-foreground);
+}
+
+.project-calendar .fc-list-day-cushion {
+  background-color: color-mix(in oklab, var(--muted) 62%, var(--card));
+}
+
+.project-calendar .fc-list-event-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.project-calendar .calendar-event-title {
+  color: currentColor;
+}
+
+.project-calendar .calendar-event-low {
+  background:
+    linear-gradient(90deg, rgb(16 185 129 / 0.2), transparent 44%),
+    rgb(236 253 245);
+  border-color: rgb(16 185 129);
+  color: rgb(5 95 70);
+}
+
+.project-calendar .calendar-event-medium {
+  background:
+    linear-gradient(90deg, rgb(99 102 241 / 0.22), transparent 44%),
+    rgb(238 242 255);
+  border-color: rgb(99 102 241);
+  color: rgb(49 46 129);
+}
+
+.project-calendar .calendar-event-high {
+  background:
+    linear-gradient(90deg, rgb(245 158 11 / 0.24), transparent 44%),
+    rgb(255 251 235);
+  border-color: rgb(245 158 11);
+  color: rgb(120 53 15);
+}
+
+.project-calendar .calendar-event-urgent {
+  background:
+    linear-gradient(90deg, rgb(244 63 94 / 0.24), transparent 44%),
+    rgb(255 241 242);
+  border-color: rgb(244 63 94);
+  color: rgb(136 19 55);
+}
+
+.dark .project-calendar .calendar-event-low {
+  background:
+    linear-gradient(90deg, rgb(16 185 129 / 0.34), transparent 48%),
+    rgb(6 78 59 / 0.5);
+  border-color: rgb(52 211 153 / 0.75);
+  color: rgb(220 252 231);
+}
+
+.dark .project-calendar .calendar-event-medium {
+  background:
+    linear-gradient(90deg, rgb(129 140 248 / 0.34), transparent 48%),
+    rgb(49 46 129 / 0.58);
+  border-color: rgb(129 140 248 / 0.78);
+  color: rgb(238 242 255);
+}
+
+.dark .project-calendar .calendar-event-high {
+  background:
+    linear-gradient(90deg, rgb(245 158 11 / 0.36), transparent 48%),
+    rgb(120 53 15 / 0.58);
+  border-color: rgb(251 191 36 / 0.78);
+  color: rgb(254 243 199);
+}
+
+.dark .project-calendar .calendar-event-urgent {
+  background:
+    linear-gradient(90deg, rgb(244 63 94 / 0.38), transparent 48%),
+    rgb(136 19 55 / 0.62);
+  border-color: rgb(251 113 133 / 0.78);
+  color: rgb(255 228 230);
+}
+
+@media (max-width: 640px) {
+  .project-calendar {
+    padding: 0.5rem;
+  }
+
+  .project-calendar .fc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-calendar .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+}

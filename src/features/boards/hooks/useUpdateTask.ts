@@ -20,13 +20,20 @@ import {
     rollbackTaskDetail,
     invalidateTaskDetail,
 } from "../cache/task-detail.cache";
-import { mapBoardMember } from "../mappers";
+import { mapBoardMember, mapTaskAttachment, normalizeTaskDependencyIds } from "../mappers";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
+import { useKanbanStore } from "@/store";
 
 type TaskUpdatePatch = Partial<TaskUpdatedData> & {
     assigneeId?: string | null;
     boardColumnId?: string;
 };
+
+function isMovementUpdate(dto: UpdateTaskDto) {
+    return dto.boardColumnId !== undefined ||
+        dto.columnOrder !== undefined ||
+        dto.status !== undefined;
+}
 
 export function useUpdateTask(
     projectId: string,
@@ -69,17 +76,38 @@ export function useUpdateTask(
                     previousTaskDetail,
                 };
             },
-            onSuccess: (res) => {
+            onSuccess: (res, dto) => {
+                const taskPatch = {
+                    ...res.data,
+                    ...dto,
+                    dependencyIds:
+                        dto.dependencyIds ??
+                        normalizeTaskDependencyIds(
+                            res.data.dependencyIds ?? res.data.dependencies,
+                        ),
+                };
+
                 patchTaskInListCache(
                     queryClient,
                     projectId,
                     taskId,
-                    (task) => updateTaskList(task, res.data),
+                    (task) => updateTaskList(task, taskPatch),
                 );
-                invalidateTaskDetail(queryClient, taskId);
+                updateTaskDetailCache(
+                    queryClient,
+                    taskId,
+                    (task) => updateTaskDetail(task, taskPatch),
+                );
+                if (dto.dependencyIds === undefined) {
+                    invalidateTaskDetail(queryClient, taskId);
+                }
             },
 
-            onError: (_, __, context) => {
+            onError: (_, dto, context) => {
+                if (isMovementUpdate(dto)) {
+                    useKanbanStore.getState().clearLocalTaskMove(taskId);
+                }
+
                 if (context?.previousTaskList) {
                     rollbackTaskList(
                         queryClient,
@@ -146,17 +174,38 @@ export function useUpdateTaskById(projectId: string) {
                 };
             },
 
-            onSuccess: (res, { taskId }) => {
+            onSuccess: (res, { taskId, dto }) => {
+                const taskPatch = {
+                    ...res.data,
+                    ...dto,
+                    dependencyIds:
+                        dto.dependencyIds ??
+                        normalizeTaskDependencyIds(
+                            res.data.dependencyIds ?? res.data.dependencies,
+                        ),
+                };
+
                 patchTaskInListCache(
                     queryClient,
                     projectId,
                     taskId,
-                    (task) => updateTaskList(task, res.data),
+                    (task) => updateTaskList(task, taskPatch),
                 );
-                invalidateTaskDetail(queryClient, taskId);
+                updateTaskDetailCache(
+                    queryClient,
+                    taskId,
+                    (task) => updateTaskDetail(task, taskPatch),
+                );
+                if (dto.dependencyIds === undefined) {
+                    invalidateTaskDetail(queryClient, taskId);
+                }
             },
 
-            onError: (_, { taskId }, context) => {
+            onError: (_, { taskId, dto }, context) => {
+                if (isMovementUpdate(dto)) {
+                    useKanbanStore.getState().clearLocalTaskMove(taskId);
+                }
+
                 if (context?.previousTaskList) {
                     rollbackTaskList(
                         queryClient,
@@ -226,6 +275,11 @@ export function updateTaskDetail(
 
         title: dto.title ?? task.title,
 
+        dependencyIds:
+            normalizeTaskDependencyIds(
+                dto.dependencyIds ?? dto.dependencies ?? task.dependencyIds,
+            ),
+
         description:
             dto.description ?? task.description,
 
@@ -233,14 +287,15 @@ export function updateTaskDetail(
             dto.priority ?? task.priority,
 
         dueDate:
-            dto.deadline ?? task.dueDate,
+            dto.deadline === undefined ? task.dueDate : dto.deadline ?? undefined,
 
         boardColumnId:
             dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
         columnOrder: dto.columnOrder ?? task.columnOrder,
         updatedAt: dto.updated_at ?? task.updatedAt,
         status: dto.status ?? task.status,
-        attachmentsCount: task.attachmentsCount,
+        attachmentsCount:
+            dto.attachments?.length ?? dto.attachmentsCount ?? task.attachmentsCount,
         source: dto.source ?? task.source,
         assignee: dto.assignee === undefined
             ? task.assignee
@@ -251,7 +306,11 @@ export function updateTaskDetail(
             dto.label !== undefined
                 ? dto.label ? [dto.label] : []
                 : task.tags,
-        attachments: dto.attachments ?? task.attachments,
+        attachments: dto.attachments
+            ? dto.attachments.map((attachment) =>
+                mapTaskAttachment(attachment, task.id),
+            )
+            : task.attachments,
     };
 
 
@@ -265,12 +324,16 @@ export function updateTaskList(
     return {
         ...task,
         title: dto.title ?? task.title,
+        dependencyIds:
+            normalizeTaskDependencyIds(
+                dto.dependencyIds ?? dto.dependencies ?? task.dependencyIds,
+            ),
         description:
             dto.description ?? task.description,
         priority:
             dto.priority ?? task.priority,
         dueDate:
-            dto.deadline ?? task.dueDate,
+            dto.deadline === undefined ? task.dueDate : dto.deadline ?? undefined,
         boardColumnId:
             dto.boardColumn?.id ?? dto.boardColumnId ?? task.boardColumnId,
         columnOrder: dto.columnOrder ?? task.columnOrder,

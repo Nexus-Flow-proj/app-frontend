@@ -15,6 +15,7 @@ export function registerNotificationHandlers(socketManager: SocketManager, qc: Q
 
         toast(notif.title, {
             description: notif.message,
+            position: "bottom-right",
             action: isInvitation && inviteToken ? {
                 label: "View",
                 onClick: () => {

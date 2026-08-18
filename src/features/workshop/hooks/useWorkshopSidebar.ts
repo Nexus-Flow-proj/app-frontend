@@ -5,6 +5,7 @@ import type {
   SectionFrameData,
   StickyNoteData,
   TaskCardData,
+  TextBoxData,
 } from "../types";
 
 export function useWorkshopSidebar() {
@@ -14,6 +15,7 @@ export function useWorkshopSidebar() {
 
   const objects = useWorkshopStore((s) => s.objects);
   const selectObject = useWorkshopStore((s) => s.selectObject);
+  const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
 
   const filtered = useMemo(
@@ -36,7 +38,9 @@ export function useWorkshopSidebar() {
               ? (obj.data as TaskCardData).title
               : obj.type === CanvasObjectType.SECTION_FRAME
                 ? (obj.data as SectionFrameData).title
-                : ((obj.data as StickyNoteData).content ?? "");
+                : obj.type === CanvasObjectType.TEXT_BOX
+                  ? ((obj.data as TextBoxData).content ?? "")
+                  : ((obj.data as StickyNoteData).content ?? "");
 
           if (!title.toLowerCase().includes(normalizedSearch)) return false;
         }
@@ -72,5 +76,6 @@ export function useWorkshopSidebar() {
     setTypeFilter,
     setStatusFilter,
     selectObject,
+    openObjectDetails,
   };
 }

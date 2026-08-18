@@ -18,7 +18,7 @@ export function useUpdateBoardColumn(
 
     return useApiMutation(
         (dto: UpdateBoardColumnDto) =>
-            boardService.updateColumn(columnId, dto),
+            boardService.updateColumn(projectId, columnId, dto),
 
         {
             showSuccessToast: false,
@@ -67,7 +67,7 @@ export function useUpdateBoardColumnById(projectId: string) {
 
     return useApiMutation(
         ({ columnId, dto }: UpdateBoardColumnByIdVariables) =>
-            boardService.updateColumn(columnId, dto),
+            boardService.updateColumn(projectId, columnId, dto),
 
         {
             showSuccessToast: false,

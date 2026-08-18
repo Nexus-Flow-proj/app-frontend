@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { QUERY_KEYS } from "@/constants";
+import { setCsrfToken } from "@/lib/api/csrf";
 import { markSessionActive } from "@/lib/api/session";
 import { useAuthStore } from "@/store";
 import { authService } from "../services";
@@ -19,8 +20,9 @@ export function useRegister() {
     {
       showSuccessToast: false,
       onSuccess: (res) => {
-        const { user } = res.data;
+        const { user, csrfToken } = res.data;
         markSessionActive();
+        setCsrfToken(csrfToken);
         setAuth(user);
         queryClient.setQueryData(QUERY_KEYS.auth.me, res);
         toast.success("Account created! Welcome to Nexus-Flow.");

@@ -9,11 +9,11 @@ export * from "./workshopStore";
 
 export interface Canvas {
   id: string;
-  projectId: string;
-  owner: User;
-  type: CanvasType;
+  draftId?: string;
+  projectId?: string;
+  owner?: User;
+  type?: CanvasType;
   objects: CanvasObject[];
-  connections: CanvasConnection[];
   viewport: CanvasViewport;
   createdAt: string;
   updatedAt: string;
@@ -21,6 +21,8 @@ export interface Canvas {
 
 export interface CanvasObject {
   id: string;
+  workshopId?: string;
+  parentFrameId?: string | null;
   type: CanvasObjectType;
   x: number;
   y: number;
@@ -29,20 +31,8 @@ export interface CanvasObject {
   rotation: number;
   zIndex: number;
   data: CanvasObjectData;
-}
-
-export interface CanvasConnection {
-  id: string;
-  fromObjectId: string;
-  toObjectId: string;
-  label?: string;
-  style: ConnectionStyle;
-}
-
-export interface ConnectionStyle {
-  color: string;
-  strokeWidth: number;
-  type: "ARROW" | "LINE" | "DASHED";
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CanvasViewport {
@@ -53,18 +43,94 @@ export interface CanvasViewport {
 
 // ─── Active tool in the toolbar (UI state only) ───────────────
 export type WorkshopTool =
-  | "select" // default: move + resize + click
+  | "select" // default: move, select, and open details
   | "pan" // hand tool: pan canvas without selecting
   | "task" // click canvas to place a TaskCard
   | "sticky" // click canvas to place a StickyNote
-  | "section" // drag canvas to draw a SectionFrame
-  | "connect"; // click a source node then a target to draw an edge
+  | "text" // click canvas to place a TextBox
+  | "section"; // drag canvas to draw a SectionFrame
 
 // ─── Undo / redo snapshot ─────────────────────────────────────
 // viewport is not included. Undo/redo only affects canvas content, not camera position.
 export interface WorkshopSnapshot {
   objects: CanvasObject[];
-  connections: CanvasConnection[];
+}
+
+export interface WorkshopCanvasResponseDto {
+  id: string;
+  draftId: string;
+  viewportX?: number;
+  viewportY?: number;
+  zoomLevel?: number;
+  viewport?: CanvasViewport;
+  objects: WorkshopObjectDto[];
+  connections: WorkshopConnectionDto[];
+}
+
+export interface WorkshopObjectDto {
+  id: string;
+  workshopId?: string;
+  parentFrameId?: string | null;
+  type: CanvasObjectType;
+  x: number;
+  y: number;
+  /** Legacy coordinate names kept only for backward-compatible reads. */
+  positionX?: number;
+  positionY?: number;
+  width: number;
+  height: number;
+  rotation?: number;
+  zIndex: number;
+  data: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkshopConnectionDto {
+  id: string;
+  workshopId?: string;
+  fromObjectId: string;
+  toObjectId: string;
+  label?: string | null;
+  type?: string | null;
+}
+
+export interface SaveWorkshopDto {
+  viewport: CanvasViewport;
+  objects: WorkshopObjectDto[];
+  connections: WorkshopConnectionDto[];
+}
+
+export type AiGenerationStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+
+export interface AiGeneration {
+  id?: string;
+  generationId?: string;
+  status: AiGenerationStatus;
+  output?: Record<string, unknown>;
+  outputSnapshot?: Record<string, unknown> | null;
+  error?: string;
+  errorMessage?: string | null;
+}
+
+export interface AiMessage {
+  id?: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: string;
+}
+
+export interface AiGenerationEvent extends AiGeneration {
+  stage?: string;
+  chunk?: string;
+  workshop?: WorkshopCanvasResponseDto;
+}
+
+export interface SubmitOnboardingResult {
+  projectId: string;
+  projectName?: string;
+  boardColumns?: Array<{ columnId: string; name: string; taskCount: number }>;
+  taskCount?: number;
 }
 
 // ─── Sidebar filter state ─────────────────────────────────────

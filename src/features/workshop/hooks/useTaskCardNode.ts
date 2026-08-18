@@ -6,34 +6,19 @@ import type { CanvasObject, TaskCardData } from "../types";
 export function useTaskCardNode(obj: CanvasObject) {
   const data = obj.data as TaskCardData;
 
-  const selectedObjectId = useWorkshopStore((s) => s.selectedObjectId);
-  const hoveredObjectId = useWorkshopStore((s) => s.hoveredObjectId);
-  const isConnecting = useWorkshopStore((s) => s.isConnecting);
-  const connectFromId = useWorkshopStore((s) => s.connectFromId);
+  const isSelected = useWorkshopStore((s) => s.selectedObjectId === obj.id);
+  const isHovered = useWorkshopStore((s) => s.hoveredObjectId === obj.id);
   const activeTool = useWorkshopStore((s) => s.activeTool);
 
   const selectObject = useWorkshopStore((s) => s.selectObject);
   const openObjectDetails = useWorkshopStore((s) => s.openObjectDetails);
   const setHoveredObject = useWorkshopStore((s) => s.setHoveredObject);
   const moveObject = useWorkshopStore((s) => s.moveObject);
-  const startConnect = useWorkshopStore((s) => s.startConnect);
-  const finishConnect = useWorkshopStore((s) => s.finishConnect);
-
-  // Derived values
-  const isSelected = selectedObjectId === obj.id;
-  const isHovered = hoveredObjectId === obj.id;
 
   const statusCfg = STATUS_CONFIG[data.status] ?? STATUS_CONFIG.BACKLOG;
   const priorityCfg = PRIORITY_CONFIG[data.priority] ?? PRIORITY_CONFIG.LOW;
 
   const handleClick = () => {
-    // If the active tool is "connect", clicking this card means the user wants to create a connection.
-    if (activeTool === "connect") {
-      if (isConnecting && connectFromId) finishConnect(obj.id);
-      else startConnect(obj.id);
-      return;
-    }
-
     if (activeTool === "select") {
       selectObject(obj.id);
     }

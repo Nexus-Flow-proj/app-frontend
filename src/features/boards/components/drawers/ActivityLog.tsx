@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-
+import UserLink from "@/components/shared/UserLink";
 import type { ActivityEvent } from "../../types";
 
 interface ActivityLogProps {
@@ -21,9 +21,11 @@ export function ActivityLog({ events }: ActivityLogProps) {
           <div className="size-1.5 rounded-full bg-muted-foreground/40 mt-1.5 shrink-0" />
           <div>
             <span className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {event.actor.name}
-              </span>
+              <UserLink
+                userId={event.actor.id}
+                name={event.actor.name}
+                className="font-medium text-foreground mr-1"
+              />
               {event.action}
             </span>
             <p className="text-[11px] text-muted-foreground/60 mt-0.5">

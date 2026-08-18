@@ -51,6 +51,7 @@ export function NavDrafts() {
         )}
 
         {drafts.map((draft) => {
+          if (draft.status === "SUBMITTED") return null;
           const name = draft.projectInfo.name || "Untitled draft";
           const color = draft.projectInfo.color || "#2563eb";
 

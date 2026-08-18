@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -39,6 +39,7 @@ export function useWorkshopController(draftId: string) {
     useState<AiGenerationStatus | null>(null);
   const [streamedText, setStreamedText] = useState("");
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const handledCompletedRef = useRef<string | null>(null);
 
   const canvasQuery = useQuery({
     queryKey: QUERY_KEYS.drafts.workshop(draftId),
@@ -66,7 +67,7 @@ export function useWorkshopController(draftId: string) {
 
   useBlocker(({ currentLocation, nextLocation }) => {
     if (currentLocation.pathname === nextLocation.pathname) return false;
-    return isDirty; // لو فيه تعديلات غير محفوظة، اعمل block
+    return isDirty;
   });
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export function useWorkshopController(draftId: string) {
     mutationFn: (prompt: string) =>
       workshopService.generatePlan(draftId, prompt),
     onMutate: () => {
+      handledCompletedRef.current = null;
       setGenerationStatus("PENDING");
       setGenerationError(null);
       setStreamedText("");
@@ -154,15 +156,22 @@ export function useWorkshopController(draftId: string) {
         setStreamedText((current) => current + event.progressMessage + "\n");
       if (event.error || event.errorMessage)
         setGenerationError(event.error ?? event.errorMessage ?? null);
-      if (event.status === "COMPLETED" && event.workshop) {
-        applyWorkshop(event.workshop);
-        queryClient.setQueryData(QUERY_KEYS.drafts.workshop(draftId), {
-          success: true,
-          message: "Workshop generated",
-          statusCode: 200,
-          data: event.workshop,
-        });
+      if (event.status === "COMPLETED") {
+        handledCompletedRef.current = eventId ?? generationId ?? "completed";
         setStreamedText("");
+        if (event.workshop) {
+          applyWorkshop(event.workshop);
+          queryClient.setQueryData(QUERY_KEYS.drafts.workshop(draftId), {
+            success: true,
+            message: "Workshop generated",
+            statusCode: 200,
+            data: event.workshop,
+          });
+        } else {
+          void queryClient.invalidateQueries({
+            queryKey: QUERY_KEYS.drafts.workshop(draftId),
+          });
+        }
         void queryClient.invalidateQueries({
           queryKey: [...QUERY_KEYS.drafts.detail(draftId), "ai-messages"],
         });
@@ -195,24 +204,28 @@ export function useWorkshopController(draftId: string) {
       generationStatus !== "COMPLETED" &&
       generationStatus !== "FAILED",
     refetchInterval: (query) => {
-      const status = query.state.data?.data.status;
+      const status = query.state.data?.data?.status;
       return status === "COMPLETED" || status === "FAILED" ? false : 2_500;
     },
     select: (response) => response.data,
   });
 
   useEffect(() => {
-    if (!generationQuery.data) return;
+    if (!generationQuery.data || !generationId) return;
     const status = generationQuery.data.status;
-    if (status === "COMPLETED" || status === "FAILED") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setGenerationStatus(status);
+    if (status === "COMPLETED") {
+      if (handledCompletedRef.current !== generationId) {
+        handledCompletedRef.current = generationId;
+        setStreamedText("");
+        void queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.drafts.workshop(draftId),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: [...QUERY_KEYS.drafts.detail(draftId), "ai-messages"],
+        });
+      }
     }
-    if (generationQuery.data.status === "COMPLETED") {
-      void refetchCanvas();
-      void refetchMessages();
-    }
-  }, [generationQuery.data, refetchCanvas, refetchMessages]);
+  }, [generationQuery.data, generationId, draftId, queryClient]);
 
   const submitMutation = useMutation({
     mutationFn: () => workshopService.submitDraft(draftId),

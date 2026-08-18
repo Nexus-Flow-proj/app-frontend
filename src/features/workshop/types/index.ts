@@ -119,8 +119,11 @@ export interface AiGeneration {
 
 export interface AiMessage {
   id?: string;
+  draftId?: string;
+  projectId?: string | null;
   role: "user" | "assistant";
   content: string;
+  generationJobId?: string | null;
   createdAt?: string;
 }
 

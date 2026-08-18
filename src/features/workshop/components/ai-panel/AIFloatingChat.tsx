@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { AIThinkingBubble } from "./AIThinkingBubble";
 import type { AiGenerationStatus, AiMessage } from "../../types";
 
 interface AIFloatingChatProps {
@@ -227,8 +228,8 @@ export function AIFloatingChat({
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                     <LoaderCircle className="size-4 animate-spin text-primary" />
                   </span>
-                  <div className="max-w-[82%] rounded-2xl bg-muted px-3.5 py-2.5 text-sm leading-6">
-                    {streamedText || "Building and arranging your workshop…"}
+                  <div className="min-w-0 flex-1">
+                    <AIThinkingBubble streamedText={streamedText} />
                   </div>
                 </div>
               ) : null}

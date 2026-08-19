@@ -51,13 +51,15 @@ export function useWorkshopController(draftId: string) {
 
   const isLocalTerminal =
     generationStatus === "COMPLETED" || generationStatus === "FAILED";
+  const isActivelyGenerating =
+    generationStatus === "PENDING" || generationStatus === "PROCESSING";
 
   const messagesQuery = useQuery({
     queryKey: [...QUERY_KEYS.drafts.detail(draftId), "ai-messages"],
     queryFn: () => workshopService.getMessages(draftId),
     select: (response) => response.data,
     staleTime: 5_000,
-    refetchInterval: isLocalTerminal ? false : 2_000,
+    refetchInterval: isActivelyGenerating ? 2_000 : false,
   });
   const refetchCanvas = canvasQuery.refetch;
   const refetchMessages = messagesQuery.refetch;

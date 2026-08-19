@@ -50,7 +50,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <NavProjects projects={projects} isLoading={projectsLoading} />
         <NavSecondary items={NAV_SECONDARY} className="mt-auto" />
       </SidebarContent>
-
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>

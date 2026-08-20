@@ -435,6 +435,7 @@ function BoardsPage() {
             projectId={resolvedProjectId}
             draftId={projectQuery.data?.draftId}
             current="board"
+            className="bottom-8"
           />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
@@ -445,6 +446,7 @@ function BoardsPage() {
             <BoardFilters
               filters={filters}
               members={members}
+              onChangeStatus={(statuses) => setFilters({ statuses })}
               onChangePriority={(priorities) => setFilters({ priorities })}
               onChangeAssignee={(assigneeIds) => setFilters({ assigneeIds })}
               onChangeDueDate={(dueDateRange) => setFilters({ dueDateRange })}

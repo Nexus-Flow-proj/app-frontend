@@ -106,9 +106,9 @@ export function ProjectMembersTableCard({
 
   return (
     <Card className="rounded-lg">
-      <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1.5">
-          <CardTitle className="flex items-center gap-2">
+      <CardHeader className="gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+        <div className="min-w-0 space-y-1.5">
+          <CardTitle className="flex min-w-0 items-center gap-2 text-base sm:text-lg">
             <ShieldCheck className="size-4 text-muted-foreground" />
             Project members
           </CardTitle>
@@ -118,13 +118,14 @@ export function ProjectMembersTableCard({
           </CardDescription>
         </div>
         {canChangeRoles && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               disabled={!hasRoleChanges || isTableBusy}
               onClick={handleDiscardRoleChanges}
+              className="w-full"
             >
               <RotateCcw className="size-3.5" />
               Discard changes
@@ -135,6 +136,7 @@ export function ProjectMembersTableCard({
               disabled={!hasRoleChanges || isBusy}
               isLoading={isSavingRoles}
               onClick={handleSaveRoleChanges}
+              className="w-full"
             >
               <Save className="size-3.5" />
               Save changes
@@ -142,7 +144,7 @@ export function ProjectMembersTableCard({
           </div>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
         <ProjectMembersTable
           projectId={projectId}
           members={members}

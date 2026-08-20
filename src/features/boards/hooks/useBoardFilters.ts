@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router";
 import { isPast, isToday, endOfWeek, isBefore } from "date-fns";
 import { useFilterParams } from "@/hooks/useSearchParams";
 import type { Task, BoardFiltersState } from "../types";
-import type { TaskPriority } from "../types/enums";
+import type { TaskPriority, TaskStatus } from "../types/enums";
 import { BOARD_FILTER_PARAM_KEYS } from "../constants/boardBaramKeys";
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -14,6 +14,8 @@ export function useUrlFilters(): BoardFiltersState {
   return useMemo(
     () => ({
       search: params.get("search") ?? "",
+      statuses: (params.get("status")?.split(",").filter(Boolean) ??
+        []) as TaskStatus[],
       priorities: (params.get("priority")?.split(",").filter(Boolean) ??
         []) as TaskPriority[],
       assigneeIds: params.get("assignee")?.split(",").filter(Boolean) ?? [],
@@ -35,6 +37,11 @@ export function useSetUrlFilters() {
 
       if (patch.search !== undefined) {
         nextParams.search = patch.search;
+      }
+      if (patch.statuses !== undefined) {
+        nextParams.status = patch.statuses.length
+          ? patch.statuses.join(",")
+          : null;
       }
       if (patch.priorities !== undefined) {
         nextParams.priority = patch.priorities.length
@@ -70,6 +77,7 @@ export function useActiveFilterCount(): number {
   const filters = useUrlFilters();
   let n = 0;
   if (filters.search) n++;
+  if (filters.statuses.length) n++;
   if (filters.priorities.length) n++;
   if (filters.assigneeIds.length) n++;
   if (filters.dueDateRange) n++;
@@ -87,6 +95,9 @@ export function taskMatchesFilters(
     filters.search &&
     !task.title.toLowerCase().includes(filters.search.toLowerCase())
   )
+    return false;
+
+  if (filters.statuses.length && !filters.statuses.includes(task.status))
     return false;
 
   if (filters.priorities.length && !filters.priorities.includes(task.priority))

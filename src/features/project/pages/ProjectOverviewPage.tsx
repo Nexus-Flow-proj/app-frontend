@@ -41,10 +41,9 @@ export default function ProjectOverviewPage() {
     return <ProjectUnavailableState />;
   }
 
-  const taskCount = project.taskCount ?? 0;
-  const completedTaskCount = project.completedTaskCount ?? 0;
-  const completedPercent =
-    taskCount > 0 ? Math.round((completedTaskCount / taskCount) * 100) : 0;
+  const taskCount = project.tasksCount ?? 0;
+  const completedTaskCount = project.completedTasks ?? 0;
+  const completedPercent = project.progress ?? 0;
   const createdAt = project.created_at ?? "";
   const updatedAt = project.updated_at ?? "";
   const currentMember = project.currentMember ?? null;

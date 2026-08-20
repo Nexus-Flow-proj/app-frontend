@@ -108,7 +108,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
         type="submit"
         isLoading={isPending}
         disabled={!isDirty}
-        className="text-xs font-bold"
+        className="w-full text-xs font-bold sm:w-auto"
       >
         Save changes
       </Button>

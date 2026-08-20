@@ -1,11 +1,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useTheme } from "@/providers/ThemeProvider";
-import { Layer, Line, Rect, Stage, Transformer } from "react-konva";
+import { Textarea } from "@/components/ui/textarea";
+import { Ellipse, Layer, Line, Rect, RegularPolygon, Stage, Transformer } from "react-konva";
 import type Konva from "konva";
 import type { Task } from "@/features/boards/types";
 import { MINI_CANVAS } from "../../constants/design";
 import { useMiniWorkshopStore } from "../../store/miniWorkshopStore";
-import type { CanvasPoint, MiniCanvasObject, MiniConnection, MiniViewport } from "../../types";
+import type { CanvasPoint, MiniCanvasObject, MiniConnection, MiniObjectStyle, MiniViewport, ShapeObject } from "../../types";
 import { connectorPoints, intersects, objectBounds, pointInObject, screenToCanvas, snapValue, viewportBounds } from "../../utils/geometry";
 import { createFrameObject, createMiniId, createShapeObject, createStickyObject, createTextObject } from "../../utils/objectFactory";
 import { ConnectionLayer } from "./ConnectionLayer";
@@ -34,17 +35,229 @@ interface Marquee {
   current: CanvasPoint;
 }
 
+interface ShapeDraft {
+  start: CanvasPoint;
+  current: CanvasPoint;
+}
+
+interface InlineTextEditorState {
+  objectId: string;
+  value: string;
+}
+
+const MIN_SHAPE_SIZE = {
+  width: 40,
+  height: 32,
+};
+
 function isTypingTarget(target: EventTarget | null) {
   return target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 }
 
-function normalizeStroke(points: number[][], zIndex: number): MiniCanvasObject | null {
+function shapeDraftBox(draft: ShapeDraft) {
+  return {
+    x: Math.min(draft.start.x, draft.current.x),
+    y: Math.min(draft.start.y, draft.current.y),
+    width: Math.abs(draft.current.x - draft.start.x),
+    height: Math.abs(draft.current.y - draft.start.y),
+  };
+}
+
+function inlineEditableText(object: MiniCanvasObject) {
+  if (object.type === "SHAPE") return object.data.text ?? "";
+  if (object.type === "TEXT" || object.type === "STICKY_NOTE") return object.data.text;
+  return null;
+}
+
+function withoutInlineText(object: MiniCanvasObject): MiniCanvasObject {
+  if (object.type === "SHAPE") return { ...object, data: { ...object.data, text: "" } };
+  if (object.type === "TEXT" || object.type === "STICKY_NOTE") return { ...object, data: { text: "" } };
+  return object;
+}
+
+function inlineEditorFrame(object: MiniCanvasObject, viewport: MiniViewport) {
+  const base = { x: object.x, y: object.y, width: object.width, height: object.height };
+
+  if (object.type === "SHAPE") {
+    base.x += 18;
+    base.y += 16;
+    base.width = Math.max(24, object.width - 36);
+    base.height = Math.max(24, object.height - 32);
+  }
+
+  if (object.type === "STICKY_NOTE") {
+    base.x += 14;
+    base.y += 14;
+    base.width = Math.max(24, object.width - 28);
+    base.height = Math.max(24, object.height - 28);
+  }
+
+  return {
+    left: viewport.x + base.x * viewport.scale,
+    top: viewport.y + base.y * viewport.scale,
+    width: base.width * viewport.scale,
+    height: base.height * viewport.scale,
+  };
+}
+
+function shouldCenterInlineText(object: MiniCanvasObject) {
+  return object.type === "SHAPE" || object.type === "TEXT";
+}
+
+function estimateInlineLineCount(value: string, frameWidth: number, fontSize: number) {
+  const averageCharacterWidth = fontSize * 0.56;
+  const charactersPerLine = Math.max(1, Math.floor(frameWidth / averageCharacterWidth));
+  const paragraphs = value.split("\n");
+
+  return paragraphs.reduce((total, paragraph) => {
+    return total + Math.max(1, Math.ceil(paragraph.length / charactersPerLine));
+  }, 0);
+}
+
+function inlineEditorPaddingTop(
+  object: MiniCanvasObject,
+  value: string,
+  frame: ReturnType<typeof inlineEditorFrame>,
+  fontSize: number,
+  lineHeight: number,
+) {
+  if (!shouldCenterInlineText(object)) return 0;
+  const lines = estimateInlineLineCount(value, frame.width, fontSize);
+  return Math.max(0, (frame.height - lines * lineHeight) / 2);
+}
+
+function applyCreationStyle<T extends MiniCanvasObject>(
+  object: T,
+  defaultStyle: MiniObjectStyle,
+): T {
+  const textStyle = {
+    opacity: defaultStyle.opacity,
+    fontSize: defaultStyle.fontSize,
+    fontWeight: defaultStyle.fontWeight,
+    textAlign: defaultStyle.textAlign,
+    textColor: defaultStyle.textColor,
+  };
+
+  if (object.type === "SHAPE") {
+    return { ...object, style: { ...object.style, ...defaultStyle } } as T;
+  }
+
+  if (object.type === "TEXT") {
+    return {
+      ...object,
+      style: {
+        ...object.style,
+        ...textStyle,
+        fill: "transparent",
+        stroke: "transparent",
+        strokeWidth: 0,
+      },
+    } as T;
+  }
+
+  if (object.type === "STICKY_NOTE" || object.type === "FRAME") {
+    return {
+      ...object,
+      style: {
+        ...object.style,
+        fill: defaultStyle.fill,
+        stroke: defaultStyle.stroke,
+        strokeWidth: defaultStyle.strokeWidth,
+        dash: defaultStyle.dash,
+        ...textStyle,
+      },
+    } as T;
+  }
+
+  return object;
+}
+
+function ShapeDraftPreview({ object, scale }: { object: ShapeObject; scale: number }) {
+  const common = {
+    x: object.x,
+    y: object.y,
+    width: object.width,
+    height: object.height,
+    fill: object.style.fill,
+    stroke: object.style.stroke,
+    strokeWidth: object.style.strokeWidth / scale,
+    dash: [8 / scale, 5 / scale],
+    opacity: 0.72,
+    listening: false,
+  };
+
+  if (object.data.shape === "ellipse") {
+    return (
+      <Ellipse
+        x={object.x + object.width / 2}
+        y={object.y + object.height / 2}
+        radiusX={object.width / 2}
+        radiusY={object.height / 2}
+        fill={common.fill}
+        stroke={common.stroke}
+        strokeWidth={common.strokeWidth}
+        dash={common.dash}
+        opacity={common.opacity}
+        listening={false}
+      />
+    );
+  }
+
+  if (object.data.shape === "diamond") {
+    return (
+      <RegularPolygon
+        x={object.x + object.width / 2}
+        y={object.y + object.height / 2}
+        sides={4}
+        radius={Math.min(object.width, object.height) / 1.45}
+        scaleX={object.width / Math.max(object.height, 1)}
+        fill={common.fill}
+        stroke={common.stroke}
+        strokeWidth={common.strokeWidth}
+        dash={common.dash}
+        opacity={common.opacity}
+        listening={false}
+      />
+    );
+  }
+
+  if (object.data.shape === "triangle") {
+    return (
+      <RegularPolygon
+        x={object.x + object.width / 2}
+        y={object.y + object.height / 2}
+        sides={3}
+        radius={Math.min(object.width, object.height) / 1.45}
+        fill={common.fill}
+        stroke={common.stroke}
+        strokeWidth={common.strokeWidth}
+        dash={common.dash}
+        opacity={common.opacity}
+        listening={false}
+      />
+    );
+  }
+
+  return <Rect {...common} cornerRadius={object.data.shape === "rounded-rectangle" ? 18 : 2} />;
+}
+
+function normalizeStroke(
+  points: number[][],
+  zIndex: number,
+  defaultStyle: MiniObjectStyle,
+): MiniCanvasObject | null {
   if (points.length < 2) return null;
   const xs = points.map((point) => point[0]); const ys = points.map((point) => point[1]);
   const x = Math.min(...xs); const y = Math.min(...ys); const width = Math.max(8, Math.max(...xs) - x); const height = Math.max(8, Math.max(...ys) - y);
   return {
     id: createMiniId("stroke"), type: "FREEHAND", x, y, width, height, rotation: 0, zIndex, groupId: null, locked: false,
-    style: { fill: "transparent", stroke: "#334155", strokeWidth: 5, opacity: 1 },
+    style: {
+      fill: "transparent",
+      stroke: defaultStyle.stroke,
+      strokeWidth: Math.max(2, defaultStyle.strokeWidth * 2.5),
+      dash: defaultStyle.dash,
+      opacity: defaultStyle.opacity,
+    },
     data: { points: points.map(([pointX, pointY, pressure]) => [pointX - x, pointY - y, pressure ?? 0.5]) },
   };
 }
@@ -55,6 +268,7 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const drawingLineRef = useRef<Konva.Line>(null);
+  const inlineTextareaRef = useRef<HTMLTextAreaElement>(null);
   const drawingPointsRef = useRef<number[]>([]);
   const drawingPreviewPointsRef = useRef<number[]>([]);
   const clipboardRef = useRef<{ objects: MiniCanvasObject[]; connections: MiniConnection[] } | null>(null);
@@ -65,6 +279,8 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
   const horizontalGuideRef = useRef<Konva.Line>(null);
   const [size, setSize] = useState({ width: 1, height: 1 });
   const [marquee, setMarquee] = useState<Marquee | null>(null);
+  const [shapeDraft, setShapeDraft] = useState<ShapeDraft | null>(null);
+  const [inlineEditor, setInlineEditor] = useState<InlineTextEditorState | null>(null);
   const [drawing, setDrawing] = useState(false);
 
   const objectsById = useMiniWorkshopStore((state) => state.objectsById);
@@ -75,6 +291,7 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
   const selectedIds = useMiniWorkshopStore((state) => state.selectedIds);
   const tool = useMiniWorkshopStore((state) => state.activeTool);
   const shape = useMiniWorkshopStore((state) => state.activeShape);
+  const defaultStyle = useMiniWorkshopStore((state) => state.defaultStyle);
   const connectorSourceId = useMiniWorkshopStore((state) => state.connectorSourceId);
   const connectorRouting = useMiniWorkshopStore((state) => state.connectorRouting);
   const canUndo = useMiniWorkshopStore((state) => state.undoStack.length > 0);
@@ -105,6 +322,15 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
   }, []);
 
   useEffect(() => { refreshBoardTasks(tasks); }, [refreshBoardTasks, tasks]);
+
+  const inlineObject = inlineEditor ? objectsById[inlineEditor.objectId] : null;
+  const inlineFrame = inlineObject ? inlineEditorFrame(inlineObject, viewport) : null;
+  const inlineEditorObjectId = inlineEditor?.objectId;
+
+  useEffect(() => {
+    if (!inlineEditorObjectId) return;
+    requestAnimationFrame(() => inlineTextareaRef.current?.select());
+  }, [inlineEditorObjectId]);
 
   useEffect(() => {
     const transformer = transformerRef.current; const stage = stageRef.current;
@@ -171,15 +397,30 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
 
   const hideGuides = useCallback(() => { verticalGuideRef.current?.visible(false); horizontalGuideRef.current?.visible(false); verticalGuideRef.current?.getLayer()?.batchDraw(); }, []);
 
+  const nextZIndex = useCallback(() => {
+    return objectOrder.length ? Math.max(...objectOrder.map((id) => objectsById[id]?.zIndex ?? 0)) + 1 : 1;
+  }, [objectOrder, objectsById]);
+
   const createAt = useCallback((point: CanvasPoint) => {
-    const zIndex = objectOrder.length ? Math.max(...objectOrder.map((id) => objectsById[id]?.zIndex ?? 0)) + 1 : 1;
-    if (tool === "shape") addObjects([createShapeObject({ x: point.x - 110, y: point.y - 70 }, shape, zIndex)]);
-    if (tool === "text") addObjects([createTextObject({ x: point.x - 130, y: point.y - 46 }, zIndex)]);
-    if (tool === "sticky") addObjects([createStickyObject({ x: point.x - 110, y: point.y - 110 }, zIndex)]);
-    if (tool === "frame") addObjects([createFrameObject({ x: point.x - 310, y: point.y - 210 }, zIndex)]);
+    const zIndex = nextZIndex();
+    if (tool === "shape") addObjects([applyCreationStyle(createShapeObject({ x: point.x - 110, y: point.y - 70 }, shape, zIndex), defaultStyle)]);
+    if (tool === "text") addObjects([applyCreationStyle(createTextObject({ x: point.x - 130, y: point.y - 46 }, zIndex), defaultStyle)]);
+    if (tool === "sticky") addObjects([applyCreationStyle(createStickyObject({ x: point.x - 110, y: point.y - 110 }, zIndex), defaultStyle)]);
+    if (tool === "frame") addObjects([applyCreationStyle(createFrameObject({ x: point.x - 310, y: point.y - 210 }, zIndex), defaultStyle)]);
     if (["shape", "text", "sticky", "frame"].includes(tool)) setTool("select");
     if (tool === "task") { onTaskPlacement(point); setTool("select"); }
-  }, [addObjects, objectOrder, objectsById, onTaskPlacement, setTool, shape, tool]);
+  }, [addObjects, defaultStyle, nextZIndex, onTaskPlacement, setTool, shape, tool]);
+
+  const shapeDraftObject = useMemo(() => {
+    if (!shapeDraft) return null;
+    const box = shapeDraftBox(shapeDraft);
+    if (box.width < MIN_SHAPE_SIZE.width || box.height < MIN_SHAPE_SIZE.height) return null;
+    const point = { x: box.x, y: box.y };
+    const object = applyCreationStyle(createShapeObject(point, shape, nextZIndex()), defaultStyle);
+    object.width = box.width;
+    object.height = box.height;
+    return object;
+  }, [defaultStyle, nextZIndex, shape, shapeDraft]);
 
   const handleStagePointerDown = useCallback((event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (tool === "eraser") {
@@ -190,7 +431,12 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
     }
     if (event.target !== event.target.getStage()) return;
     const point = pointer();
-    if (["shape", "text", "sticky", "frame", "task"].includes(tool)) { createAt(point); return; }
+    if (tool === "shape") {
+      select([]);
+      setShapeDraft({ start: point, current: point });
+      return;
+    }
+    if (["text", "sticky", "frame", "task"].includes(tool)) { createAt(point); return; }
     if (tool === "freehand") {
       setDrawing(true);
       drawingPointsRef.current = [point.x, point.y, 0.5];
@@ -203,19 +449,26 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
 
   const handleStagePointerMove = useCallback(() => {
     const point = pointer();
+    if (shapeDraft && tool === "shape") setShapeDraft((current) => current ? { ...current, current: point } : null);
     if (drawing && tool === "freehand") {
       drawingPointsRef.current.push(point.x, point.y, 0.5);
       drawingPreviewPointsRef.current.push(point.x, point.y);
       drawingLineRef.current?.points(drawingPreviewPointsRef.current); drawingLineRef.current?.getLayer()?.batchDraw();
     }
     if (marquee) setMarquee((current) => current ? { ...current, current: point } : null);
-  }, [drawing, marquee, pointer, tool]);
+  }, [drawing, marquee, pointer, shapeDraft, tool]);
 
   const handleStagePointerUp = useCallback(() => {
+    if (shapeDraft && shapeDraftObject) {
+      addObjects([shapeDraftObject]);
+      select([shapeDraftObject.id]);
+      setTool("select");
+    }
+    if (shapeDraft) setShapeDraft(null);
     if (drawing) {
       const grouped: number[][] = [];
       for (let index = 0; index < drawingPointsRef.current.length; index += 3) grouped.push(drawingPointsRef.current.slice(index, index + 3));
-      const object = normalizeStroke(grouped, objectOrder.length + 1); if (object) addObjects([object]);
+      const object = normalizeStroke(grouped, objectOrder.length + 1, defaultStyle); if (object) addObjects([object]);
       drawingPointsRef.current = [];
       drawingPreviewPointsRef.current = [];
       drawingLineRef.current?.points([]);
@@ -226,7 +479,7 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
       if (box.width > 3 || box.height > 3) select(objectOrder.filter((id) => objectsById[id] && intersects(objectBounds(objectsById[id]), box)));
       setMarquee(null);
     }
-  }, [addObjects, drawing, marquee, objectOrder, objectsById, select]);
+  }, [addObjects, defaultStyle, drawing, marquee, objectOrder, objectsById, select, setTool, shapeDraft, shapeDraftObject]);
 
   const handleObjectSelect = useCallback((object: MiniCanvasObject, event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     event.cancelBubble = true;
@@ -243,6 +496,32 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
     const groupIds = object.groupId ? objectOrder.filter((id) => objectsById[id]?.groupId === object.groupId) : [object.id];
     if ("shiftKey" in event.evt && event.evt.shiftKey) groupIds.forEach(toggleSelection); else select(groupIds);
   }, [addConnection, connectorRouting, connectorSourceId, deleteObjects, objectOrder, objectsById, select, setConnectorSource, toggleSelection, tool]);
+
+  const commitInlineEdit = useCallback(() => {
+    if (!inlineEditor) return;
+    const object = objectsById[inlineEditor.objectId];
+    if (!object) {
+      setInlineEditor(null);
+      return;
+    }
+
+    const value = inlineEditor.value.trim();
+    if (object.type === "SHAPE") updateObject(object.id, { data: { ...object.data, text: value } } as Partial<MiniCanvasObject>);
+    if (object.type === "TEXT" || object.type === "STICKY_NOTE") updateObject(object.id, { data: { text: value } } as Partial<MiniCanvasObject>);
+    setInlineEditor(null);
+  }, [inlineEditor, objectsById, updateObject]);
+
+  const startInlineEdit = useCallback((object: MiniCanvasObject) => {
+    const value = inlineEditableText(object);
+    if (value === null || object.locked) {
+      onEditObject(object);
+      return;
+    }
+
+    select([object.id]);
+    setTool("select");
+    setInlineEditor({ objectId: object.id, value });
+  }, [onEditObject, select, setTool]);
 
   const handleTransformEnd = useCallback(() => {
     const stage = stageRef.current; if (!stage) return;
@@ -307,7 +586,7 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
         clipboardRef.current = { objects: copied, connections: copiedConnections }; addObjects(copied, copiedConnections); return;
       }
       if (event.key === "Delete" || event.key === "Backspace") { event.preventDefault(); deleteSelected(); return; }
-      if (event.key === "Escape") { setTool("select"); select([]); setConnectorSource(null); return; }
+      if (event.key === "Escape") { setTool("select"); select([]); setConnectorSource(null); setShapeDraft(null); setInlineEditor(null); return; }
       const shortcut: Record<string, typeof tool> = { v: "select", h: "pan", p: "freehand", e: "eraser", s: "shape", c: "connector", t: "text", n: "sticky", f: "frame", k: "task" };
       if (shortcut[event.key.toLowerCase()] && !command) setTool(shortcut[event.key.toLowerCase()]);
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key) && selectedIds.length) {
@@ -328,16 +607,59 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
 
   const marqueeRect = marquee ? { x: Math.min(marquee.start.x, marquee.current.x), y: Math.min(marquee.start.y, marquee.current.y), width: Math.abs(marquee.current.x - marquee.start.x), height: Math.abs(marquee.current.y - marquee.start.y) } : null;
   const darkCanvas = resolvedTheme === "dark";
+  const inlineFontSize = inlineObject ? (inlineObject.style.fontSize ?? 18) * viewport.scale : 18;
+  const inlineLineHeight = inlineFontSize * 1.2;
+  const inlinePaddingTop = inlineObject && inlineFrame && inlineEditor
+    ? inlineEditorPaddingTop(inlineObject, inlineEditor.value, inlineFrame, inlineFontSize, inlineLineHeight)
+    : 0;
 
   return <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[#f8f7fc] dark:bg-[#0b0912]">
     <Stage ref={stageRef} width={size.width} height={size.height} x={viewport.x} y={viewport.y} scaleX={viewport.scale} scaleY={viewport.scale} draggable={tool === "pan"} onDragEnd={handleStageDragEnd} onWheel={handleWheel} onMouseDown={handleStagePointerDown} onTouchStart={handleStagePointerDown} onMouseMove={handleStagePointerMove} onTouchMove={handleStagePointerMove} onMouseUp={handleStagePointerUp} onTouchEnd={handleStagePointerUp}>
       <Layer listening={false}><CanvasBackground bounds={backgroundBounds} dark={darkCanvas} scale={viewport.scale} /></Layer>
       <Layer id="mini-connection-layer" listening={false}><ConnectionLayer connections={connections} objectsById={objectsById} /></Layer>
-      <Layer>{visibleObjects.map((object) => <MiniCanvasNode key={object.id} object={object} asset={object.type === "IMAGE" ? assets[object.data.assetId] : undefined} interactionKey={`${tool}:${connectorSourceId ?? ""}:${viewport.scale}:${objectOrder.length}`} selected={selectedIds.includes(object.id)} connecting={connectorSourceId === object.id} onSelect={(event) => handleObjectSelect(object, event)} onOpen={() => object.type !== "FREEHAND" && onEditObject(object)} onDragMove={(x, y) => { smartPosition(object, x, y); refreshLiveConnections(); }} onDragEnd={(x, y) => { const position = smartPosition(object, x, y, false); hideGuides(); updateObject(object.id, position as Partial<MiniCanvasObject>); }} />)}</Layer>
-      <Layer><Line ref={verticalGuideRef} points={[]} stroke={MINI_CANVAS.guide} strokeWidth={1 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} visible={false} listening={false} /><Line ref={horizontalGuideRef} points={[]} stroke={MINI_CANVAS.guide} strokeWidth={1 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} visible={false} listening={false} /><Line ref={drawingLineRef} points={[]} stroke="#334155" strokeWidth={5} lineCap="round" lineJoin="round" listening={false} />{marqueeRect && <Rect {...marqueeRect} fill="rgba(139, 92, 246, 0.10)" stroke="#8b5cf6" strokeWidth={1.5 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} listening={false} />}<Transformer ref={transformerRef} visible={tool === "select"} listening={tool === "select"} rotateEnabled enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right", "top-center", "bottom-center"]} borderStroke="#8b5cf6" anchorFill="#ffffff" anchorStroke="#8b5cf6" anchorSize={9} boundBoxFunc={(oldBox, newBox) => newBox.width < 40 || newBox.height < 32 ? oldBox : newBox} onTransform={refreshLiveConnections} onTransformEnd={handleTransformEnd} /></Layer>
+      <Layer>{visibleObjects.map((object) => {
+        const displayObject = inlineEditor?.objectId === object.id ? withoutInlineText(object) : object;
+        return <MiniCanvasNode key={object.id} object={displayObject} asset={object.type === "IMAGE" ? assets[object.data.assetId] : undefined} interactionKey={`${tool}:${connectorSourceId ?? ""}:${viewport.scale}:${objectOrder.length}:${inlineEditor?.objectId ?? ""}`} selected={selectedIds.includes(object.id)} connecting={connectorSourceId === object.id} onSelect={(event) => handleObjectSelect(object, event)} onOpen={() => object.type !== "FREEHAND" && startInlineEdit(object)} onDragMove={(x, y) => { smartPosition(object, x, y); refreshLiveConnections(); }} onDragEnd={(x, y) => { const position = smartPosition(object, x, y, false); hideGuides(); updateObject(object.id, position as Partial<MiniCanvasObject>); }} />;
+      })}</Layer>
+      <Layer><Line ref={verticalGuideRef} points={[]} stroke={MINI_CANVAS.guide} strokeWidth={1 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} visible={false} listening={false} /><Line ref={horizontalGuideRef} points={[]} stroke={MINI_CANVAS.guide} strokeWidth={1 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} visible={false} listening={false} /><Line ref={drawingLineRef} points={[]} stroke={defaultStyle.stroke} strokeWidth={Math.max(2, defaultStyle.strokeWidth * 2.5)} dash={defaultStyle.dash} opacity={defaultStyle.opacity} lineCap="round" lineJoin="round" listening={false} />{shapeDraftObject && <ShapeDraftPreview object={shapeDraftObject} scale={viewport.scale} />}{marqueeRect && <Rect {...marqueeRect} fill="rgba(139, 92, 246, 0.10)" stroke="#8b5cf6" strokeWidth={1.5 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} listening={false} />}<Transformer ref={transformerRef} visible={tool === "select"} listening={tool === "select"} rotateEnabled enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right", "top-center", "bottom-center"]} borderStroke="#8b5cf6" anchorFill="#ffffff" anchorStroke="#8b5cf6" anchorSize={9} boundBoxFunc={(oldBox, newBox) => newBox.width < 40 || newBox.height < 32 ? oldBox : newBox} onTransform={refreshLiveConnections} onTransformEnd={handleTransformEnd} /></Layer>
     </Stage>
+    {inlineEditor && inlineObject && inlineFrame && (
+      <Textarea
+        ref={inlineTextareaRef}
+        autoFocus
+        value={inlineEditor.value}
+        aria-label="Edit object text"
+        className="absolute z-20 resize-none overflow-hidden border-primary/50 bg-transparent p-0 text-center shadow-none outline-none ring-0 focus-visible:ring-1 focus-visible:ring-primary"
+        style={{
+          left: inlineFrame.left,
+          top: inlineFrame.top,
+          width: inlineFrame.width,
+          height: inlineFrame.height,
+          minHeight: inlineFrame.height,
+          paddingTop: inlinePaddingTop,
+          paddingBottom: 0,
+          transform: `rotate(${inlineObject.rotation}deg)`,
+          transformOrigin: "center",
+          fontSize: inlineFontSize,
+          lineHeight: `${inlineLineHeight}px`,
+          fontWeight: inlineObject.style.fontWeight ?? 500,
+          color: inlineObject.style.textColor ?? "#1e293b",
+          fontFamily: inlineObject.style.fontFamily ?? MINI_CANVAS.fontFamily,
+          textAlign: inlineObject.style.textAlign ?? "center",
+        }}
+        onPointerDown={(event) => event.stopPropagation()}
+        onChange={(event) => setInlineEditor((current) => current ? { ...current, value: event.target.value } : null)}
+        onBlur={commitInlineEdit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            event.currentTarget.blur();
+          }
+        }}
+      />
+    )}
     <SelectionToolbar />
-    <MiniWorkshopToolbar tool={tool} canUndo={canUndo} canRedo={canRedo} onTool={setTool} onShape={setShape} onTemplates={onTemplates} onImage={onImage} onSearch={onSearch} onUndo={undo} onRedo={redo} />
+    <MiniWorkshopToolbar tool={tool} activeShape={shape} canUndo={canUndo} canRedo={canRedo} onTool={setTool} onShape={setShape} onTemplates={onTemplates} onImage={onImage} onSearch={onSearch} onUndo={undo} onRedo={redo} />
     <div className="pointer-events-none absolute bottom-5 left-5 rounded-full border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">{objectOrder.length} objects · {connections.length} links · {Math.round(viewport.scale * 100)}%</div>
   </div>;
 });

@@ -68,12 +68,11 @@ function memberName(member: {
 }
 
 function fileName(name: string, extension: string) {
-  return `${
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "mini-workshop"
-  }.${extension}`;
+  return `${name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "mini-workshop"
+    }.${extension}`;
 }
 
 function MiniWorkshopPage() {
@@ -155,10 +154,10 @@ function MiniWorkshopPage() {
     () =>
       objectOrder.length
         ? Math.max(
-            ...objectOrder.map(
-              (objectId) => objectsById[objectId]?.zIndex ?? 0,
-            ),
-          ) + 1
+          ...objectOrder.map(
+            (objectId) => objectsById[objectId]?.zIndex ?? 0,
+          ),
+        ) + 1
         : 1,
     [objectOrder, objectsById],
   );
@@ -425,6 +424,13 @@ function MiniWorkshopPage() {
           if (!open) setEditingObject(null);
         }}
         onSave={handleEditSave}
+      />
+
+      <ProjectWorkspaceNavigation
+        projectId={id}
+        draftId={projectQuery.data?.draftId}
+        current="mini-workshop"
+        className="bottom-8"
       />
 
       <UnsavedChangesDialog

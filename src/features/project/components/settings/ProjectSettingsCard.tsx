@@ -16,8 +16,8 @@ interface ProjectSettingsCardProps {
 export function ProjectSettingsCard({ project }: ProjectSettingsCardProps) {
   return (
     <Card className="rounded-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <FolderKanban className="size-4 text-muted-foreground" />
           Project details
         </CardTitle>
@@ -25,7 +25,7 @@ export function ProjectSettingsCard({ project }: ProjectSettingsCardProps) {
           Changes here update how the project appears across the workspace.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
         <ProjectSettingsForm project={project} />
       </CardContent>
     </Card>

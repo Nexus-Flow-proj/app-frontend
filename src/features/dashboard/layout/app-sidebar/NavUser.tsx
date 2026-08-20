@@ -2,8 +2,10 @@ import {
   BadgeCheckIcon,
   BellIcon,
   ChevronsUpDownIcon,
+  CreditCardIcon,
   LogOutIcon,
   SparklesIcon,
+  ZapIcon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,14 +28,18 @@ import { useNavigate } from "react-router";
 import { ROUTES } from "@/constants";
 import { useLogout } from "@/features/auth/hooks";
 import { useMyProfile } from "@/features/profile/hooks";
+import { useMySubscription } from "@/features/subscriptions/hooks";
+import { PlanBadge } from "@/features/subscriptions/components";
 
 export function NavUser() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { data: profile } = useMyProfile();
+  const { data: subscription } = useMySubscription();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
-  const plan: string = "Free"; // Replace with actual plan logic if available
+  const planTier = subscription?.plan?.tier ?? "FREE";
+  const isFree = planTier === "FREE";
 
   if (!user) {
     return (
@@ -75,24 +81,46 @@ export function NavUser() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="bg-sidebar-accent border-sidebar-accent-foreground text-sidebar-accent-foreground ">
+          <DropdownMenuContent className="bg-sidebar-accent border-sidebar-accent-foreground text-sidebar-accent-foreground min-w-56">
             <DropdownMenuLabel>
-              <div className="flex items-center gap-2 text-left text-sm">
+              <div className="flex items-center justify-between gap-2 text-left text-sm">
                 <NavUserInfo
                   avatarUrl={avatarUrl ?? undefined}
                   email={email}
                   name={name}
                 />
+                <PlanBadge tier={planTier} size="sm" />
               </div>
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem disabled={plan !== "Free"}>
-                <SparklesIcon />
-                Upgrade to Pro
-              </DropdownMenuItem>
+              {isFree ? (
+                <DropdownMenuItem
+                  onClick={() => navigate(ROUTES.PRICING)}
+                  className="cursor-pointer font-medium text-purple-600 dark:text-purple-400"
+                >
+                  <SparklesIcon className="text-purple-600 dark:text-purple-400" />
+                  Upgrade to Pro
+                </DropdownMenuItem>
+              ) : planTier === "PRO" ? (
+                <DropdownMenuItem
+                  onClick={() => navigate(ROUTES.PRICING)}
+                  className="cursor-pointer font-medium text-amber-600 dark:text-amber-400"
+                >
+                  <ZapIcon className="text-amber-600 dark:text-amber-400" />
+                  Upgrade to Business
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => navigate(ROUTES.PRICING)}
+                  className="cursor-pointer"
+                >
+                  <SparklesIcon />
+                  Plan Details
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
@@ -101,6 +129,10 @@ export function NavUser() {
               <DropdownMenuItem onClick={() => navigate(ROUTES.PROFILE)}>
                 <BadgeCheckIcon />
                 Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(ROUTES.BILLING)}>
+                <CreditCardIcon />
+                Subscription & Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <BellIcon />

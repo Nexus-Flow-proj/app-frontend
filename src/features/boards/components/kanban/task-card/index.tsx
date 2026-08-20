@@ -84,7 +84,7 @@ function TaskCard({
     >
       {/* Left accent */}
       <div
-        className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full"
+        className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full"
         style={{ background: accentColor }}
       />
 

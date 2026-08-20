@@ -253,7 +253,8 @@
   .custom-scrollbar:hover {
     @apply scrollbar-thumb-muted-foreground/30;
   }
-   input[type="number"]::-webkit-outer-spin-button,
+
+  input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
@@ -500,11 +501,9 @@
   position: absolute;
   inset: 0 0 auto;
   height: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--toast-accent),
-    color-mix(in oklab, var(--toast-accent) 38%, white)
-  );
+  background: linear-gradient(90deg,
+      var(--toast-accent),
+      color-mix(in oklab, var(--toast-accent) 38%, white));
 }
 
 .nexus-toast::after {
@@ -602,6 +601,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .animate-realtime-highlight,
   .animate-realtime-move,
   .animate-realtime-remove,
@@ -611,5 +611,158 @@
   .animate-comment-remove {
     animation-duration: 1ms;
     animation-iteration-count: 1;
+  }
+}
+
+
+
+/* logo */
+
+.bridge-loader {
+  display: block;
+  overflow: visible;
+  color: currentColor;
+}
+
+.bridge-loader .piece {
+  fill: currentColor;
+  transform-box: fill-box;
+}
+
+/* Left horizontal grows from left to right */
+.bridge-loader .piece-left {
+  transform-origin: left center;
+  animation: bridge-left 1.9s ease-in-out infinite;
+}
+
+/* First vertical top grows top -> down */
+.bridge-loader .piece-v1-top {
+  transform-origin: center top;
+  animation: bridge-v1-top 1.9s ease-in-out infinite;
+}
+
+/* First vertical bottom grows top -> down */
+.bridge-loader .piece-v1-bottom {
+  transform-origin: center top;
+  animation: bridge-v1-bottom 1.9s ease-in-out infinite;
+}
+
+/* Second full vertical grows top -> down */
+.bridge-loader .piece-v2 {
+  transform-origin: center top;
+  animation: bridge-v2 1.9s ease-in-out infinite;
+}
+
+/* Right horizontal grows left -> right */
+.bridge-loader .piece-right {
+  transform-origin: left center;
+  animation: bridge-right 1.9s ease-in-out infinite;
+}
+
+@keyframes bridge-left {
+
+  0%,
+  8% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  24%,
+  74% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
+@keyframes bridge-v1-top {
+
+  0%,
+  18% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+
+  34%,
+  74% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes bridge-v1-bottom {
+
+  0%,
+  26% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+
+  42%,
+  74% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes bridge-v2 {
+
+  0%,
+  34% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+
+  52%,
+  74% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes bridge-right {
+
+  0%,
+  44% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  60%,
+  74% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bridge-loader .piece {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

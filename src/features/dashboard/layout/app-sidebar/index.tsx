@@ -16,7 +16,7 @@ import { NavSecondary } from "./NavSecondary";
 import { NavUser } from "./NavUser";
 import { SearchForm } from "./SearchForm";
 import { NAV_MAIN, NAV_SECONDARY } from "../../constants/navItems";
-import Logo from "@/components/shared/Logo";
+import Logo from "@/components/shared/logo/Logo";
 import { useProjects } from "@/features/project/hooks";
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {

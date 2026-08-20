@@ -1,0 +1,464 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@plugin "tailwind-scrollbar";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary-950: var(--primary-950);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* ── Neutrals (warm-gray, barely violet-tinted) ── */
+  --background: oklch(0.99 0.004 293);
+  --foreground: oklch(0.16 0.02 293);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.02 293);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.02 293);
+
+  /* ── Primary — violet #9063EB ── */
+  --primary: oklch(0.54 0.21 293);
+  --primary-foreground: oklch(0.99 0.004 293);
+
+  /* ── Primary scale — 50 → 950 ── */
+  --primary-50: oklch(0.97 0.03 293);
+  /* #F0EAFF — hover bg, tints          */
+  --primary-100: oklch(0.93 0.06 293);
+  /* #DDD0FB — subtle fills              */
+  --primary-200: oklch(0.86 0.1 293);
+  /* #C4AFF7 — light tints               */
+  --primary-300: oklch(0.76 0.14 293);
+  /* #B089F3 — dark mode primary         */
+  --primary-400: oklch(0.65 0.18 293);
+  /* #9A74EF — hover on primary          */
+  --primary-500: oklch(0.54 0.21 293);
+  /* #9063EB ★ default primary           */
+  --primary-600: oklch(0.46 0.21 293);
+  /* #7A4FD4 — active/focus states       */
+  --primary-700: oklch(0.39 0.2 293);
+  /* #6B3EC7 — pressed states            */
+  --primary-800: oklch(0.3 0.17 293);
+  /* #532F9A — deep emphasis             */
+  --primary-900: oklch(0.22 0.13 293);
+  /* #3D1F7A — deep tints, dark bg       */
+  --primary-950: oklch(0.14 0.08 293);
+  /* #1F0D40 — darkest, near-black       */
+
+  /* ── Secondary — soft violet-tinted surface ── */
+  --secondary: oklch(0.95 0.025 293);
+  --secondary-foreground: oklch(0.35 0.12 293);
+
+  /* ── Muted — subdued backgrounds & labels ── */
+  --muted: oklch(0.95 0.012 293);
+  --muted-foreground: oklch(0.52 0.04 293);
+
+  /* ── Accent — indigo-blue (complementary, H≈260) ── */
+  --accent: oklch(0.94 0.03 260);
+  --accent-foreground: oklch(0.36 0.16 260);
+
+  /* ── Semantic ── */
+  --destructive: oklch(0.58 0.22 25);
+
+  /* ── Borders & inputs ── */
+  --border: oklch(0.9 0.018 293);
+  --input: oklch(0.9 0.018 293);
+  --ring: oklch(0.54 0.21 293);
+
+  /* ── Charts — violet → indigo → teal → amber → rose ── */
+  --chart-1: oklch(0.54 0.21 293);
+  /* violet    */
+  --chart-2: oklch(0.52 0.2 260);
+  /* indigo    */
+  --chart-3: oklch(0.6 0.14 195);
+  /* teal      */
+  --chart-4: oklch(0.72 0.16 75);
+  /* amber     */
+  --chart-5: oklch(0.62 0.2 20);
+  /* rose-red  */
+
+  --radius: 0.625rem;
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(0.97 0.012 293);
+  --sidebar-foreground: oklch(0.22 0.04 293);
+  --sidebar-primary: oklch(0.54 0.21 293);
+  --sidebar-primary-foreground: oklch(0.99 0.004 293);
+  --sidebar-accent: oklch(0.92 0.035 293);
+  --sidebar-accent-foreground: oklch(0.35 0.12 293);
+  --sidebar-border: oklch(0.89 0.022 293);
+  --sidebar-ring: oklch(0.54 0.21 293);
+}
+
+.dark {
+  /* ── Neutrals — deep violet-gray ── */
+  --background: oklch(0.14 0.022 293);
+  --foreground: oklch(0.96 0.008 293);
+  --card: oklch(0.19 0.025 293);
+  --card-foreground: oklch(0.96 0.008 293);
+  --popover: oklch(0.19 0.025 293);
+  --popover-foreground: oklch(0.96 0.008 293);
+
+  /* ── Primary — slightly brighter violet in dark mode ── */
+  --primary: oklch(0.68 0.2 293);
+  --primary-foreground: oklch(0.14 0.022 293);
+
+  /* ── Secondary — elevated dark surface ── */
+  --secondary: oklch(0.24 0.03 293);
+  --secondary-foreground: oklch(0.9 0.015 293);
+
+  /* ── Muted ── */
+  --muted: oklch(0.24 0.025 293);
+  --muted-foreground: oklch(0.65 0.04 293);
+
+  /* ── Accent — indigo tinted dark ── */
+  --accent: oklch(0.26 0.05 260);
+  --accent-foreground: oklch(0.82 0.14 260);
+
+  /* ── Semantic ── */
+  --destructive: oklch(0.7 0.19 22);
+
+  /* ── Borders & inputs ── */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.68 0.2 293);
+
+  /* ── Charts — same hues, lightness tuned for dark bg ── */
+  --chart-1: oklch(0.72 0.2 293);
+  /* violet    */
+  --chart-2: oklch(0.68 0.19 260);
+  /* indigo    */
+  --chart-3: oklch(0.72 0.13 195);
+  /* teal      */
+  --chart-4: oklch(0.8 0.15 75);
+  /* amber     */
+  --chart-5: oklch(0.72 0.19 20);
+  /* rose-red  */
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(0.19 0.025 293);
+  --sidebar-foreground: oklch(0.9 0.01 293);
+  --sidebar-primary: oklch(0.68 0.2 293);
+  --sidebar-primary-foreground: oklch(0.14 0.022 293);
+  --sidebar-accent: oklch(0.26 0.04 293);
+  --sidebar-accent-foreground: oklch(0.85 0.015 293);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.2 293);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border;
+  }
+
+  body:hover {
+    @apply scrollbar-thumb-muted-foreground/30;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar {
+    /* scrollbar-gutter: stable; */
+    @apply scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border;
+  }
+
+  .custom-scrollbar:hover {
+    @apply scrollbar-thumb-muted-foreground/30;
+  }
+   input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+
+/* ---------- ADD events (task added, column added, comment added) ---------- */
+@keyframes realtime-highlight {
+  0% {
+    transform: translateY(1px) scale(0.995);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  35% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 8px 22px var(--highlight-shadow);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.animate-realtime-highlight {
+  animation: realtime-highlight 850ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- MOVE events (task movement, column reorder) ---------- */
+@keyframes realtime-move {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    opacity: 0.88;
+  }
+
+  45% {
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 6px 18px var(--highlight-shadow);
+    opacity: 1;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.animate-realtime-move {
+  animation: realtime-move 420ms ease-out;
+}
+
+/* ---------- DELETE events (task, column, comment removed) ---------- */
+@keyframes realtime-remove {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    max-height: var(--item-height, 200px);
+    margin-bottom: var(--item-gap, 8px);
+  }
+
+  35% {
+    transform: translateY(0) scale(0.995);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translateY(-2px) scale(0.985);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.animate-realtime-remove {
+  animation: realtime-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Column-level variants (slightly different, since columns are wider) ---------- */
+@keyframes realtime-column-highlight {
+  0% {
+    transform: translateY(3px);
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  35% {
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px var(--highlight-ring),
+      0 10px 26px var(--highlight-shadow);
+  }
+
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.animate-column-add {
+  animation: realtime-column-highlight 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes realtime-column-remove {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translateY(-2px) scale(0.985);
+    opacity: 0;
+    max-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.animate-column-remove {
+  animation: realtime-column-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Comment-level variant (smaller, subtler — it's a nested item) ---------- */
+@keyframes realtime-comment-highlight {
+  0% {
+    transform: translateX(-12px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes realtime-comment-accent {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.35);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+.animate-comment-add {
+  position: relative;
+  animation: realtime-comment-highlight 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-comment-add::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--highlight-ring);
+  transform-origin: center;
+  pointer-events: none;
+  animation: realtime-comment-accent 850ms ease-out forwards;
+}
+
+@keyframes realtime-comment-remove {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+    max-height: var(--item-height, 200px);
+    margin-bottom: var(--item-gap, 8px);
+  }
+
+  100% {
+    transform: translateX(-8px);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.animate-comment-remove {
+  animation: realtime-comment-remove 220ms ease-out forwards;
+  overflow: hidden;
+}
+
+/* ---------- Theme tokens ---------- */
+:root {
+  --highlight-ring: color-mix(in oklch, var(--primary) 60%, transparent);
+  --highlight-shadow: color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+.dark {
+  --highlight-ring: color-mix(in oklch, var(--primary) 55%, transparent);
+  --highlight-shadow: color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-realtime-highlight,
+  .animate-realtime-move,
+  .animate-realtime-remove,
+  .animate-column-add,
+  .animate-column-remove,
+  .animate-comment-add,
+  .animate-comment-remove {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}

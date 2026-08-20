@@ -1,0 +1,44 @@
+import type {
+    BoardColumn,
+    BoardState,
+    Task,
+} from "../types";
+
+export function buildBoardState(
+    columns: BoardColumn[],
+    tasks: Task[],
+): BoardState {
+    const columnsMap: BoardState["columns"] = {};
+    const tasksMap: BoardState["tasks"] = {};
+    const columnOrder: string[] = [];
+
+    const orderedColumns = [...columns].sort(
+        (a, b) => a.sortOrder - b.sortOrder,
+    );
+
+    // Build column lookup
+    for (const column of orderedColumns) {
+        columnsMap[column.id] = column;
+        tasksMap[column.id] = [];
+        columnOrder.push(column.id);
+    }
+
+    // Group tasks by their board column
+    for (const task of tasks) {
+        if (!task.boardColumnId) continue;
+
+        tasksMap[task.boardColumnId]?.push(task);
+    }
+
+    for (const columnId of columnOrder) {
+        tasksMap[columnId].sort(
+            (a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0),
+        );
+    }
+
+    return {
+        columns: columnsMap,
+        tasks: tasksMap,
+        columnOrder,
+    };
+}

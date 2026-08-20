@@ -1,0 +1,114 @@
+import type { CSSProperties } from "react";
+import { cn } from "@/lib/utils";
+import type { Task } from "../../../types";
+import SubtaskProgress from "./SubtaskProgress";
+import TaskCardFooter from "./TaskCardFooter";
+import TaskCardTags from "./TaskCardTags";
+import { TaskPriority } from "../../../types/enums";
+import { useSortableTask } from "../../../hooks/useSortableTask";
+import { HighlightEntity, useHighlightStore } from "@/store/highlight.store";
+
+interface TaskCardProps {
+  task: Task;
+  isDragging?: boolean;
+  isOverlay?: boolean;
+  style?: CSSProperties;
+  dragHandleProps?: Record<string, unknown>;
+  onClick?: (task: Task) => void;
+}
+
+// import "./style/style.css";
+
+function TaskCard({
+  task,
+  isDragging = false,
+  isOverlay = false,
+  style,
+  onClick,
+}: TaskCardProps) {
+  const {
+    attributes,
+    isDragging: isSortableDragging,
+    listeners,
+    setNodeRef,
+    style: sortableStyle,
+  } = useSortableTask(task);
+  const accentColor =
+    task.priority === TaskPriority.URGENT
+      ? "var(--destructive)"
+      : task.priority === TaskPriority.HIGH
+        ? "var(--chart-5)"
+        : task.priority === TaskPriority.MEDIUM
+          ? "var(--chart-4)"
+          : "var(--accent-foreground)";
+
+  const highlighted = useHighlightStore(
+    state =>
+      state.highlighted
+        .get(HighlightEntity.task)
+        ?.has(task.id) ?? false,
+  );
+  const removing = useHighlightStore(
+    state =>
+      state.removing
+        .get(HighlightEntity.task)
+        ?.has(task.id) ?? false,
+  );
+  const moving = useHighlightStore(
+    state =>
+      state.moving
+        .get(HighlightEntity.task)
+        ?.has(task.id) ?? false,
+  );
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-realtime-entity={HighlightEntity.task}
+      data-realtime-id={task.id}
+      style={{ ...sortableStyle, ...style }}
+      onClick={() => onClick?.(task)}
+      className={cn(
+        "group relative w-full rounded-lg border bg-background/30 text-left transition-all duration-150 cursor-pointer select-none",
+        isDragging || isSortableDragging
+          ? "opacity-40 border-primary/30"
+          : isOverlay
+            ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
+            : "border-border hover:border-dashed hover:bg-background/70",
+        highlighted && "animate-realtime-highlight",
+        moving && "animate-realtime-move",
+        removing && "animate-realtime-remove",
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      {/* Left accent */}
+      <div
+        className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full"
+        style={{ background: accentColor }}
+      />
+
+      <div className="px-3 py-3 pl-4 space-y-2">
+        <TaskCardTags priority={task.priority} tags={task.tags ?? []} />
+
+        <p className="text-[13px] font-medium text-card-foreground leading-snug line-clamp-2">
+          {task.title}
+        </p>
+
+        {!!task.subtasksCount && task.subtasksCount > 0 && (
+          <SubtaskProgress
+            completed={task.completedSubtasksCount ?? 0}
+            total={task.subtasksCount}
+          />
+        )}
+        <TaskCardFooter
+          dueDate={task.dueDate}
+          commentsCount={task.commentsCount ?? 0}
+          attachmentsCount={task.attachmentsCount ?? 0}
+          assignee={task.assignee ?? null}
+        />
+      </div>
+    </div >
+  );
+}
+export default TaskCard;

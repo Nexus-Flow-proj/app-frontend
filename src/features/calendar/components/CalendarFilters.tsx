@@ -27,6 +27,7 @@ export function CalendarFilters({
       <BoardFilters
         filters={filters}
         members={members}
+        onChangeStatus={(statuses) => onChangeFilters({ statuses })}
         onChangePriority={(priorities) => onChangeFilters({ priorities })}
         onChangeAssignee={(assigneeIds) => onChangeFilters({ assigneeIds })}
         onChangeDueDate={(dueDateRange) => onChangeFilters({ dueDateRange })}

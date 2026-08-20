@@ -2,18 +2,20 @@
 // Dev 4 — filter bar. All changes push to URL via useSetUrlFilters.
 // RULE: never mutates sort_order arrays. Filtering = visual hide only.
 
-import { X, User, Calendar, Filter } from "lucide-react";
+import { X, User, Calendar, Filter, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { BoardFiltersState, Priority, BoardMember } from "../../types";
-import { PRIORITY_CONFIG } from "../../constants";
+import { PRIORITY_CONFIG, STATUS_CONFIG } from "../../constants";
 import { FilterDropdown } from "./FilterDropdown";
-import { TaskPriority } from "../../types/enums";
+import { TaskPriority, TaskStatus } from "../../types/enums";
+import { TASK_STATUSES } from "../../utils/task-status";
 
 interface BoardFiltersProps {
   filters: BoardFiltersState;
   members: BoardMember[];
+  onChangeStatus: (statuses: TaskStatus[]) => void;
   onChangePriority: (priorities: Priority[]) => void;
   onChangeAssignee: (assigneeIds: string[]) => void;
   onChangeDueDate: (due: BoardFiltersState["dueDateRange"]) => void;
@@ -41,6 +43,7 @@ const DUE_OPTIONS: {
 export function BoardFilters({
   filters,
   members,
+  onChangeStatus,
   onChangePriority,
   onChangeAssignee,
   onChangeDueDate,
@@ -48,6 +51,13 @@ export function BoardFilters({
   onReset,
   activeCount,
 }: BoardFiltersProps) {
+  const toggleStatus = (status: TaskStatus) => {
+    const next = filters.statuses.includes(status)
+      ? filters.statuses.filter((x) => x !== status)
+      : [...filters.statuses, status];
+    onChangeStatus(next);
+  };
+
   const togglePriority = (p: Priority) => {
     const next = filters.priorities.includes(p)
       ? filters.priorities.filter((x) => x !== p)
@@ -67,6 +77,18 @@ export function BoardFilters({
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
+      <FilterDropdown
+        label="Status"
+        icon={ListFilter}
+        options={TASK_STATUSES.map((status) => ({
+          value: status,
+          label: STATUS_CONFIG[status].label,
+          dotClassName: STATUS_CONFIG[status].dotClass,
+        }))}
+        selected={filters.statuses}
+        onToggle={toggleStatus}
+      />
+
       <FilterDropdown
         label="Priority"
         icon={Filter}

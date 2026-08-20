@@ -16,6 +16,7 @@ import type {
 } from "../types";
 import { fromWorkshopDto, toSaveWorkshopDto } from "../utils/workshopMappers";
 import { useBlocker } from "react-router";
+import { useUpgradeModalStore } from "@/store/upgradeModalStore";
 
 function errorText(error: ApiError | null | undefined) {
   const message = error?.message;
@@ -151,7 +152,26 @@ export function useWorkshopController(draftId: string) {
     },
     onError: (error: ApiError) => {
       setGenerationStatus("FAILED");
-      setGenerationError(errorText(error));
+      const errMsg = errorText(error);
+      setGenerationError(errMsg);
+      if (
+        error.statusCode === 402 ||
+        errMsg.toLowerCase().includes("quota") ||
+        errMsg.toLowerCase().includes("3 free") ||
+        errMsg.toLowerCase().includes("upgrade")
+      ) {
+        useUpgradeModalStore.getState().openUpgradePrompt({
+          statusCode: 402,
+          error: "Payment Required",
+          code: "AI_FREE_QUOTA_EXCEEDED",
+          message: errMsg || "You have used your 3 free monthly AI requests. Upgrade to Pro to continue.",
+          limitType: "AI Requests",
+          limit: 3,
+          current: 3,
+          requiredPlan: "PRO",
+          upgradeUrl: "/pricing",
+        });
+      }
     },
   });
 
@@ -223,7 +243,26 @@ export function useWorkshopController(draftId: string) {
         );
       }
       if (event.error || event.errorMessage) {
-        setGenerationError(event.error ?? event.errorMessage ?? null);
+        const errMsg = event.error ?? event.errorMessage ?? null;
+        setGenerationError(errMsg);
+        if (
+          errMsg &&
+          (errMsg.toLowerCase().includes("quota") ||
+            errMsg.toLowerCase().includes("3 free") ||
+            errMsg.toLowerCase().includes("upgrade"))
+        ) {
+          useUpgradeModalStore.getState().openUpgradePrompt({
+            statusCode: 402,
+            error: "Payment Required",
+            code: "AI_FREE_QUOTA_EXCEEDED",
+            message: errMsg,
+            limitType: "AI Requests",
+            limit: 3,
+            current: 3,
+            requiredPlan: "PRO",
+            upgradeUrl: "/pricing",
+          });
+        }
       }
       if (event.status === "COMPLETED") {
         void handleAIGenerationComplete(eventId, event.workshop);

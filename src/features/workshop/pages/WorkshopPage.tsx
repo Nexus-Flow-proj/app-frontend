@@ -42,6 +42,8 @@ import {
 import { useWorkshopStore } from "../store/workshopStore";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
+import { useProjects } from "@/features/project/hooks";
 
 // function UnsupportedProjectWorkshop() {
 //   return (
@@ -93,6 +95,8 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
   const objectCount = useWorkshopStore((state) => state.objects.length);
   const canvasId = useWorkshopStore((state) => state.canvasId);
   const detailsObjectId = useWorkshopStore((state) => state.detailsObjectId);
+  const projectsQuery = useProjects();
+  const projectId = projectsQuery.data?.find((p) => p.draftId === draftId)?.id;
   const {
     sidebarPanelRef,
     isSidebarCollapsed,
@@ -243,7 +247,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
           <WorkshopSidebar
             collapsed={false}
             onCollapse={() => setExplorerOpen(false)}
-            onExpand={() => {}}
+            onExpand={() => { }}
           />
         </SheetContent>
       </Sheet>
@@ -258,6 +262,12 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         isGenerating={controller.isGenerating}
         isDirty={controller.isDirty}
         onGenerate={controller.generate}
+      />
+
+      <ProjectWorkspaceNavigation
+        projectId={projectId}
+        draftId={draftId}
+        current="workshop"
       />
 
       <UnsavedChangesDialog

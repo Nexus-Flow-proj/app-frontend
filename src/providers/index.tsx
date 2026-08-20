@@ -4,6 +4,10 @@ import ReactQueryProvider from "./ReactQueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "./ThemeProvider";
 import RealTimeProvider from "./RealtimeProvider";
+import {
+  PricingComparisonModal,
+  UpgradePromptModal,
+} from "@/features/subscriptions/components";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -22,7 +26,11 @@ function Providers({ children }: ProvidersProps) {
               toastOptions={{ duration: 3500 }}
               closeButton
             />
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              {children}
+              <UpgradePromptModal />
+              <PricingComparisonModal />
+            </TooltipProvider>
           </ThemeProvider>
         </RealTimeProvider>
       </ReactQueryProvider>

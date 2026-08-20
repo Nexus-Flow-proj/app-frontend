@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import type { PaginationMeta } from "@/types";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -103,27 +102,30 @@ export function ProjectInvitesSettingsCard({
 
   return (
     <Card className="rounded-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MailCheck className="size-4 text-muted-foreground" />
-          Project invites
-        </CardTitle>
-        <CardDescription>
-          Review invitation status and cancel pending access links.
-        </CardDescription>
-        <CardAction>
+      <CardHeader className="gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:p-6">
+        <div className="min-w-0 space-y-1.5">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MailCheck className="size-4 text-muted-foreground" />
+            Project invites
+          </CardTitle>
+          <CardDescription>
+            Review invitation status and cancel pending access links.
+          </CardDescription>
+        </div>
+        <div className="w-full sm:w-auto sm:justify-self-end">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => invitesQuery.refetch()}
             disabled={invitesQuery.isFetching}
+            className="w-full sm:w-auto"
           >
             Refresh
           </Button>
-        </CardAction>
+        </div>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent className="grid gap-4 p-4 pt-0 sm:p-6 sm:pt-0">
         {shouldShowLoadError ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             Could not load project invites. Try refreshing the table.
@@ -140,17 +142,18 @@ export function ProjectInvitesSettingsCard({
         />
 
         {meta && meta.totalPages > 1 ? (
-          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+          <div className="grid gap-3 text-sm text-muted-foreground sm:flex sm:items-center sm:justify-between">
             <span>
               Page {meta.page} of {meta.totalPages}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 disabled={!meta.hasPrev || invitesQuery.isFetching}
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
+                className="w-full"
               >
                 Previous
               </Button>
@@ -160,6 +163,7 @@ export function ProjectInvitesSettingsCard({
                 size="sm"
                 disabled={!meta.hasNext || invitesQuery.isFetching}
                 onClick={() => setPage((current) => current + 1)}
+                className="w-full"
               >
                 Next
               </Button>

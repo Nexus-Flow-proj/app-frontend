@@ -9,6 +9,8 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
   USER_PROFILE: (userId: string) => `/users/${userId}`,
+  BILLING: "/settings/billing",
+  PRICING: "/pricing",
 
   PROJECT_NEW: "/drafts/new",
   DRAFT_NEW: "/drafts/new",

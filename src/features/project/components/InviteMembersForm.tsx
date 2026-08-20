@@ -135,7 +135,7 @@ export function InviteMembersForm({ projectId }: InviteMembersFormProps) {
         type="submit"
         disabled={isLoadingRoles || roles.length === 0}
         isLoading={isPending}
-        className="justify-self-start text-xs font-bold"
+        className="w-full justify-self-start text-xs font-bold sm:w-auto"
       >
         Send invite
       </Button>

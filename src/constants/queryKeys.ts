@@ -91,5 +91,11 @@ export const QUERY_KEYS = {
   profile: {
     me: () => ["profile", "me"] as const,
     user: (userId: string) => ["profile", "user", userId] as const,
-  }
+  },
+  subscriptions: {
+    all: ["subscriptions"] as const,
+    plans: () => [...QUERY_KEYS.subscriptions.all, "plans"] as const,
+    me: () => [...QUERY_KEYS.subscriptions.all, "me"] as const,
+    payments: () => [...QUERY_KEYS.subscriptions.all, "payments"] as const,
+  },
 } as const;

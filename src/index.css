@@ -140,6 +140,20 @@
   --sidebar-accent-foreground: oklch(0.35 0.12 293);
   --sidebar-border: oklch(0.89 0.022 293);
   --sidebar-ring: oklch(0.54 0.21 293);
+
+  /* ── Toasts ── */
+  --toast-panel: color-mix(in oklab, white 96%, var(--toast-accent) 4%);
+  --toast-panel-deep: color-mix(in oklab, white 86%, var(--toast-accent) 14%);
+  --toast-border: color-mix(in oklab, var(--toast-accent) 40%, var(--border));
+  --toast-shadow:
+    0 18px 42px -22px color-mix(in oklab, var(--toast-accent) 55%, black),
+    0 8px 18px -14px rgb(15 23 42 / 0.42),
+    inset 0 1px 0 rgb(255 255 255 / 0.88);
+  --toast-icon-bg: color-mix(in oklab, var(--toast-accent) 13%, white);
+  --toast-icon-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--toast-accent) 28%, transparent),
+    0 8px 18px -14px color-mix(in oklab, var(--toast-accent) 80%, black);
+  --toast-description: var(--muted-foreground);
 }
 
 .dark {
@@ -196,6 +210,20 @@
   --sidebar-accent-foreground: oklch(0.85 0.015 293);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.68 0.2 293);
+
+  /* ── Toasts ── */
+  --toast-panel: color-mix(in oklab, var(--background) 82%, black 18%);
+  --toast-panel-deep: color-mix(in oklab, var(--primary-950) 58%, black 42%);
+  --toast-border: color-mix(in oklab, var(--toast-accent) 55%, rgb(255 255 255 / 0.1));
+  --toast-shadow:
+    0 22px 56px -18px rgb(0 0 0 / 0.86),
+    0 0 0 1px color-mix(in oklab, var(--toast-accent) 18%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --toast-icon-bg: color-mix(in oklab, var(--toast-accent) 18%, black);
+  --toast-icon-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--toast-accent) 34%, transparent),
+    0 8px 18px -14px color-mix(in oklab, var(--toast-accent) 90%, black);
+  --toast-description: color-mix(in oklab, var(--foreground) 68%, transparent);
 }
 
 @layer base {
@@ -448,6 +476,129 @@
 .dark {
   --highlight-ring: color-mix(in oklch, var(--primary) 55%, transparent);
   --highlight-shadow: color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+/* ---------- Nexus toast system ---------- */
+.nexus-toast {
+  --toast-accent: var(--primary);
+
+  position: relative;
+  overflow: hidden;
+  min-height: 76px;
+  padding: 1rem 1rem 1rem 1.05rem;
+  border: 1px solid var(--toast-border);
+  border-radius: 0.875rem;
+  color: var(--foreground);
+  background:
+    linear-gradient(180deg, var(--toast-panel), var(--toast-panel-deep)),
+    var(--toast-panel);
+  box-shadow: var(--toast-shadow);
+}
+
+.nexus-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--toast-accent),
+    color-mix(in oklab, var(--toast-accent) 38%, white)
+  );
+}
+
+.nexus-toast::after {
+  content: "";
+  position: absolute;
+  right: -2.5rem;
+  top: -3rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--toast-accent) 12%, transparent);
+  pointer-events: none;
+}
+
+.nexus-toast-success,
+.nexus-toast-loading {
+  --toast-accent: var(--primary);
+}
+
+.nexus-toast-error {
+  --toast-accent: var(--destructive);
+}
+
+.nexus-toast-warning {
+  --toast-accent: var(--chart-4);
+}
+
+.nexus-toast-info {
+  --toast-accent: var(--chart-2);
+}
+
+.nexus-toast-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.85rem;
+  border-radius: 0.7rem;
+  color: var(--toast-accent);
+  background: var(--toast-icon-bg);
+  box-shadow: var(--toast-icon-shadow);
+}
+
+.nexus-toast-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.nexus-toast-title {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 750;
+  line-height: 1.25rem;
+  letter-spacing: 0;
+}
+
+.nexus-toast-description {
+  color: var(--toast-description);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.nexus-toast-action,
+.nexus-toast-cancel {
+  height: 2rem;
+  border-radius: 0.55rem;
+  padding-inline: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.nexus-toast-action {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.nexus-toast-cancel {
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+.nexus-toast-close {
+  color: var(--muted-foreground);
+  background: var(--background);
+  border-color: color-mix(in oklab, var(--toast-accent) 24%, var(--border));
+  box-shadow: 0 8px 20px -16px black;
 }
 
 @media (prefers-reduced-motion: reduce) {

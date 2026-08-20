@@ -36,6 +36,12 @@ const ProfilePages = {
   ),
 };
 
+// ** Subscription Pages
+const SubscriptionPages = {
+  Billing: lazy(() => import("@/features/subscriptions/pages/BillingPage")),
+  Pricing: lazy(() => import("@/features/subscriptions/pages/PricingPage")),
+};
+
 // ** Draft Pages
 const DraftPages = {
   Create: lazy(() => import("@/features/drafts/pages/CreateDraftPage")),
@@ -123,6 +129,10 @@ const router = createBrowserRouter([
     path: "project/invitation/:token",
     element: <WithSuspense Component={ProjectPages.Invitation} />,
   },
+  {
+    path: "pricing",
+    element: <WithSuspense Component={SubscriptionPages.Pricing} />,
+  },
 
   // ── Auth-required routes
   {
@@ -140,6 +150,14 @@ const router = createBrowserRouter([
           {
             path: "/profile",
             element: <WithSuspense Component={ProfilePages.Profile} />,
+          },
+          {
+            path: "/settings/billing",
+            element: <WithSuspense Component={SubscriptionPages.Billing} />,
+          },
+          {
+            path: "/pricing",
+            element: <WithSuspense Component={SubscriptionPages.Pricing} />,
           },
           {
             path: "/users/:userId",

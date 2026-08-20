@@ -1,5 +1,5 @@
 import { BASE_URL, CSRF_TOKEN_HEADER } from "@/constants/BackendApisConfig";
-import { useAuthStore } from "@/store";
+import { useAuthStore, useUpgradeModalStore } from "@/store";
 import type { ApiError, ApiResponse } from "@/types";
 import axios, {
   type AxiosError,
@@ -71,6 +71,55 @@ api.interceptors.response.use(
   },
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as RetryableRequestConfig | undefined;
+    const status = error.response?.status;
+    const errorData = error.response?.data as any;
+
+    const isLimitOrPaymentError =
+      status === 402 ||
+      errorData?.statusCode === 402 ||
+      errorData?.error === "Payment Required" ||
+      errorData?.code === "PAYMENT_REQUIRED" ||
+      errorData?.code === "AI_FREE_QUOTA_EXCEEDED" ||
+      errorData?.code === "AI_ONBOARDING_QUOTA_EXCEEDED" ||
+      errorData?.code === "AI_CHAT_QUOTA_EXCEEDED" ||
+      errorData?.code === "AI_TASK_QUOTA_EXCEEDED" ||
+      errorData?.code === "PROJECT_LIMIT_REACHED" ||
+      errorData?.code === "MEMBER_LIMIT_REACHED" ||
+      errorData?.code === "TASK_LIMIT_REACHED" ||
+      errorData?.code === "COLUMN_LIMIT_REACHED" ||
+      errorData?.code === "CUSTOM_ROLES_NOT_ALLOWED" ||
+      errorData?.code === "KNOWLEDGE_BASE_NOT_ALLOWED" ||
+      errorData?.code === "KNOWLEDGE_CHUNK_LIMIT_REACHED" ||
+      errorData?.code === "PLAN_UPGRADE_REQUIRED" ||
+      (typeof errorData?.code === "string" &&
+        (errorData.code.startsWith("AI_") ||
+          errorData.code.includes("QUOTA") ||
+          errorData.code.includes("LIMIT"))) ||
+      (typeof errorData?.message === "string" &&
+        (errorData.message.toLowerCase().includes("quota") ||
+          errorData.message.toLowerCase().includes("3 free") ||
+          errorData.message.toLowerCase().includes("upgrade to pro") ||
+          errorData.message.toLowerCase().includes("payment required")));
+
+    if (isLimitOrPaymentError) {
+      useUpgradeModalStore.getState().openUpgradePrompt({
+        statusCode: 402,
+        error: errorData?.error ?? "Payment Required",
+        code: errorData?.code ?? "AI_FREE_QUOTA_EXCEEDED",
+        message:
+          typeof errorData?.message === "string"
+            ? errorData.message
+            : Array.isArray(errorData?.message)
+              ? errorData.message.join(". ")
+              : "You have reached a plan limit. Upgrade your plan to continue.",
+        limitType: errorData?.limitType ?? "AI Requests",
+        limit: errorData?.limit ?? (errorData?.code?.includes("AI") ? 3 : undefined),
+        current: errorData?.current ?? (errorData?.code?.includes("AI") ? 3 : undefined),
+        requiredPlan: errorData?.requiredPlan ?? "PRO",
+        upgradeUrl: errorData?.upgradeUrl ?? "/pricing",
+      });
+      return Promise.reject(normalizeApiError(error));
+    }
 
     if (!originalRequest) {
       return Promise.reject(normalizeApiError(error));

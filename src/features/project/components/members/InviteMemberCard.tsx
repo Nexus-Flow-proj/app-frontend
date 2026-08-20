@@ -15,8 +15,8 @@ interface InviteMemberCardProps {
 export function InviteMemberCard({ projectId }: InviteMemberCardProps) {
   return (
     <Card className="rounded-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <MailPlus className="size-4 text-muted-foreground" />
           Invite member
         </CardTitle>
@@ -24,7 +24,7 @@ export function InviteMemberCard({ projectId }: InviteMemberCardProps) {
           Send an invitation email with the role the member should receive.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
         <InviteMembersForm projectId={projectId} />
       </CardContent>
     </Card>

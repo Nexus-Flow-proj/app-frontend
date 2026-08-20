@@ -29,4 +29,7 @@ export const profileService = {
       })
       .then((r) => r.data);
   },
+
+  deleteAvatar: (): Promise<ApiResponse<null>> =>
+    api.delete<ApiResponse<null>>("/users/me/avatar").then((r) => r.data),
 };

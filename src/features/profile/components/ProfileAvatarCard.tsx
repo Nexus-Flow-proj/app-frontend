@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { AtSign, Camera, FileText, Layers, Loader2, Pencil, ScanSearch, Wrench } from "lucide-react";
+import { AtSign, Camera, FileText, Layers, Loader2, Pencil, ScanSearch, Trash2, Wrench } from "lucide-react";
 import { ProfileEditSheet } from "./ProfileEditSheet";
 import {
   Avatar,
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { AVATAR_LIMITS } from "../constants";
-import { useUploadAvatar } from "../hooks";
+import { useDeleteAvatar, useUploadAvatar } from "../hooks";
 import type { PublicUserProfile, UserProfile } from "../types";
 import { toast } from "sonner";
 
@@ -43,7 +43,9 @@ export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const { mutate: uploadAvatar, isPending } = useUploadAvatar();
+  const { mutate: uploadAvatar, isPending: isUploading } = useUploadAvatar();
+  const { mutate: deleteAvatar, isPending: isDeleting } = useDeleteAvatar();
+  const isPending = isUploading || isDeleting;
 
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
   const initials =
@@ -85,11 +87,13 @@ export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCa
         </AvatarFallback>
       </Avatar>
 
-      {/* Upload spinner overlay — always shown while uploading */}
+      {/* Upload/Delete spinner overlay — always shown while pending */}
       {isPending ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/55 rounded-full backdrop-blur-[1px]">
           <Loader2 className="size-7 text-white animate-spin" />
-          <span className="mt-1 text-[9px] font-bold tracking-widest text-white/90 uppercase">Uploading</span>
+          <span className="mt-1 text-[9px] font-bold tracking-widest text-white/90 uppercase">
+            {isDeleting ? "Deleting" : "Uploading"}
+          </span>
         </div>
       ) : (
         /* Hover overlay */
@@ -159,8 +163,21 @@ export function ProfileAvatarCard({ profile, readonly = false }: ProfileAvatarCa
                     disabled={isPending}
                   >
                     <Camera className="size-3.5 text-muted-foreground" />
-                    {isPending ? "Uploading…" : "Change Photo"}
+                    {isUploading ? "Uploading…" : "Change Photo"}
                   </DropdownMenuItem>
+                  {profile.avatarUrl && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="gap-2 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onSelect={() => deleteAvatar()}
+                        disabled={isPending}
+                      >
+                        <Trash2 className="size-3.5" />
+                        {isDeleting ? "Deleting…" : "Delete Photo"}
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

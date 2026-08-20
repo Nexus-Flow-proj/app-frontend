@@ -2,6 +2,7 @@ import Loading from "@/components/shared/loading/Loading";
 import {
   ProfileAvatarCard,
   ProfileErrorState,
+  ProfileHeader,
   ProfileProjectsCard,
 } from "../components";
 import { useMyProfile } from "../hooks";

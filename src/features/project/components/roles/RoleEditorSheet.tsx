@@ -32,7 +32,7 @@ export function RoleEditorSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-2xl lg:max-w-5xl">
-        <SheetHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+        <SheetHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
           <SheetTitle>
             {role?.id.startsWith("new-") ? "Create role" : "Edit role"}
           </SheetTitle>
@@ -41,21 +41,24 @@ export function RoleEditorSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="grid flex-1 gap-6 px-5 pb-5 sm:px-6 sm:pb-6">
+        <div className="grid flex-1 gap-6 px-4 pb-4 sm:px-6 sm:pb-6">
           {role && <RoleForm role={role} onChange={onChange} />}
         </div>
 
-        <SheetFooter className="border-t bg-background p-5 sm:p-6">
+        <SheetFooter className="grid gap-2 border-t bg-background p-4 sm:flex sm:p-6">
           <Button
             onClick={onSave}
             disabled={!role?.name.trim() || isSaving || role?.isSystemRole}
             isLoading={isSaving}
+            className="w-full sm:w-auto"
           >
             <Save />
             {isSaving ? "Saving..." : "Save role"}
           </Button>
           <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="w-full sm:w-auto">
+              Cancel
+            </Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>

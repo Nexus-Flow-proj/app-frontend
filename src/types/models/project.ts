@@ -12,8 +12,9 @@ export interface Project {
   ownerId?: string;
   owner?: User;
   memberCount: number;
-  taskCount?: number;
-  completedTaskCount?: number;
+  tasksCount?: number;
+  completedTasks?: number;
+  progress?: number;
   currentMember?: ProjectMember | null;
   createdAt?: string;
   updatedAt?: string;

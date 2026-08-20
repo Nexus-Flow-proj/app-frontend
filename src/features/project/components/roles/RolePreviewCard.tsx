@@ -27,8 +27,8 @@ export function RolePreviewCard({ role }: RolePreviewCardProps) {
 
   return (
     <Card size="sm" className="rounded-lg bg-muted/30">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between gap-3">
+      <CardHeader className="gap-3">
+        <CardTitle className="flex items-center justify-between gap-3 text-base">
           <span>Role effect</span>
           <Badge variant="outline" size="sm">
             {enabledPermissions}/{totalPermissions}

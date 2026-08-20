@@ -445,6 +445,7 @@ function BoardsPage() {
             <BoardFilters
               filters={filters}
               members={members}
+              onChangeStatus={(statuses) => setFilters({ statuses })}
               onChangePriority={(priorities) => setFilters({ priorities })}
               onChangeAssignee={(assigneeIds) => setFilters({ assigneeIds })}
               onChangeDueDate={(dueDateRange) => setFilters({ dueDateRange })}

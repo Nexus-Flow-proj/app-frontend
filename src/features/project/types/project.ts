@@ -7,6 +7,7 @@ export interface ProjectListItem {
   description?: string | null;
   deadline?: string | null;
   status: ProjectStatus;
+  draftId: string;
   adminId?: string;
   memberCount: number;
   color?: string | null;
@@ -18,4 +19,14 @@ export interface ProjectListItem {
 export interface ProjectDetails extends ProjectListItem {
   taskCount?: number;
   completedTaskCount?: number;
+}
+
+export interface ProjectSummary {
+  statusSummary: string;
+  whoIsDoingWhat: string;
+  remainingTasksSummary: string;
+  bottlenecks: string[];
+  workloadWarnings: string[];
+  highlights?: string[];
+  nextSteps?: string[];
 }

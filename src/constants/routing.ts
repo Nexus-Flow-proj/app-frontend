@@ -7,6 +7,8 @@ export const ROUTES = {
   PROJECT_INVITATION: (token: string) => `/project/invitation/${token}`,
 
   DASHBOARD: "/dashboard",
+  PROFILE: "/profile",
+  USER_PROFILE: (userId: string) => `/users/${userId}`,
 
   PROJECT_NEW: "/drafts/new",
   DRAFT_NEW: "/drafts/new",
@@ -16,6 +18,7 @@ export const ROUTES = {
   PROJECT_OVERVIEW: (id: string) => `/projects/${id}`,
   PROJECT_SETTINGS: (id: string) => `/projects/${id}/settings`,
   PROJECT_INVITES: (id: string) => `/projects/${id}/settings/invites`,
+  PROJECT_KNOWLEDGE: (id: string) => `/projects/${id}/knowledge`,
   PROJECT_MEMBERS: (id: string) => `/projects/${id}/members`,
   PROJECT_ROLES: (id: string) => `/projects/${id}/roles`,
   WORKSHOP: (id: string) => `/projects/${id}/workshop`,

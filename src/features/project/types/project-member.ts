@@ -13,6 +13,7 @@ export interface ProjectMemberSummary {
   role?: ProjectRoleDefinition | null;
   roleLabel?: string;
   isAdmin?: boolean;
+  lastVisitedAt?: string | null;
   joinedAt: string;
-  isOnline: boolean
+  isOnline?: boolean;
 }

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { useUpgradeModalStore } from "@/store/upgradeModalStore";
 import { AIThinkingBubble } from "./AIThinkingBubble";
 import type { AiGenerationStatus, AiMessage } from "../../types";
 
@@ -235,9 +236,32 @@ export function AIFloatingChat({
               ) : null}
 
               {status === "FAILED" ? (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                  {error ||
-                    "Generation failed. Your saved canvas was not changed."}
+                <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive space-y-2">
+                  <p>{error || "Generation failed. Your saved canvas was not changed."}</p>
+                  {(error?.toLowerCase().includes("quota") ||
+                    error?.toLowerCase().includes("limit") ||
+                    error?.toLowerCase().includes("free") ||
+                    error?.toLowerCase().includes("pro")) && (
+                      <Button
+                        size="sm"
+                        className="w-full text-xs font-medium h-7"
+                        onClick={() =>
+                          useUpgradeModalStore.getState().openUpgradePrompt({
+                            statusCode: 402,
+                            error: "Payment Required",
+                            code: "AI_FREE_QUOTA_EXCEEDED",
+                            message: error || "You have used your 3 free monthly AI requests. Upgrade to Pro to continue.",
+                            limitType: "AI Requests",
+                            limit: 3,
+                            current: 3,
+                            requiredPlan: "PRO",
+                            upgradeUrl: "/pricing",
+                          })
+                        }
+                      >
+                        Upgrade to Pro
+                      </Button>
+                    )}
                 </div>
               ) : null}
               <div ref={endRef} />

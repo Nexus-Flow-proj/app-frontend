@@ -435,6 +435,7 @@ function BoardsPage() {
             projectId={resolvedProjectId}
             draftId={projectQuery.data?.draftId}
             current="board"
+            className="bottom-8"
           />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">

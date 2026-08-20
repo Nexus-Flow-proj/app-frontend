@@ -64,7 +64,7 @@ interface BaseMiniCanvasObject {
   height: number;
   rotation: number;
   zIndex: number;
-  groupId: string | null;
+  groupId?: string | null;
   locked: boolean;
   style: MiniObjectStyle;
 }

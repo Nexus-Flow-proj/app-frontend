@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Bot,
-  LoaderCircle,
-  RefreshCcw,
-  Sparkles,
-  // TriangleAlert,
-} from "lucide-react";
+import { Bot, LoaderCircle, RefreshCcw, Sparkles } from "lucide-react";
 import { useLocation, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +40,8 @@ import {
   useWorkshopResizableSidebar,
 } from "../hooks/useWorkshopResizableSidebar";
 import { useWorkshopStore } from "../store/workshopStore";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
+import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 
 // function UnsupportedProjectWorkshop() {
 //   return (
@@ -112,6 +108,10 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
     (controller.canvasQuery.error as { statusCode?: number } | null)
       ?.statusCode === 404;
   const fatalError = controller.canvasQuery.isError && !isMissing;
+
+  const { isBlocking, confirmLeave, cancelLeave } = useUnsavedChangesWarning(
+    controller.isDirty,
+  );
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -188,9 +188,9 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
                   height={stageSize.height}
                 />
               ) : null}
-              {objectCount === 0 ? (
+              {objectCount === 0 && !isCompleted ? (
                 <div className="pointer-events-none absolute inset-0 grid place-items-center p-6">
-                  <Card className="pointer-events-auto max-w-md border-dashed bg-background/90 text-center shadow-xl backdrop-blur">
+                  <Card className="pointer-events-auto w-sm border-dashed bg-background/90 text-center shadow-xl backdrop-blur">
                     <CardHeader>
                       <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                         <Bot />
@@ -225,7 +225,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
                 </div>
               ) : null}
               <CanvasStatus />
-              {!isCompleted && <WorkshopToolbar />}
+              {<WorkshopToolbar isCompleted={isCompleted} />}
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -248,6 +248,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         </SheetContent>
       </Sheet>
       <AIFloatingChat
+        isCompleted={isCompleted}
         open={controller.isAiOpen}
         onOpenChange={controller.setAiOpen}
         messages={controller.messages}
@@ -257,6 +258,12 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         isGenerating={controller.isGenerating}
         isDirty={controller.isDirty}
         onGenerate={controller.generate}
+      />
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirmLeave}
+        onCancel={cancelLeave}
       />
     </div>
   );

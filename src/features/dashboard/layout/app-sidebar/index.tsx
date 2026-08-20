@@ -25,7 +25,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-t z-50 border-t-sidebar"
       {...props}
     >
       <SidebarHeader>
@@ -50,7 +50,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <NavProjects projects={projects} isLoading={projectsLoading} />
         <NavSecondary items={NAV_SECONDARY} className="mt-auto" />
       </SidebarContent>
-
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>

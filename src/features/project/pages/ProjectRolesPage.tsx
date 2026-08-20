@@ -17,7 +17,7 @@ export default function ProjectRolesPage() {
   }
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-6 px-1 py-1">
+    <main className="mx-auto grid w-full max-w-6xl gap-4 px-3 py-3 sm:gap-6 sm:px-4 sm:py-4 lg:px-1 lg:py-1">
       <ProjectRolesHeader project={project} />
       <ProjectRolesPanel projectId={project.id} />
     </main>

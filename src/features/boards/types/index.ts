@@ -194,6 +194,7 @@ export type MoveColumnFn = (
 
 export interface BoardFiltersState {
   search: string;
+  statuses: TaskStatus[];
   priorities: Priority[];
   assigneeIds: string[];
   dueDateRange: "overdue" | "today" | "this_week" | null;

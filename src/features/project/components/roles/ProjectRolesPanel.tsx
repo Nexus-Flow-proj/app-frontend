@@ -205,8 +205,8 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
   return (
     <>
       <Tabs defaultValue="roles" className="gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <TabsList>
+        <div className="grid gap-3 sm:flex sm:items-center sm:justify-between">
+          <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="roles">Roles</TabsTrigger>
             <TabsTrigger value="presets">Presets</TabsTrigger>
           </TabsList>
@@ -234,7 +234,7 @@ export function ProjectRolesPanel({ projectId }: ProjectRolesPanelProps) {
 
         <TabsContent value="presets">
           <Card className="rounded-lg">
-            <CardContent className="pt-0">
+            <CardContent className="p-4 sm:p-6">
               <RolePresetSelector
                 canDuplicate={canCreateRole}
                 onDuplicatePreset={handleDuplicatePreset}

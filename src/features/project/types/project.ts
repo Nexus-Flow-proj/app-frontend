@@ -17,8 +17,9 @@ export interface ProjectListItem {
 }
 
 export interface ProjectDetails extends ProjectListItem {
-  taskCount?: number;
-  completedTaskCount?: number;
+  tasksCount?: number;
+  completedTasks?: number;
+  progress?: number;
 }
 
 export interface ProjectSummary {

@@ -68,8 +68,8 @@ export function RolePermissionMatrix({
                       )
                     }
                   />
-                  <span className="grid gap-1.5">
-                    <span className="flex items-center gap-2 text-sm font-medium leading-none">
+                  <span className="grid min-w-0 gap-1.5">
+                    <span className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-medium leading-5">
                       {permission.label}
                       {permission.dangerous && (
                         <span className="text-xs font-medium text-destructive">

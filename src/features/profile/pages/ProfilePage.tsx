@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto grid w-full max-w-4xl gap-6 px-1 py-1">
-      {/* <ProfileHeader /> */}
+      <ProfileHeader />
       <ProfileAvatarCard profile={profile} />
       <ProfileProjectsCard profile={profile} />
     </main>

@@ -14,13 +14,13 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://app-backend-production-1306.up.railway.app",
+        target: "https://nexus-flow-backend.up.railway.app/",
         changeOrigin: true,
         secure: true,
         cookieDomainRewrite: "",
       },
       "/socket.io": {
-        target: "https://app-backend-production-1306.up.railway.app",
+        target: "https://nexus-flow-backend.up.railway.app/",
         changeOrigin: true,
         secure: true,
         ws: true,

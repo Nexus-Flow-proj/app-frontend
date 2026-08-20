@@ -24,6 +24,7 @@ import { PRIORITY_CONFIG } from "@/features/boards/constants";
 
 const EMPTY_FILTERS: BoardFiltersState = {
   search: "",
+  statuses: [],
   priorities: [],
   assigneeIds: [],
   dueDateRange: null,
@@ -57,6 +58,7 @@ export function ExistingTaskPickerDialog({
     [currentUserId, filters, tasks],
   );
   const activeCount = Number(Boolean(filters.search)) +
+    Number(filters.statuses.length > 0) +
     Number(filters.priorities.length > 0) +
     Number(filters.assigneeIds.length > 0) +
     Number(Boolean(filters.dueDateRange)) +
@@ -97,6 +99,7 @@ export function ExistingTaskPickerDialog({
           <BoardFilters
             filters={filters}
             members={members}
+            onChangeStatus={(statuses) => setFilters((current) => ({ ...current, statuses }))}
             onChangePriority={(priorities) => setFilters((current) => ({ ...current, priorities }))}
             onChangeAssignee={(assigneeIds) => setFilters((current) => ({ ...current, assigneeIds }))}
             onChangeDueDate={(dueDateRange) => setFilters((current) => ({ ...current, dueDateRange }))}
@@ -159,4 +162,3 @@ export function ExistingTaskPickerDialog({
     </Dialog>
   );
 }
-

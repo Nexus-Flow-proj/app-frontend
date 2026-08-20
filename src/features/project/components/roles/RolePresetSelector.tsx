@@ -32,8 +32,8 @@ export function RolePresetSelector({
 
         return (
           <Card key={preset.id} size="sm" className="rounded-lg">
-            <CardHeader>
-              <CardTitle>{preset.name}</CardTitle>
+            <CardHeader className="gap-3">
+              <CardTitle className="text-base">{preset.name}</CardTitle>
               <CardDescription>{preset.description}</CardDescription>
               <CardAction>
                 <Badge variant="outline" size="sm">
@@ -47,7 +47,7 @@ export function RolePresetSelector({
               </p>
               <Button
                 variant="outline"
-                className="w-fit"
+                className="w-full sm:w-fit"
                 disabled={isReservedPreset || !canDuplicate}
                 onClick={() => onDuplicatePreset(preset)}
               >

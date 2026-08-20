@@ -9,7 +9,7 @@ const styleSchema = z.object({
 
 const base = {
   id: z.string().min(1), x: z.number().finite(), y: z.number().finite(), width: z.number().positive(), height: z.number().positive(),
-  rotation: z.number().finite(), zIndex: z.number().finite(), groupId: z.string().nullable(), locked: z.boolean(), style: styleSchema,
+  rotation: z.number().finite(), zIndex: z.number().finite(), groupId: z.string().nullable().optional(), locked: z.boolean(), style: styleSchema,
 };
 
 export const miniCanvasObjectSchema = z.discriminatedUnion("type", [

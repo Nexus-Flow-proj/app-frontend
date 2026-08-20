@@ -216,7 +216,7 @@ export function CreateDraftForm({ draftId }: CreateDraftFormProps) {
         </div>
 
         <CardContent className="p-5 md:p-6">
-          <div className="min-h-[300px] space-y-5 md:min-h-[330px]">
+          <div className="min-h-75 space-y-5 md:min-h-82.5">
             {stepIndex === 0 && (
               <DraftBasicsStep
                 register={register}

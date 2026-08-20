@@ -10,16 +10,6 @@ import {
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +57,7 @@ import {
   createPersonalTaskObject,
 } from "../utils/objectFactory";
 import type { PersonalTaskDto } from "../validation/personal-task.schema";
+import { UnsavedChangesDialog } from "@/features/workshop/components/UnsavedChangesDialog";
 
 function memberName(member: {
   firstName: string;
@@ -295,7 +286,7 @@ function MiniWorkshopPage() {
   const projectName = projectQuery.data?.name || "Project";
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background font-sans">
-      <header className="z-30 flex min-h-16 shrink-0 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+      <header className="z-30 flex min-h-16 shrink-0 items-center gap-3 border-b bg-sidebar px-4 backdrop-blur">
         <Button
           variant="ghost"
           size="icon"
@@ -435,7 +426,13 @@ function MiniWorkshopPage() {
         }}
         onSave={handleEditSave}
       />
-      <AlertDialog open={blocker.state === "blocked"}>
+
+      <UnsavedChangesDialog
+        open={blocker.state === "blocked"}
+        onConfirm={() => blocker.proceed?.()}
+        onCancel={() => blocker.reset?.()}
+      />
+      {/* <AlertDialog open={blocker.state === "blocked"}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
@@ -453,7 +450,7 @@ function MiniWorkshopPage() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </div>
   );
 }

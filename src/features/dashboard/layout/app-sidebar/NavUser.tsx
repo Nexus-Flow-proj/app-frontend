@@ -64,7 +64,7 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="bg-sidebar-accent hover:bg-background/30 hover:cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <NavUserInfo
                 avatarUrl={avatarUrl ?? undefined}
@@ -76,7 +76,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="bg-sidebar-accent border-sidebar-accent-foreground text-sidebar-accent-foreground ">
-            <DropdownMenuLabel onClick={() => navigate(ROUTES.PROFILE)} className="hover:cursor-pointer" >
+            <DropdownMenuLabel>
               <div className="flex items-center gap-2 text-left text-sm">
                 <NavUserInfo
                   avatarUrl={avatarUrl ?? undefined}

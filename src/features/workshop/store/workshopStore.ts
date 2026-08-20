@@ -12,7 +12,7 @@ import {
   FEATURE_TASK_TOP_OFFSET,
 } from "../constants";
 
-// Define the shape of the workshop Data (This describes the data stored inside Zustand.
+// Define the shape of the workshop Data (This describes the data stored inside Zustand).
 export interface WorkshopState {
   canvasId: Nullable<string>;
   objects: CanvasObject[];
@@ -64,7 +64,7 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
 
     isDirty: false, // At first, nothing changed
 
-    activeTool: "select", // Default tool is select.
+    activeTool: "pan", // Default tool is select.
 
     // At first, no object selected or hovered.
     selectedObjectId: null,
@@ -78,14 +78,16 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
     //** actions
     setActiveTool: (tool) => set({ activeTool: tool }),
 
-    selectObject: (id) => set((state) =>
-      state.selectedObjectId === id ? state : { selectedObjectId: id },
-    ),
+    selectObject: (id) =>
+      set((state) =>
+        state.selectedObjectId === id ? state : { selectedObjectId: id },
+      ),
     openObjectDetails: (id) => set({ detailsObjectId: id }),
     closeObjectDetails: () => set({ detailsObjectId: null }),
-    setHoveredObject: (id) => set((state) =>
-      state.hoveredObjectId === id ? state : { hoveredObjectId: id },
-    ),
+    setHoveredObject: (id) =>
+      set((state) =>
+        state.hoveredObjectId === id ? state : { hoveredObjectId: id },
+      ),
 
     addObject: (obj) =>
       set((state) => ({
@@ -138,29 +140,38 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         if (!moving) return {};
         const dx = x - moving.x;
         const dy = y - moving.y;
-        const frames = state.objects.filter((obj) => obj.type === "SECTION_FRAME");
-        const containingFrame = moving.type !== "TASK_CARD"
-          ? null
-          : frames
-              .filter((frame) => {
-                const centerX = x + moving.width / 2;
-                return centerX >= frame.x &&
-                  centerX <= frame.x + frame.width &&
-                  y >= frame.y &&
-                  y <= frame.y + frame.height;
-              })
-              .sort((a, b) => b.zIndex - a.zIndex)[0];
+        const frames = state.objects.filter(
+          (obj) => obj.type === "SECTION_FRAME",
+        );
+        const containingFrame =
+          moving.type !== "TASK_CARD"
+            ? null
+            : frames
+                .filter((frame) => {
+                  const centerX = x + moving.width / 2;
+                  return (
+                    centerX >= frame.x &&
+                    centerX <= frame.x + frame.width &&
+                    y >= frame.y &&
+                    y <= frame.y + frame.height
+                  );
+                })
+                .sort((a, b) => b.zIndex - a.zIndex)[0];
 
         const minTaskX = containingFrame
           ? containingFrame.x + FEATURE_TASK_HORIZONTAL_PADDING
           : x;
         const maxTaskX = containingFrame
-          ? containingFrame.x + containingFrame.width - moving.width - FEATURE_TASK_HORIZONTAL_PADDING
+          ? containingFrame.x +
+            containingFrame.width -
+            moving.width -
+            FEATURE_TASK_HORIZONTAL_PADDING
           : x;
         const nextX = containingFrame
           ? maxTaskX >= minTaskX
             ? Math.min(Math.max(x, minTaskX), maxTaskX)
-            : containingFrame.x + Math.max(0, (containingFrame.width - moving.width) / 2)
+            : containingFrame.x +
+              Math.max(0, (containingFrame.width - moving.width) / 2)
           : x;
         const nextY = containingFrame
           ? Math.max(y, containingFrame.y + FEATURE_TASK_TOP_OFFSET)
@@ -176,14 +187,15 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
                 parentFrameId:
                   obj.type === "SECTION_FRAME"
                     ? obj.parentFrameId
-                    : containingFrame?.id ?? null,
+                    : (containingFrame?.id ?? null),
               };
             }
             if (moving.type === "SECTION_FRAME" && obj.parentFrameId === id) {
               return { ...obj, x: obj.x + dx, y: obj.y + dy };
             }
             if (obj.id === containingFrame?.id) {
-              const requiredHeight = nextY + moving.height + FEATURE_TASK_BOTTOM_PADDING - obj.y;
+              const requiredHeight =
+                nextY + moving.height + FEATURE_TASK_BOTTOM_PADDING - obj.y;
               return requiredHeight > obj.height
                 ? { ...obj, height: requiredHeight }
                 : obj;
@@ -200,7 +212,9 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
       set((state) => ({
         objects: state.objects
           .filter((obj) => obj.id !== id)
-          .map((obj) => (obj.parentFrameId === id ? { ...obj, parentFrameId: null } : obj)),
+          .map((obj) =>
+            obj.parentFrameId === id ? { ...obj, parentFrameId: null } : obj,
+          ),
         selectedObjectId:
           state.selectedObjectId === id ? null : state.selectedObjectId,
         detailsObjectId:
@@ -232,10 +246,7 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
           //Removes the snapshot we just used.
           undoStack: state.undoStack.slice(0, -1),
           // Pushes the current state to redo stack, so we can redo it later.
-          redoStack: [
-            ...state.redoStack,
-            cloneSnapshot(state.objects),
-          ],
+          redoStack: [...state.redoStack, cloneSnapshot(state.objects)],
           isDirty: true,
         };
       }),
@@ -247,26 +258,25 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         return {
           objects: snapshot.objects,
           redoStack: state.redoStack.slice(0, -1),
-          undoStack: [
-            ...state.undoStack,
-            cloneSnapshot(state.objects),
-          ],
+          undoStack: [...state.undoStack, cloneSnapshot(state.objects)],
           isDirty: true,
         };
       }),
 
     markClean: () => set({ isDirty: false }),
 
-    resetCanvas: () => set({
-      canvasId: null,
-      objects: [],
-      viewport: { x: 32, y: 32, scale: 0.82 },
-      isDirty: false,
-      selectedObjectId: null,
-      detailsObjectId: null,
-      undoStack: [],
-      redoStack: [],
-    }),
+    resetCanvas: () =>
+      set({
+        activeTool: "pan",
+        canvasId: null,
+        objects: [],
+        viewport: { x: 32, y: 32, scale: 0.82 },
+        isDirty: false,
+        selectedObjectId: null,
+        detailsObjectId: null,
+        undoStack: [],
+        redoStack: [],
+      }),
 
     loadCanvas: (canvasId, objects, viewport) =>
       set({

@@ -47,7 +47,7 @@ export default function WorkshopHeader({
   )?.id;
 
   return (
-    <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-background/95 px-3 py-2 backdrop-blur md:px-5">
+    <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-sidebar px-3 py-2 backdrop-blur md:px-5">
       <Button variant="ghost" size="icon" asChild aria-label="Back to draft">
         <Link to={draft?.id ? `/drafts/${draft.id}` : "/dashboard"}>
           <ArrowLeft />

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router";
-import { Plus } from "lucide-react";
+import { useNavigate, useParams } from "react-router";
+import { ArrowLeft, Plus } from "lucide-react";
 import {
   DndContext,
   DragOverlay,
@@ -130,6 +130,8 @@ function BoardsPage() {
   const remoteBoard = useRemoteBoardState(resolvedProjectId);
   const projectMembersQuery = useProjectMembers(resolvedProjectId);
   const projectQuery = useProject(resolvedProjectId);
+  const navigate = useNavigate();
+
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -419,6 +421,14 @@ function BoardsPage() {
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <header className="border-b border-border shrink-0">
         <div className="flex items-center gap-2 px-5 flex-wrap min-h-13 py-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Go back"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
           <BoardInfo />
           <BoardSyncIndicator status={syncStatus} />
           <ProjectWorkspaceNavigation

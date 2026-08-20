@@ -89,7 +89,9 @@ export default function ProjectInvitationPage() {
     : false;
   const isAccepted = invitation.status === InviteStatus.ACCEPTED;
   const isRevoked = invitation.status === InviteStatus.REVOKED;
-  const isClosed = isExpired || isAccepted || isRevoked;
+  const isRejected = invitation.status === InviteStatus.REJECTED;
+  const isCancelled = invitation.status === InviteStatus.CANCELLED;
+  const isClosed = isExpired || isAccepted || isRevoked || isRejected || isCancelled;
   const canAccept = isLoggedInAsInvitedUser && !isClosed;
   const canDecline = isLoggedInAsInvitedUser && !isClosed;
   const showSignIn = !user && !isClosed;
@@ -149,6 +151,14 @@ export default function ProjectInvitationPage() {
             />
           )}
 
+          {isRejected && (
+            <InvitationMessage
+              icon={<AlertCircle className="size-4" />}
+              title="Invitation declined"
+              description="You have previously declined this invitation."
+            />
+          )}
+
           {isExpired && (
             <InvitationMessage
               icon={<AlertCircle className="size-4" />}
@@ -157,10 +167,10 @@ export default function ProjectInvitationPage() {
             />
           )}
 
-          {isRevoked && (
+          {(isRevoked || isCancelled) && (
             <InvitationMessage
               icon={<AlertCircle className="size-4" />}
-              title="Invitation revoked"
+              title="Invitation unavailable"
               description="This invitation is no longer available."
             />
           )}

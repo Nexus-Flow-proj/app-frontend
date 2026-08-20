@@ -21,6 +21,7 @@ export interface Notification {
     taskId?: string;
     commentId?: string;
     invitationId?: string;
+    inviteToken?: string;
   };
 
   isRead: boolean;

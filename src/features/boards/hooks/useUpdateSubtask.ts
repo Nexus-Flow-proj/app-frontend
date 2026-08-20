@@ -11,6 +11,7 @@ import {
     updateSubtaskInCache,
     updateSubtaskInCacheOptimistically,
 } from "../cache/task-detail.cache";
+import { rollbackTaskListCaches } from "../cache/task-list.cache";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
 export function useUpdateSubtask(taskId: string) {
@@ -65,6 +66,7 @@ export function useUpdateSubtask(taskId: string) {
                         context.previousTask,
                     );
                 }
+                rollbackTaskListCaches(queryClient, context?.previousTaskLists);
             },
 
             onSettled: (_, error, __, context) => {

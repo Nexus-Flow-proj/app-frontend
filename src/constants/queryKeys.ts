@@ -6,11 +6,27 @@ export const QUERY_KEYS = {
     all: ["projects"] as const,
     list: () => [...QUERY_KEYS.projects.all, "list"] as const,
     detail: (id: string) => [...QUERY_KEYS.projects.all, "detail", id] as const,
+    summary: (id: string) =>
+      [...QUERY_KEYS.projects.all, "summary", id] as const,
     members: (id: string) =>
       [...QUERY_KEYS.projects.all, "members", id] as const,
     roles: (id: string) => [...QUERY_KEYS.projects.all, "roles", id] as const,
     invites: (id: string) =>
       [...QUERY_KEYS.projects.all, "invites", id] as const,
+    knowledge: (id: string, sourceType?: string) =>
+      sourceType
+        ? ([...QUERY_KEYS.projects.all, "knowledge", id, sourceType] as const)
+        : ([...QUERY_KEYS.projects.all, "knowledge", id] as const),
+    knowledgeDetail: (projectId: string, chunkId: string) =>
+      [
+        ...QUERY_KEYS.projects.all,
+        "knowledge",
+        projectId,
+        "detail",
+        chunkId,
+      ] as const,
+    knowledgeSearch: (id: string) =>
+      [...QUERY_KEYS.projects.all, "knowledge-search", id] as const,
     invitation: (token: string) =>
       [...QUERY_KEYS.projects.all, "invitation", token] as const,
     activity: (projectId: string) =>

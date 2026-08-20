@@ -35,6 +35,7 @@ export interface ProjectMember {
   role?: ProjectRoleDefinition | null;
   roleLabel?: string;
   isAdmin?: boolean;
+  lastVisitedAt?: string | null;
   joinedAt: string;
 }
 

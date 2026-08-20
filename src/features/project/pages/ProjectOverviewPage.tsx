@@ -1,17 +1,16 @@
 import { useNavigate, useParams } from "react-router";
 import { dateformat } from "@/lib/format/date";
-import { ROUTES } from "@/constants";
 import {
   ProjectActivityFeedCard,
+  ProjectAwayBriefCard,
   ProjectDetailsCard,
-  ProjectMembersCard,
   ProjectOverviewHero,
   ProjectOverviewSkeleton,
   ProjectStatsGrid,
   ProjectUnavailableState,
   type ProjectActivityItem,
 } from "../components/overview";
-import { useProjectAccess, useProjectMembers } from "../hooks";
+import { useProjectAccess, useProjectSummary } from "../hooks";
 import {
   canManageProjectSettings,
   canReadBoard,
@@ -28,8 +27,11 @@ export default function ProjectOverviewPage() {
     isLoading: isProjectLoading,
     isError: isProjectError,
   } = useProjectAccess(id);
-  const { data: members = [], isLoading: isMembersLoading } =
-    useProjectMembers(id);
+  const {
+    data: projectSummary,
+    isFetching: isProjectSummaryFetching,
+    refetch: refetchProjectSummary,
+  } = useProjectSummary(id);
 
   if (isProjectLoading) {
     return <ProjectOverviewSkeleton />;
@@ -45,18 +47,19 @@ export default function ProjectOverviewPage() {
     taskCount > 0 ? Math.round((completedTaskCount / taskCount) * 100) : 0;
   const createdAt = project.created_at ?? "";
   const updatedAt = project.updated_at ?? "";
-  const adminCount = members.filter((member) => isProjectAdmin(member)).length;
+  const currentMember = project.currentMember ?? null;
   const projectAdmin =
-    members.find((member) => member.userId === project.adminId) ??
-    members.find((member) => isProjectAdmin(member)) ??
-    members[0];
+    currentMember &&
+    (currentMember.userId === project.adminId || isProjectAdmin(currentMember))
+      ? currentMember
+      : null;
   const canManageSettings = role ? canManageProjectSettings(role) : false;
   const canOpenWorkshop = role ? canReadWorkshop(role) : false;
   const canOpenBoard = role ? canReadBoard(role) : false;
   const adminName = projectAdmin
     ? `${projectAdmin.firstName} ${projectAdmin.lastName}`.trim() ||
       projectAdmin.email
-    : "Not loaded";
+    : "Project admin";
   const activityFeed: ProjectActivityItem[] = [
     {
       title: "Project created",
@@ -98,11 +101,13 @@ export default function ProjectOverviewPage() {
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid">
-          <ProjectMembersCard
-            members={members}
-            adminCount={adminCount}
-            isLoading={isMembersLoading}
-            onOpenMembers={() => navigate(ROUTES.PROJECT_MEMBERS(project.id))}
+          <ProjectAwayBriefCard
+            lastVisitedAt={project.currentMember?.lastVisitedAt}
+            summary={projectSummary}
+            isGenerating={isProjectSummaryFetching}
+            onGenerateBrief={() => {
+              void refetchProjectSummary();
+            }}
           />
         </div>
 

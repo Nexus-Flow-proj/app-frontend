@@ -5,8 +5,9 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { SearchForm } from "./SearchForm";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import DarkModeToggle from "@/components/shared/ModeToggle";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import MyBreadcrumb from "@/components/shared/MyBreadcrumb";
+import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 export function SiteHeader() {
   const { pathname } = useLocation();
@@ -18,7 +19,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 flex w-full items-center border-b bg-sidebar">
       <div
-        className={`flex h-(--header-height) w-full items-center px-4 ${isSidebarOpen ? "gap-2" : "gap-0.75"}`}
+        className={`flex h-(--header-height) w-full items-center px-4 ${isSidebarOpen ? "gap-2" : "gap-1"}`}
       >
         <Button
           variant={isSidebarOpen ? "ghost" : "link"}
@@ -30,10 +31,11 @@ export function SiteHeader() {
           <PanelLeftIcon />
         </Button>
 
-        <Separator orientation="vertical" className="mr-2 h-full" />
+        {/* <Separator orientation="vertical" className="mr-2 h-full" /> */}
         <MyBreadcrumb breadcrumbs={breadcrumbs} />
         <div className="ml-auto flex items-center gap-2">
           <SearchForm className="hidden md:block w-56" />
+          <NotificationCenter />
           <DarkModeToggle />
         </div>
       </div>

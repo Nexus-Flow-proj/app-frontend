@@ -12,7 +12,7 @@ export function useDeleteBoardColumn(projectId: string) {
 
     return useApiMutation(
         (columnId: string) =>
-            boardService.deleteColumn(columnId),
+            boardService.deleteColumn(projectId, columnId),
 
         {
             showSuccessToast: false,

@@ -37,6 +37,14 @@ interface BoardSyncState {
   resultTimer: number | null;
 }
 
+export interface PendingTaskMove {
+  taskId: TaskId;
+  boardColumnId: ColumnId;
+  columnOrder: number;
+  status: Task["status"];
+  expiresAt: number;
+}
+
 interface AddTaskInput {
   title?: string;
   description?: string;
@@ -53,6 +61,7 @@ interface KanbanStoreState {
   isBoardLoading: boolean;
   boardError: string | null;
   sync: BoardSyncState;
+  pendingTaskMoves: Record<TaskId, PendingTaskMove>;
   drawer: KanbanDrawerState;
 
   initializeBoard: (boardState: BoardState, projectId?: string | null) => void;
@@ -63,6 +72,12 @@ interface KanbanStoreState {
   finishSync: (success: boolean) => void;
   showSyncResult: (success: boolean) => void;
   clearSyncStatus: () => void;
+  recordLocalTaskMove: (
+    taskId: TaskId,
+    move: Pick<PendingTaskMove, "boardColumnId" | "columnOrder" | "status">,
+  ) => void;
+  clearLocalTaskMove: (taskId: TaskId) => void;
+  getLocalTaskMove: (taskId: TaskId) => PendingTaskMove | null;
 
   openTaskDrawer: (task: Task) => void;
   setDrawerTask: (task: TaskDetail | null) => void;
@@ -106,6 +121,22 @@ const initialSyncState: BoardSyncState = {
 const MIN_SYNC_VISIBLE_MS = 700;
 const SUCCESS_VISIBLE_MS = 1800;
 const ERROR_VISIBLE_MS = 2500;
+const LOCAL_TASK_MOVE_TTL_MS = 12000;
+
+function isPendingMoveFresh(move: PendingTaskMove, now = Date.now()) {
+  return move.expiresAt > now;
+}
+
+function getFreshPendingTaskMoves(
+  pendingTaskMoves: Record<TaskId, PendingTaskMove>,
+  now = Date.now(),
+) {
+  return Object.fromEntries(
+    Object.entries(pendingTaskMoves).filter(([, move]) =>
+      isPendingMoveFresh(move, now),
+    ),
+  ) as Record<TaskId, PendingTaskMove>;
+}
 
 function getNextSortOrder<T extends { sortOrder?: number; columnOrder?: number }>(
   items: T[],
@@ -164,26 +195,100 @@ function patchBoardTask(
   };
 }
 
+function findTaskInBoard(boardState: BoardState, taskId: TaskId) {
+  for (const tasks of Object.values(boardState.tasks)) {
+    const task = tasks.find((item) => item.id === taskId);
+    if (task) return task;
+  }
+
+  return null;
+}
+
+function sortTasksByColumnOrder(tasks: Task[]) {
+  return [...tasks].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
+}
+
+function preservePendingTaskMoves(
+  incomingBoardState: BoardState,
+  currentBoardState: BoardState,
+  pendingTaskMoves: Record<TaskId, PendingTaskMove>,
+): BoardState {
+  const freshMoves = Object.values(pendingTaskMoves).filter(isPendingMoveFresh);
+  if (freshMoves.length === 0) return incomingBoardState;
+
+  const nextTasks = Object.fromEntries(
+    Object.entries(incomingBoardState.tasks).map(([columnId, tasks]) => [
+      columnId,
+      [...tasks],
+    ]),
+  ) as BoardState["tasks"];
+
+  for (const move of freshMoves) {
+    const targetColumnExists = Boolean(incomingBoardState.columns[move.boardColumnId]);
+    if (!targetColumnExists) continue;
+
+    const remoteTask = findTaskInBoard(incomingBoardState, move.taskId);
+    const currentTask = findTaskInBoard(currentBoardState, move.taskId);
+    const task = remoteTask ?? currentTask;
+    if (!task) continue;
+
+    for (const columnId of Object.keys(nextTasks)) {
+      nextTasks[columnId] = nextTasks[columnId].filter(
+        (item) => item.id !== move.taskId,
+      );
+    }
+
+    nextTasks[move.boardColumnId] = [
+      ...(nextTasks[move.boardColumnId] ?? []),
+      {
+        ...task,
+        boardColumnId: move.boardColumnId,
+        columnOrder: move.columnOrder,
+        status: move.status,
+      },
+    ];
+  }
+
+  for (const columnId of Object.keys(nextTasks)) {
+    nextTasks[columnId] = sortTasksByColumnOrder(nextTasks[columnId]);
+  }
+
+  return {
+    ...incomingBoardState,
+    tasks: nextTasks,
+  };
+}
+
 export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
   projectId: null,
   boardState: emptyBoardState,
   isBoardLoading: false,
   boardError: null,
   sync: initialSyncState,
+  pendingTaskMoves: {},
   drawer: initialDrawerState,
 
   initializeBoard: (boardState, projectId = null) =>
-    set((state) => ({
-      projectId,
-      boardState,
-      isBoardLoading: false,
-      boardError: null,
-      sync:
-        projectId !== null && state.projectId !== projectId
-          ? initialSyncState
-          : state.sync,
-      drawer: initialDrawerState,
-    })),
+    set((state) => {
+      const isProjectChange = projectId !== null && state.projectId !== projectId;
+      const pendingTaskMoves = isProjectChange
+        ? {}
+        : getFreshPendingTaskMoves(state.pendingTaskMoves);
+
+      return {
+        projectId,
+        boardState: preservePendingTaskMoves(
+          boardState,
+          state.boardState,
+          pendingTaskMoves,
+        ),
+        isBoardLoading: false,
+        boardError: null,
+        pendingTaskMoves,
+        sync: isProjectChange ? initialSyncState : state.sync,
+        drawer: isProjectChange ? initialDrawerState : state.drawer,
+      };
+    }),
 
   setBoardState: (updater) =>
     set((state) => ({
@@ -313,6 +418,37 @@ export const useKanbanStore = create<KanbanStoreState>()((set, get) => ({
         sync: initialSyncState,
       };
     }),
+
+  recordLocalTaskMove: (taskId, move) =>
+    set((state) => ({
+      pendingTaskMoves: {
+        ...state.pendingTaskMoves,
+        [taskId]: {
+          taskId,
+          ...move,
+          expiresAt: Date.now() + LOCAL_TASK_MOVE_TTL_MS,
+        },
+      },
+    })),
+
+  clearLocalTaskMove: (taskId) =>
+    set((state) => {
+      if (!state.pendingTaskMoves[taskId]) return {};
+
+      const pendingTaskMoves = { ...state.pendingTaskMoves };
+      delete pendingTaskMoves[taskId];
+
+      return { pendingTaskMoves };
+    }),
+
+  getLocalTaskMove: (taskId) => {
+    const move = get().pendingTaskMoves[taskId];
+    if (!move) return null;
+    if (isPendingMoveFresh(move)) return move;
+
+    get().clearLocalTaskMove(taskId);
+    return null;
+  },
 
   openTaskDrawer: (task) =>
     set({

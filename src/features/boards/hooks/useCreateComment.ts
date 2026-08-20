@@ -11,6 +11,7 @@ import {
     rollbackTaskDetail,
     updateCommentInCache,
 } from "../cache/task-detail.cache";
+import { rollbackTaskListCaches } from "../cache/task-list.cache";
 import type { BoardMember, Comment } from "../types";
 import { finishBoardSync, startBoardSync } from "../utils/board-sync";
 
@@ -79,6 +80,7 @@ export function useCreateComment(
                         context.previousTask,
                     );
                 }
+                rollbackTaskListCaches(queryClient, context?.previousTaskLists);
             },
 
             onSettled: (_, error, __, context) => {

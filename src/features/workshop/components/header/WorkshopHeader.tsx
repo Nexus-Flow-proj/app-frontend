@@ -1,8 +1,18 @@
-import { ArrowLeft, Check, CloudAlert, LoaderCircle, PanelLeft, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  CloudAlert,
+  LoaderCircle,
+  PanelLeft,
+  Save,
+} from "lucide-react";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ModeToggle from "@/components/shared/ModeToggle";
+import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import type { DraftSummary } from "@/features/drafts/types";
+import { useProjects } from "@/features/project/hooks";
 
 interface WorkshopHeaderProps {
   draft?: DraftSummary;
@@ -15,6 +25,7 @@ interface WorkshopHeaderProps {
   onSave: () => void;
   onSubmit: () => void;
   onOpenExplorer?: () => void;
+  isCompleted: boolean;
 }
 
 export default function WorkshopHeader({
@@ -28,9 +39,15 @@ export default function WorkshopHeader({
   onSave,
   onSubmit,
   onOpenExplorer,
+  isCompleted,
 }: WorkshopHeaderProps) {
+  const projectsQuery = useProjects();
+  const projectId = projectsQuery.data?.find(
+    (project) => project.draftId === draft?.id,
+  )?.id;
+
   return (
-    <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-background/95 px-3 py-2 backdrop-blur md:px-5">
+    <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-sidebar px-3 py-2 backdrop-blur md:px-5">
       <Button variant="ghost" size="icon" asChild aria-label="Back to draft">
         <Link to={draft?.id ? `/drafts/${draft.id}` : "/dashboard"}>
           <ArrowLeft />
@@ -42,30 +59,78 @@ export default function WorkshopHeader({
             {draft?.projectInfo.name || "Onboarding Workshop"}
           </h1>
           {isGenerating ? (
-            <Badge variant="secondary" className="gap-1"><LoaderCircle className="size-3 animate-spin" /> AI planning</Badge>
+            <Badge variant="secondary" className="gap-1">
+              <LoaderCircle className="size-3 animate-spin" /> AI planning
+            </Badge>
           ) : isSaving ? (
-            <Badge variant="secondary" className="gap-1"><LoaderCircle className="size-3 animate-spin" /> Saving</Badge>
+            <Badge variant="secondary" className="gap-1">
+              <LoaderCircle className="size-3 animate-spin" /> Saving
+            </Badge>
           ) : isDirty ? (
-            <Badge variant="outline" className="gap-1 border-amber-500/40 text-amber-600"><CloudAlert className="size-3" /> Unsaved</Badge>
+            <Badge
+              variant="outline"
+              className="gap-1 border-amber-500/40 text-amber-600"
+            >
+              <CloudAlert className="size-3" /> Unsaved
+            </Badge>
           ) : hasCanvas ? (
-            <Badge variant="outline" className="gap-1 text-emerald-600"><Check className="size-3" /> Saved</Badge>
+            <Badge variant="outline" className="gap-1 text-emerald-600">
+              <Check className="size-3" /> Saved
+            </Badge>
           ) : null}
         </div>
-        <p className="hidden text-xs text-muted-foreground sm:block">Onboarding Workshop · Shape the plan before creating the project</p>
+        <p className="hidden text-xs text-muted-foreground sm:block">
+          Onboarding Workshop · Shape the plan before creating the project
+        </p>
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <ProjectWorkspaceNavigation
+          projectId={projectId}
+          draftId={draft?.id}
+          current="workshop"
+        />
+        <ModeToggle />
         {onOpenExplorer ? (
-          <Button variant="outline" size="icon" className="md:hidden" onClick={onOpenExplorer} aria-label="Open canvas explorer"><PanelLeft /></Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="md:hidden"
+            onClick={onOpenExplorer}
+            aria-label="Open canvas explorer"
+          >
+            <PanelLeft />
+          </Button>
         ) : null}
-        <Button variant="outline" size="sm" className="gap-2" disabled={!isDirty || isSaving || isGenerating || !hasCanvas} onClick={onSave}>
-          {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-          <span className="hidden sm:inline">Save</span>
-        </Button>
-        <Button size="sm" disabled={!canSubmit || isSubmitting} onClick={onSubmit}>
-          {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          Create project
-        </Button>
+        {!isCompleted && (
+          <>
+            {" "}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={!isDirty || isSaving || isGenerating || !hasCanvas}
+              onClick={onSave}
+            >
+              {isSaving ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              <span className="hidden sm:inline">Save</span>
+            </Button>
+            <Button
+              size="sm"
+              disabled={!canSubmit || isSubmitting}
+              onClick={onSubmit}
+            >
+              {isSubmitting ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : null}
+              Create project
+            </Button>
+          </>
+        )}
       </div>
     </header>
   );

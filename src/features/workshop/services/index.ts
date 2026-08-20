@@ -76,7 +76,12 @@ export const workshopService = {
     api
       .get<
         ApiResponse<AiGeneration>
-      >(`/projects/onboarding/ai/generations/${generationId}`)
+      >(`/projects/onboarding/ai/generations/${generationId}`, {
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+        },
+      })
       .then((r) => r.data),
   getMessages: (draftId: string) =>
     api

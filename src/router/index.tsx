@@ -48,6 +48,9 @@ const ProjectPages = {
     () => import("@/features/project/pages/ProjectInvitationPage"),
   ),
   Members: lazy(() => import("@/features/project/pages/ProjectMembersPage")),
+  Knowledge: lazy(
+    () => import("@/features/project/pages/ProjectKnowledgePage"),
+  ),
   Settings: lazy(() => import("@/features/project/pages/ProjectSettingsPage")),
   Invites: lazy(() => import("@/features/project/pages/ProjectInvitesPage")),
   Roles: lazy(() => import("@/features/project/pages/ProjectRolesPage")),
@@ -162,6 +165,19 @@ const router = createBrowserRouter([
                 element: <WithSuspense Component={ProjectPages.Overview} />,
               },
               {
+                element: (
+                  <ProjectPermissionGuard permissions={["project.read"]} />
+                ),
+                children: [
+                  {
+                    path: "knowledge",
+                    element: (
+                      <WithSuspense Component={ProjectPages.Knowledge} />
+                    ),
+                  },
+                ],
+              },
+              {
                 element: <AdminGuard />,
                 children: [
                   {
@@ -214,10 +230,6 @@ const router = createBrowserRouter([
             element: <ProjectPermissionGuard permissions={["board.read"]} />,
             children: [
               {
-                path: "/projects/:id/boards",
-                element: <WithSuspense Component={BoardPages.TeamBoard} />,
-              },
-              {
                 path: "/projects/:id/calendar",
                 element: (
                   <WithSuspense Component={CalendarPages.ProjectCalendar} />
@@ -230,22 +242,27 @@ const router = createBrowserRouter([
       // Member routes render without the dashboard shell.
 
       {
+        path: "/projects/:id/boards",
+        element: <WithSuspense Component={BoardPages.TeamBoard} />,
+      },
+
+      {
         element: <MemberGuard />,
         children: [
           {
-            path: "/projects/:id/my-workspace",
+            path: "/projects/:id/my-workshop",
             element: <WithSuspense Component={WorkshopPages.MiniWorkshop} />,
           },
         ],
       },
       {
-        element: <ProjectPermissionGuard permissions={["workshop.read"]} />,
-        children: [
-          {
-            path: "/projects/:id/workshop",
-            element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
-          },
-        ],
+        // element: <ProjectPermissionGuard permissions={["workshop.read"]} />,
+        // children: [
+        //   {
+        path: "/projects/:id/workshop",
+        element: <WithSuspense Component={WorkshopPages.MainWorkshop} />,
+        //   },
+        // ],
       },
       {
         path: "/drafts/:id/workshop",

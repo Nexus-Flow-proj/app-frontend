@@ -101,15 +101,15 @@ function KanbanBoardColumn({
               className="h-0.5 w-7 rounded-full mb-3 opacity-90"
               style={{ background: accentColor }}
             />
-            <div className="flex items-center gap-2 min-w-0">
-              <CardTitle className="text-[14px] font-semibold truncate">
+            <div className="flex min-w-0 items-start gap-2">
+              <CardTitle className="min-w-0 flex-1 whitespace-normal break-words text-[14px] font-semibold leading-snug">
                 {column.name}
               </CardTitle>
               <Badge
                 variant="outline"
                 size="sm"
                 shape="rounded"
-                className="font-semibold tabular-nums"
+                className="shrink-0 font-semibold tabular-nums"
               >
                 {isFiltered
                   ? `${filteredTasks.length}/${tasks.length}`

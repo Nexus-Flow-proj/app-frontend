@@ -54,6 +54,7 @@ export function ChatMessageItem({
 
   const canEdit = isOwn && canSend;
   const canDelete = (isOwn && canSend) || canDeleteAny;
+  const hasMessageActions = canSend || canPin || canDelete;
 
   const setReplyTo = useChatStore((state) => state.setReplyTo);
 
@@ -143,89 +144,94 @@ export function ChatMessageItem({
           : ""
       }
       actions={
-        <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-background/95 p-0.5 shadow-md backdrop-blur-xs">
-          {canSend ? (
-            <QuickReactionTrigger onSelectEmoji={handleAddReaction} />
-          ) : null}
+        hasMessageActions ? (
+          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-background/95 p-0.5 shadow-md backdrop-blur-xs">
+            {canSend ? (
+              <QuickReactionTrigger onSelectEmoji={handleAddReaction} />
+            ) : null}
 
-          {canSend ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-6 text-muted-foreground hover:text-foreground"
-              onClick={() => setReplyTo(message)}
-              aria-label="Reply to message"
-            >
-              <Reply className="size-3.5" />
-            </Button>
-          ) : null}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            {canSend ? (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="size-6 text-muted-foreground hover:text-foreground"
-                aria-label="More message actions"
+                onClick={() => setReplyTo(message)}
+                aria-label="Reply to message"
               >
-                <MoreVertical className="size-3.5" />
+                <Reply className="size-3.5" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align={isOwn ? "start" : "end"} className="w-36">
-              {canSend ? (
-                <DropdownMenuItem
-                  onClick={() => setReplyTo(message)}
-                  className="gap-2 text-xs"
-                >
-                  <Reply className="size-3.5" /> Reply
-                </DropdownMenuItem>
-              ) : null}
+            ) : null}
 
-              {canPin ? (
-                <DropdownMenuItem
-                  onClick={handleTogglePin}
-                  className="gap-2 text-xs"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-6 text-muted-foreground hover:text-foreground"
+                  aria-label="More message actions"
                 >
-                  {message.isPinned ? (
-                    <>
-                      <PinOff className="size-3.5" /> Unpin
-                    </>
-                  ) : (
-                    <>
-                      <Pin className="size-3.5" /> Pin message
-                    </>
-                  )}
-                </DropdownMenuItem>
-              ) : null}
-
-              {canEdit ? (
-                <DropdownMenuItem
-                  onClick={() => {
-                    setEditContent(message.content);
-                    setIsEditing(true);
-                  }}
-                  className="gap-2 text-xs"
-                >
-                  <Pencil className="size-3.5" /> Edit
-                </DropdownMenuItem>
-              ) : null}
-
-              {canDelete ? (
-                <>
-                  <DropdownMenuSeparator />
+                  <MoreVertical className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align={isOwn ? "start" : "end"}
+                className="w-36"
+              >
+                {canSend ? (
                   <DropdownMenuItem
-                    onClick={handleDelete}
-                    className="gap-2 text-xs text-destructive focus:text-destructive"
+                    onClick={() => setReplyTo(message)}
+                    className="gap-2 text-xs"
                   >
-                    <Trash2 className="size-3.5" /> Delete
+                    <Reply className="size-3.5" /> Reply
                   </DropdownMenuItem>
-                </>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                ) : null}
+
+                {canPin ? (
+                  <DropdownMenuItem
+                    onClick={handleTogglePin}
+                    className="gap-2 text-xs"
+                  >
+                    {message.isPinned ? (
+                      <>
+                        <PinOff className="size-3.5" /> Unpin
+                      </>
+                    ) : (
+                      <>
+                        <Pin className="size-3.5" /> Pin message
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                ) : null}
+
+                {canEdit ? (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setEditContent(message.content);
+                      setIsEditing(true);
+                    }}
+                    className="gap-2 text-xs"
+                  >
+                    <Pencil className="size-3.5" /> Edit
+                  </DropdownMenuItem>
+                ) : null}
+
+                {canDelete ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="gap-2 text-xs text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="size-3.5" /> Delete
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : null
       }
       footer={
         <ChatReactionBar

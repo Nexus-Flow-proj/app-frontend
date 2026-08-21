@@ -98,6 +98,17 @@ export interface DashboardSummary {
 }
 
 /**
+ * GET /dashboard/ai/summary
+ * AI-generated daily guidance that interprets dashboard signals and recommends
+ * the highest-value next action for the user.
+ */
+export interface DashboardAiSummary {
+  headline: string;
+  quickInsight: string;
+  focusRecommendation: string;
+}
+
+/**
  * GET /dashboard/task-progress?range=...
  * Its own endpoint so switching the range only reloads this chart, not the
  * whole page.

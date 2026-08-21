@@ -1,6 +1,7 @@
 import { api } from "@/lib/api/axios";
 import type { ApiResponse } from "@/types";
 import type {
+  DashboardAiSummary,
   DashboardSummary,
   FocusItem,
   TaskProgressData,
@@ -22,6 +23,11 @@ export const dashboardService = {
 
         return response.data;
       }),
+
+  getAiSummary: (): Promise<ApiResponse<DashboardAiSummary>> =>
+    api
+      .get<ApiResponse<DashboardAiSummary>>("/dashboard/ai/summary")
+      .then((response) => response.data),
 
   getTaskProgress: (
     range: TaskProgressRange,

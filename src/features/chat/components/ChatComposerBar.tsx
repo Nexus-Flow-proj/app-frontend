@@ -51,11 +51,7 @@ export function ChatComposerBar({ projectId }: ChatComposerBarProps) {
   const uploadMutation = useUploadAttachments(projectId);
 
   if (!canSend) {
-    return (
-      <div className="p-3 text-center text-xs text-muted-foreground bg-muted/20 border-t">
-        You have view-only access to this project chat.
-      </div>
-    );
+    return null;
   }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {

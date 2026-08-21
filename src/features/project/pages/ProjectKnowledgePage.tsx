@@ -5,7 +5,7 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Sparkles,
+  Bot,
   Trash2,
 } from "lucide-react";
 import { useParams } from "react-router";
@@ -266,7 +266,7 @@ export default function ProjectKnowledgePage() {
             <div className="grid place-items-center rounded-lg border border-dashed bg-muted/20 px-6 py-14 text-center">
               <div className="mx-auto flex max-w-md flex-col items-center gap-3">
                 <span className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Sparkles className="size-6" />
+                  <Bot className="size-6" />
                 </span>
                 <div>
                   <h2 className="text-base font-semibold text-foreground">

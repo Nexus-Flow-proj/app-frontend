@@ -1,4 +1,4 @@
-import { Sparkles, GitBranch } from "lucide-react";
+import { Bot, GitBranch } from "lucide-react";
 import { flowSteps } from "../../constants/flowSteps";
 import { registerBenefits } from "../../constants/registerBenefits";
 
@@ -10,7 +10,7 @@ function AsideRegister() {
       <div className="mx-auto max-w-70">
         <div className="mb-12 flex items-center gap-3">
           <div className="flex size-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary shadow-sm shadow-primary/20">
-            <Sparkles className="size-6" />
+            <Bot className="size-6" />
           </div>
           <div>
             <p className="text-2xl font-black tracking-wide">

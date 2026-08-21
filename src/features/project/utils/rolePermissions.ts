@@ -101,6 +101,28 @@ export function canManageBoard(role: Pick<ProjectRoleDefinition, "permissions">)
   );
 }
 
+export function canReadChat(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "chat.read");
+}
+
+export function canSendChat(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "chat.send");
+}
+
+export function canPinChat(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "chat.pin");
+}
+
+export function canDeleteAnyChat(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "chat.deleteAny");
+}
+
+export function canSendChatAnnouncement(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+) {
+  return hasPermission(role, "chat.sendAnnouncement");
+}
+
 export function countEnabledPermissions(permissions: RolePermissions) {
   return ROLE_PERMISSION_GROUPS.reduce(
     (total, group) =>

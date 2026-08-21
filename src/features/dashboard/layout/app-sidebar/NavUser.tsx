@@ -4,8 +4,8 @@ import {
   ChevronsUpDownIcon,
   CreditCardIcon,
   LogOutIcon,
-  SparklesIcon,
   ZapIcon,
+  SparklesIcon,
 } from "lucide-react";
 import {
   DropdownMenu,

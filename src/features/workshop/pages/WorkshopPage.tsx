@@ -44,6 +44,7 @@ import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import { useProjects } from "@/features/project/hooks";
+import { ProjectChatWidget } from "@/features/chat";
 
 // function UnsupportedProjectWorkshop() {
 //   return (
@@ -275,6 +276,8 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
         onConfirm={confirmLeave}
         onCancel={cancelLeave}
       />
+
+      <ProjectChatWidget explicitProjectId={projectId} />
     </div>
   );
 }

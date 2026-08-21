@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "./app-sidebar/SiteHeader";
 import { AppSidebar } from "./app-sidebar";
 import { Outlet } from "react-router";
+import { ProjectChatWidget } from "@/features/chat";
 
 export default function DashboardLayout() {
   return (
@@ -17,6 +18,8 @@ export default function DashboardLayout() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <ProjectChatWidget />
     </div>
   );
 }
+

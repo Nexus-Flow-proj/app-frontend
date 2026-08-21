@@ -1,7 +1,7 @@
 import { useId, useState, useEffect, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronUp, Plus, Sparkles, User, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, User, X, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -98,4 +98,17 @@ export const QUERY_KEYS = {
     me: () => [...QUERY_KEYS.subscriptions.all, "me"] as const,
     payments: () => [...QUERY_KEYS.subscriptions.all, "payments"] as const,
   },
+  chat: {
+    all: ["chat"] as const,
+    messages: (projectId: string, params?: { search?: string; type?: string; pinned?: boolean }) =>
+      params
+        ? ([...QUERY_KEYS.chat.all, "messages", projectId, params] as const)
+        : ([...QUERY_KEYS.chat.all, "messages", projectId] as const),
+    pinned: (projectId: string) =>
+      [...QUERY_KEYS.chat.all, "pinned", projectId] as const,
+    unreadCount: (projectId: string) =>
+      [...QUERY_KEYS.chat.all, "unread-count", projectId] as const,
+    detail: (projectId: string, messageId: string) =>
+      [...QUERY_KEYS.chat.all, "detail", projectId, messageId] as const,
+  },
 } as const;

@@ -58,6 +58,7 @@ import {
 } from "../utils/objectFactory";
 import type { PersonalTaskDto } from "../validation/personal-task.schema";
 import { UnsavedChangesDialog } from "@/features/workshop/components/UnsavedChangesDialog";
+import { ProjectChatWidget } from "@/features/chat";
 
 function memberName(member: {
   firstName: string;
@@ -441,25 +442,8 @@ function MiniWorkshopPage() {
         onConfirm={() => blocker.proceed?.()}
         onCancel={() => blocker.reset?.()}
       />
-      {/* <AlertDialog open={blocker.state === "blocked"}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your latest Mini Workshop content changes have not been saved.
-              Viewport movement alone does not trigger this warning.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Keep editing
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => blocker.proceed?.()}>
-              Leave anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog> */}
+
+      <ProjectChatWidget explicitProjectId={id} />
     </div>
   );
 }

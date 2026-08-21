@@ -1,13 +1,13 @@
 import {
   AlertTriangleIcon,
-  BotIcon,
   CircleCheckIcon,
   Clock3Icon,
   FileTextIcon,
   Loader2Icon,
   ListTodoIcon,
-  SparklesIcon,
+  BotIcon,
   UsersRoundIcon,
+  SparklesIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

@@ -46,6 +46,13 @@ export interface RolePermissions {
     update: boolean;
     delete: boolean;
   };
+  chat: {
+    read: boolean;
+    send: boolean;
+    pin: boolean;
+    deleteAny: boolean;
+    sendAnnouncement: boolean;
+  };
 }
 
 export interface RolePreset {

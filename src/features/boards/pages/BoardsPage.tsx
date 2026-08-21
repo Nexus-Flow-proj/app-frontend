@@ -18,6 +18,7 @@ import { TaskDetailDrawer } from "../components/drawers/TaskDetailDrawer";
 import { BoardFilters } from "../components/Topbar/BoardFilters";
 import { BoardSearchBar } from "../components/Topbar/BoardSearchBar";
 import { Button } from "@/components/ui/button";
+import { ProjectChatWidget } from "@/features/chat";
 import {
   useUrlFilters,
   useSetUrlFilters,
@@ -622,6 +623,7 @@ function BoardsPage() {
         isDeletingAttachment={deleteAttachmentMutation.isPending}
         onDeleteTask={handleDeleteTask}
       />
+      <ProjectChatWidget explicitProjectId={resolvedProjectId} />
     </div>
   );
 }

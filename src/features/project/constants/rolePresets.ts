@@ -54,6 +54,13 @@ export const EMPTY_ROLE_PERMISSIONS: RolePermissions = {
     update: false,
     delete: false,
   },
+  chat: {
+    read: true,
+    send: false,
+    pin: false,
+    deleteAny: false,
+    sendAnnouncement: false,
+  },
 };
 
 const FULL_PERMISSIONS: RolePermissions = {
@@ -90,6 +97,13 @@ const FULL_PERMISSIONS: RolePermissions = {
     create: true,
     update: true,
     delete: true,
+  },
+  chat: {
+    read: true,
+    send: true,
+    pin: true,
+    deleteAny: true,
+    sendAnnouncement: true,
   },
 };
 
@@ -261,6 +275,39 @@ export const ROLE_PERMISSION_GROUPS: Array<{
       },
     ],
   },
+  {
+    key: "chat",
+    label: "Chat",
+    description: "Project chat, announcements, pinning, and message moderation.",
+    permissions: [
+      {
+        key: "read",
+        label: "Read chat",
+        description: "View and read project chat messages.",
+      },
+      {
+        key: "send",
+        label: "Send messages",
+        description: "Send chat messages, replies, attachments, and reactions.",
+      },
+      {
+        key: "pin",
+        label: "Pin messages",
+        description: "Pin important messages to the project chat.",
+      },
+      {
+        key: "deleteAny",
+        label: "Delete any message",
+        description: "Delete other members' messages.",
+        dangerous: true,
+      },
+      {
+        key: "sendAnnouncement",
+        label: "Post announcements",
+        description: "Broadcast special project announcements.",
+      },
+    ],
+  },
 ];
 
 export const ROLE_PRESETS: RolePreset[] = [
@@ -305,6 +352,13 @@ export const ROLE_PRESETS: RolePreset[] = [
       },
       board: { read: true, moveTasks: true, manageColumns: false },
       roles: { create: false, update: false, delete: false },
+      chat: {
+        read: true,
+        send: true,
+        pin: true,
+        deleteAny: false,
+        sendAnnouncement: false,
+      },
     },
   },
   {
@@ -331,6 +385,13 @@ export const ROLE_PRESETS: RolePreset[] = [
       },
       board: { read: true, moveTasks: true, manageColumns: false },
       roles: { create: false, update: false, delete: false },
+      chat: {
+        read: true,
+        send: true,
+        pin: false,
+        deleteAny: false,
+        sendAnnouncement: false,
+      },
     },
   },
   {

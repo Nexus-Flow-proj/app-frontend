@@ -1,4 +1,9 @@
-import { KanbanSquareIcon, Settings2Icon, SparklesIcon } from "lucide-react";
+import {
+  BoxesIcon,
+  KanbanSquareIcon,
+  Settings2Icon,
+  SparklesIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/constants";
@@ -11,6 +16,7 @@ interface ProjectOverviewHeroProps {
   createdAt: string;
   canOpenWorkshop: boolean;
   canOpenBoard: boolean;
+  canOpenMiniWorkshop: boolean;
   canManageSettings: boolean;
   onNavigate: (to: string) => void;
 }
@@ -20,6 +26,7 @@ export function ProjectOverviewHero({
   createdAt,
   canOpenWorkshop,
   canOpenBoard,
+  canOpenMiniWorkshop,
   canManageSettings,
   onNavigate,
 }: ProjectOverviewHeroProps) {
@@ -76,6 +83,17 @@ export function ProjectOverviewHero({
           >
             <KanbanSquareIcon data-icon="inline-start" className="size-4" />
             <span>Board</span>
+          </Button>
+        )}
+        {canOpenMiniWorkshop && (
+          <Button
+            size="lg"
+            variant="surface"
+            className="justify-center gap-2"
+            onClick={() => onNavigate(ROUTES.MY_WORKSPACE(project.id))}
+          >
+            <BoxesIcon data-icon="inline-start" className="size-4" />
+            <span>Mini Workshop</span>
           </Button>
         )}
         {canManageSettings && (

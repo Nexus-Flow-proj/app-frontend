@@ -10,7 +10,7 @@ export const ROLE_LEVELS = [
   { value: 40, label: "Member" },
   { value: 60, label: "Team Lead" },
   { value: 80, label: "Project Manager" },
-  { value: 100, label: "Reserved System" },
+  { value: 100, label: "Admin" },
 ] as const;
 
 export const CUSTOM_ROLE_LEVEL_MIN = 1;

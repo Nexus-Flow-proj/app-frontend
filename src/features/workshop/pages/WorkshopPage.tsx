@@ -250,7 +250,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
           <WorkshopSidebar
             collapsed={false}
             onCollapse={() => setExplorerOpen(false)}
-            onExpand={() => {}}
+            onExpand={() => { }}
           />
         </SheetContent>
       </Sheet>

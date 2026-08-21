@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { ArrowLeft, Plus } from "lucide-react";
 import {
   DndContext,
@@ -51,7 +51,11 @@ import { useUpdateComment } from "../hooks/useUpdateComment";
 import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
 import { useUploadTaskAttachments } from "../hooks/useUploadTaskAttachments";
 import type { BoardMember, Task } from "../types";
-import { TaskStatus, TaskType, type TaskStatus as TaskStatusValue } from "../types/enums";
+import {
+  TaskStatus,
+  TaskType,
+  type TaskStatus as TaskStatusValue,
+} from "../types/enums";
 import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
@@ -63,6 +67,7 @@ import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
 import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
 import { getTaskStatusFromColumnName } from "../utils/task-status";
 import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
+import DarkModeToggle from "@/components/shared/ModeToggle";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -83,7 +88,9 @@ const boardCollisionStrategy: CollisionDetection = (args) => {
     : closestCorners(args);
 };
 
-function mapProjectMemberToBoardMember(member: ProjectMemberSummary): BoardMember {
+function mapProjectMemberToBoardMember(
+  member: ProjectMemberSummary,
+): BoardMember {
   const name = `${member.firstName} ${member.lastName}`.trim() || member.email;
 
   return {
@@ -95,7 +102,9 @@ function mapProjectMemberToBoardMember(member: ProjectMemberSummary): BoardMembe
   };
 }
 
-function mapUserToBoardMember(user: NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>): BoardMember {
+function mapUserToBoardMember(
+  user: NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>,
+): BoardMember {
   const name =
     user.name ||
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
@@ -115,7 +124,10 @@ function getColumnTaskStatus(
   columnId: string,
   fallback: TaskStatusValue = TaskStatus.TODO,
 ) {
-  return getTaskStatusFromColumnName(boardState.columns[columnId]?.name, fallback);
+  return getTaskStatusFromColumnName(
+    boardState.columns[columnId]?.name,
+    fallback,
+  );
 }
 
 function BoardsPage() {
@@ -130,8 +142,6 @@ function BoardsPage() {
   const remoteBoard = useRemoteBoardState(resolvedProjectId);
   const projectMembersQuery = useProjectMembers(resolvedProjectId);
   const projectQuery = useProject(resolvedProjectId);
-  const navigate = useNavigate();
-
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -148,7 +158,9 @@ function BoardsPage() {
   const setDrawerLoading = useKanbanStore((state) => state.setDrawerLoading);
   const closeTaskDrawer = useKanbanStore((state) => state.closeTaskDrawer);
   const moveTaskToColumn = useKanbanStore((state) => state.moveTaskToColumn);
-  const recordLocalTaskMove = useKanbanStore((state) => state.recordLocalTaskMove);
+  const recordLocalTaskMove = useKanbanStore(
+    (state) => state.recordLocalTaskMove,
+  );
   const activeTaskId = drawer.activeTaskId ?? "";
   const taskDetailQuery = useTask(activeTaskId);
   const timeLogsQuery = useTimeLogs(activeTaskId);
@@ -157,10 +169,7 @@ function BoardsPage() {
     isPending: isRecommendingAssignee,
     mutate: recommendAssignee,
     reset: resetAssigneeRecommendation,
-  } = useAiAssigneeRecommendation(
-    resolvedProjectId,
-    activeTaskId,
-  );
+  } = useAiAssigneeRecommendation(resolvedProjectId, activeTaskId);
   const {
     isPending: isGeneratingTaskBreakdown,
     mutate: generateTaskBreakdown,
@@ -378,8 +387,8 @@ function BoardsPage() {
 
   const handleMoveTaskToColumn = useCallback(
     (taskId: string, targetColumnId: string) => {
-      const sourceColumnId = Object.entries(boardState.tasks).find(([, tasks]) =>
-        tasks.some((task) => task.id === taskId),
+      const sourceColumnId = Object.entries(boardState.tasks).find(
+        ([, tasks]) => tasks.some((task) => task.id === taskId),
       )?.[0];
       const movingTask = sourceColumnId
         ? boardState.tasks[sourceColumnId]?.find((task) => task.id === taskId)
@@ -424,10 +433,12 @@ function BoardsPage() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Go back"
-            onClick={() => navigate(-1)}
+            asChild
+            aria-label="Back to workshop"
           >
-            <ArrowLeft className="size-5" />
+            <Link to={`/projects/${projectId}`}>
+              <ArrowLeft />
+            </Link>
           </Button>
           <BoardInfo />
           <BoardSyncIndicator status={syncStatus} />
@@ -456,6 +467,8 @@ function BoardsPage() {
               onReset={resetFilters}
               activeCount={activeCount}
             />
+            <DarkModeToggle />
+
             <div className="w-px h-5 bg-border" />
 
             <Button
@@ -514,9 +527,9 @@ function BoardsPage() {
           initialData={
             editingColumn
               ? {
-                name: editingColumn.name,
-                color: editingColumn.color ?? "var(--primary)",
-              }
+                  name: editingColumn.name,
+                  color: editingColumn.color ?? "var(--primary)",
+                }
               : null
           }
           title={editingColumn ? "Rename column" : "New column"}
@@ -579,9 +592,7 @@ function BoardsPage() {
             dto,
           })
         }
-        onDeleteSubtask={(subtaskId) =>
-          deleteSubtaskMutation.mutate(subtaskId)
-        }
+        onDeleteSubtask={(subtaskId) => deleteSubtaskMutation.mutate(subtaskId)}
         onMoveToColumn={handleMoveTaskToColumn}
         onAddComment={(content) =>
           createCommentMutation.mutate({

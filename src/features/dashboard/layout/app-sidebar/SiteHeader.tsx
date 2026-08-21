@@ -2,7 +2,7 @@ import { useLocation } from "react-router";
 import { PanelLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
-import { SearchForm } from "./SearchForm";
+// import { SearchForm } from "./SearchForm";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import DarkModeToggle from "@/components/shared/ModeToggle";
 // import { Separator } from "@/components/ui/separator";
@@ -34,7 +34,7 @@ export function SiteHeader() {
         {/* <Separator orientation="vertical" className="mr-2 h-full" /> */}
         <MyBreadcrumb breadcrumbs={breadcrumbs} />
         <div className="ml-auto flex items-center gap-2">
-          <SearchForm className="hidden md:block w-56" />
+          {/* <SearchForm className="hidden md:block w-56" /> */}
           <NotificationCenter />
           <DarkModeToggle />
         </div>

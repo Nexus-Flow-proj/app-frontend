@@ -5,7 +5,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 // import { SearchForm } from "./SearchForm";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import DarkModeToggle from "@/components/shared/ModeToggle";
-// import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import MyBreadcrumb from "@/components/shared/MyBreadcrumb";
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
@@ -22,16 +22,19 @@ export function SiteHeader() {
         className={`flex h-(--header-height) w-full items-center px-4 ${isSidebarOpen ? "gap-2" : "gap-1"}`}
       >
         <Button
-          variant={isSidebarOpen ? "link" : "link"}
+          variant={"link"}
           size="icon-sm"
           onClick={toggleSidebar}
           aria-label="Toggle sidebar"
-          className={` ${!isSidebarOpen && "pr-2.25"}`}
+          className={`text-foreground ${!isSidebarOpen && "pr-2"}`}
         >
           <PanelLeftIcon />
         </Button>
 
-        {/* <Separator orientation="vertical" className="mr-2 h-full" /> */}
+        <Separator
+          orientation="vertical"
+          className="mr-2.5 h-full -translate-x-px"
+        />
         <MyBreadcrumb breadcrumbs={breadcrumbs} />
         <div className="ml-auto flex items-center gap-2">
           {/* <SearchForm className="hidden md:block w-56" /> */}

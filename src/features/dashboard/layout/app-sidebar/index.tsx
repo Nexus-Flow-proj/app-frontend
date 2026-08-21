@@ -25,7 +25,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-t z-50 border-t-sidebar"
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! z-49"
       {...props}
     >
       <SidebarHeader>

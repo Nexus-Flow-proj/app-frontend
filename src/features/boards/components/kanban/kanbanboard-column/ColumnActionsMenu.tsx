@@ -31,7 +31,7 @@ function ColumnActionsMenu({
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-max min-w-max">
         {!isProtected ? (
           <>
             <DropdownMenuItem onClick={() => onAddTask?.(columnId)}>
@@ -62,4 +62,3 @@ function ColumnActionsMenu({
 }
 
 export default ColumnActionsMenu;
-

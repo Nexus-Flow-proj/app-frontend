@@ -16,7 +16,7 @@ import { NavSecondary } from "./NavSecondary";
 import { NavUser } from "./NavUser";
 import { SearchForm } from "./SearchForm";
 import { NAV_MAIN, NAV_SECONDARY } from "../../constants/navItems";
-import Logo from "@/components/shared/Logo";
+import Logo from "@/components/shared/logo/Logo";
 import { useProjects } from "@/features/project/hooks";
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
@@ -25,15 +25,22 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-t z-50 border-t-sidebar"
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! z-49"
       {...props}
     >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="h-18 justify-center hover:bg-transparent active:bg-transparent group-data-[collapsible=icon]:size-9! group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:hover:bg-sidebar-accent group-data-[collapsible=icon]:active:bg-sidebar-accent"
+            >
               <Link to="/dashboard">
-                <Logo />
+                <Logo
+                  textClassName="text-center text-primary group-data-[collapsible=icon]:hidden"
+                  markClassName="flex-none  !size-22 group-data-[collapsible=icon]:!size-9"
+                />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

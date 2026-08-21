@@ -1,14 +1,19 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Circle, Group, Rect, Text } from "react-konva";
 import type { CanvasObject } from "../../types";
+import { TaskStatus } from "@/types/enums";
 import { formatInitials } from "@/lib/format/text";
 import { useTaskCardNode } from "../../hooks/useTaskCardNode";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface Props {
   obj: CanvasObject;
 }
 
 export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   const {
     data,
     isSelected,
@@ -25,6 +30,42 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
 
   const W = obj.width;
   const H = obj.height;
+
+  const cardFill = isDark ? "#221F33" : "#FFFFFF";
+  const cardStroke = isSelected
+    ? "#9063EB"
+    : isHovered
+      ? isDark ? "#6366F1" : "#0F766E"
+      : isDark ? "#383352" : "#E2E8F0";
+  const shadowFill = isDark ? "rgba(0, 0, 0, 0.55)" : "rgba(15, 23, 42, 0.09)";
+  const titleFill = isDark ? "#F1F5F9" : "#1E293B";
+  const descFill = isDark ? "#94A3B8" : "#64748B";
+  const kindFill = isDark ? priorityCfg.dot : priorityCfg.text;
+  const dueDateFill = isDark ? "#94A3B8" : "#64748B";
+
+  const badgeStyle = useMemo(() => {
+    if (isDark) {
+      switch (data.status) {
+        case TaskStatus.BACKLOG:
+          return { bg: "rgba(148, 163, 184, 0.18)", text: "#CBD5E1", dot: "#94A3B8" };
+        case TaskStatus.TODO:
+          return { bg: "rgba(59, 130, 246, 0.2)", text: "#93C5FD", dot: "#60A5FA" };
+        case TaskStatus.IN_PROGRESS:
+          return { bg: "rgba(144, 99, 235, 0.2)", text: "#C4B5FD", dot: "#A78BFA" };
+        case TaskStatus.IN_REVIEW:
+          return { bg: "rgba(249, 115, 22, 0.2)", text: "#FDBA74", dot: "#FB923C" };
+        case TaskStatus.DONE:
+          return { bg: "rgba(34, 197, 94, 0.2)", text: "#86EFAC", dot: "#4ADE80" };
+        default:
+          return { bg: "rgba(148, 163, 184, 0.18)", text: "#CBD5E1", dot: statusCfg.dot };
+      }
+    }
+    return { bg: statusCfg.bg, text: statusCfg.text, dot: statusCfg.dot };
+  }, [isDark, data.status, statusCfg]);
+
+  const avatarBg = isDark ? "#2E2845" : "#F0EAFF";
+  const avatarStroke = isDark ? "#221F33" : "white";
+  const avatarText = isDark ? "#C4B5FD" : "#7A4FD4";
 
   return (
     <Group
@@ -45,7 +86,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         y={5}
         width={W}
         height={H}
-        fill="rgba(15, 23, 42, 0.08)"
+        fill={shadowFill}
         cornerRadius={8}
         listening={false}
       />
@@ -53,8 +94,8 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
       <Rect
         width={W}
         height={H}
-        fill="white"
-        stroke={isSelected ? "#9063EB" : isHovered ? "#0F766E" : "#E2E8F0"}
+        fill={cardFill}
+        stroke={cardStroke}
         strokeWidth={isSelected ? 2.5 : 1.25}
         cornerRadius={8}
       />
@@ -75,7 +116,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         text={data.kind ?? "Task"}
         fontSize={10}
         fontStyle="700"
-        fill={priorityCfg.text}
+        fill={kindFill}
         fontFamily="'Geist Variable', sans-serif"
         listening={false}
       />
@@ -88,7 +129,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         text={data.title}
         fontSize={14}
         fontStyle="600"
-        fill="#1E293B"
+        fill={titleFill}
         wrap="word" // Wrap text to next line if it exceeds the width.
         lineHeight={1.25}
         fontFamily="'Geist Variable', sans-serif"
@@ -103,7 +144,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
           height={20}
           text={data.description}
           fontSize={10.5}
-          fill="#64748B"
+          fill={descFill}
           wrap="word"
           lineHeight={1.3}
           fontFamily="'Geist Variable', sans-serif"
@@ -117,7 +158,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         y={H - 28}
         width={86}
         height={18}
-        fill={statusCfg.bg}
+        fill={badgeStyle.bg}
         cornerRadius={10}
         listening={false}
       />
@@ -126,7 +167,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         x={26}
         y={H - 19}
         radius={3.5}
-        fill={statusCfg.dot}
+        fill={badgeStyle.dot}
         listening={false}
       />
       {/* Text inside the status badge. */}
@@ -137,7 +178,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         text={statusCfg.label}
         fontSize={10}
         fontStyle="600"
-        fill={statusCfg.text}
+        fill={badgeStyle.text}
         fontFamily="'Geist Variable', sans-serif"
         listening={false}
       />
@@ -150,7 +191,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
           text={data.dueDate.slice(5)} // It removes the year.
           fontSize={10}
           align="right"
-          fill="#64748B"
+          fill={dueDateFill}
           fontFamily="'Geist Variable', sans-serif"
           listening={false}
         />
@@ -162,8 +203,8 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
             x={W - 22}
             y={H - 19}
             radius={11}
-            fill="#F0EAFF"
-            stroke="white"
+            fill={avatarBg}
+            stroke={avatarStroke}
             strokeWidth={2}
             listening={false}
           />
@@ -175,7 +216,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
             text={formatInitials(data.assigneeName)}
             fontSize={10}
             fontStyle="700"
-            fill="#7A4FD4"
+            fill={avatarText}
             fontFamily="'Geist Variable', sans-serif"
             listening={false}
           />

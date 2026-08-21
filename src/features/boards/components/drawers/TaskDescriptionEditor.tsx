@@ -11,8 +11,8 @@ import {
   ListOrdered,
   Pencil,
   Redo2,
-  Sparkles,
   Undo2,
+  Sparkles,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -140,7 +140,7 @@ export function TaskDescriptionEditor({
         className={cn(
           "space-y-2",
           isEditing &&
-            "sticky top-0 z-20 -mx-6 bg-card/95 px-6 py-2 backdrop-blur",
+          "sticky top-0 z-20 -mx-6 bg-card/95 px-6 py-2 backdrop-blur",
         )}
       >
         <div className="flex items-center justify-between gap-3">

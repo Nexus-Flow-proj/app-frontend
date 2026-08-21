@@ -106,6 +106,9 @@ export function toObjectDto(object: CanvasObject): WorkshopObjectDto {
       kind: source.kind,
       title: source.title,
       description: source.description,
+      status: source.status,
+      priority: source.priority,
+      dueDate: source.dueDate,
       featureId: object.parentFrameId ?? undefined,
     });
   } else if (object.type === CanvasObjectType.STICKY_NOTE) {

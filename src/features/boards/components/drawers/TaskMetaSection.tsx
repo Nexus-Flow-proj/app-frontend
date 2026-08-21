@@ -7,10 +7,10 @@ import {
   CircleDot,
   GitBranch,
   Pencil,
-  Sparkles,
   Tag,
   User,
   X,
+  Sparkles,
 } from "lucide-react";
 import {
   Select,

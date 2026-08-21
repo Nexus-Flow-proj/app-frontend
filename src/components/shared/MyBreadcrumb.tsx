@@ -22,12 +22,12 @@ function MyBreadcrumb({ breadcrumbs }: MyBreadcrumbProps) {
           return (
             <span key={idx} className="flex items-center gap-1.5">
               <BreadcrumbItem>
-                {isLast || !crumb.href ? (
-                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                ) : (
+                {crumb.href ? (
                   <BreadcrumbLink asChild>
                     <Link to={crumb.href}>{crumb.label}</Link>
                   </BreadcrumbLink>
+                ) : (
+                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
               {!isLast && <BreadcrumbSeparator />}

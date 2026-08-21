@@ -1,13 +1,13 @@
 import {
   AlertTriangleIcon,
-  BotIcon,
   CircleCheckIcon,
   Clock3Icon,
   FileTextIcon,
   Loader2Icon,
   ListTodoIcon,
-  SparklesIcon,
+  BotIcon,
   UsersRoundIcon,
+  SparklesIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +37,10 @@ function formatAwayDuration(elapsedMs: number) {
   const safeElapsedMs = Math.max(0, elapsedMs);
   const days = Math.floor(safeElapsedMs / DAY_MS);
   const hours = Math.floor((safeElapsedMs % DAY_MS) / HOUR_MS);
-  const minutes = Math.max(1, Math.floor((safeElapsedMs % HOUR_MS) / MINUTE_MS));
+  const minutes = Math.max(
+    1,
+    Math.floor((safeElapsedMs % HOUR_MS) / MINUTE_MS),
+  );
   const parts: string[] = [];
 
   if (days > 0) {
@@ -140,8 +143,8 @@ export function ProjectAwayBriefCard({
                 You have been away for {awayState.awayLabel}.
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Ask Nexus Flow for a concise summary before you jump back into
-                the board or workshop.
+                Ask Bridge for a concise summary before you jump back into the
+                board or workshop.
               </p>
             </div>
           </div>
@@ -260,8 +263,7 @@ function SummaryListSection({
   emptyText,
   tone = "default",
 }: SummaryListSectionProps) {
-  const iconClassName =
-    tone === "warning" ? "text-amber-600" : "text-primary";
+  const iconClassName = tone === "warning" ? "text-amber-600" : "text-primary";
 
   return (
     <div className="rounded-lg border bg-background p-4">

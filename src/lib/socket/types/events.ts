@@ -9,6 +9,16 @@ import type {
     PresenceLeftPayload,
     ActivityCreatedPayload,
     NotificationReadAllPayload,
+    ChatMessageCreatedPayload,
+    ChatMessageUpdatedPayload,
+    ChatMessageDeletedPayload,
+    ChatMessagePinnedPayload,
+    ChatMessageUnpinnedPayload,
+    ChatReactionAddedPayload,
+    ChatReactionRemovedPayload,
+    ChatUserTypingPayload,
+    ChatReadPayload,
+    ChatTypingEmitPayload,
 } from "./payloads";
 import type { EventMetadata, ProjectPayload } from "./socket.types";
 import { SOCKET_EVENTS } from "../constants/socket-events";
@@ -49,9 +59,22 @@ export interface ServerToClientEvents {
     // Core Presence 
     [SOCKET_EVENTS.PRESENCE.USER_ONLINE]: (payload: PresenceJoinedPayload) => void;
     [SOCKET_EVENTS.PRESENCE.USER_OFFLINE]: (payload: PresenceLeftPayload) => void;
+
+    // Chat Events
+    [SOCKET_EVENTS.CHAT.MESSAGE_CREATED]: (payload: ChatMessageCreatedPayload) => void;
+    [SOCKET_EVENTS.CHAT.MESSAGE_UPDATED]: (payload: ChatMessageUpdatedPayload) => void;
+    [SOCKET_EVENTS.CHAT.MESSAGE_DELETED]: (payload: ChatMessageDeletedPayload) => void;
+    [SOCKET_EVENTS.CHAT.MESSAGE_PINNED]: (payload: ChatMessagePinnedPayload) => void;
+    [SOCKET_EVENTS.CHAT.MESSAGE_UNPINNED]: (payload: ChatMessageUnpinnedPayload) => void;
+    [SOCKET_EVENTS.CHAT.REACTION_ADDED]: (payload: ChatReactionAddedPayload) => void;
+    [SOCKET_EVENTS.CHAT.REACTION_REMOVED]: (payload: ChatReactionRemovedPayload) => void;
+    [SOCKET_EVENTS.CHAT.USER_TYPING]: (payload: ChatUserTypingPayload) => void;
+    [SOCKET_EVENTS.CHAT.READ]: (payload: ChatReadPayload) => void;
 }
 
 export interface ClientToServerEvents {
     [SOCKET_EVENTS.PROJECT.JOIN]: (payload: ProjectPayload) => void;
     [SOCKET_EVENTS.PROJECT.LEAVE]: (payload: ProjectPayload) => void;
+    [SOCKET_EVENTS.CHAT.TYPING]: (payload: ChatTypingEmitPayload) => void;
 }
+

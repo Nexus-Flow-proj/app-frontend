@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useBlocker, useNavigate, useParams } from "react-router";
+import { Link, useBlocker, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   CloudOff,
@@ -58,6 +58,7 @@ import {
 } from "../utils/objectFactory";
 import type { PersonalTaskDto } from "../validation/personal-task.schema";
 import { UnsavedChangesDialog } from "@/features/workshop/components/UnsavedChangesDialog";
+import { ProjectChatWidget } from "@/features/chat";
 
 function memberName(member: {
   firstName: string;
@@ -68,11 +69,12 @@ function memberName(member: {
 }
 
 function fileName(name: string, extension: string) {
-  return `${name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || "mini-workshop"
-    }.${extension}`;
+  return `${
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "mini-workshop"
+  }.${extension}`;
 }
 
 function MiniWorkshopPage() {
@@ -154,10 +156,10 @@ function MiniWorkshopPage() {
     () =>
       objectOrder.length
         ? Math.max(
-          ...objectOrder.map(
-            (objectId) => objectsById[objectId]?.zIndex ?? 0,
-          ),
-        ) + 1
+            ...objectOrder.map(
+              (objectId) => objectsById[objectId]?.zIndex ?? 0,
+            ),
+          ) + 1
         : 1,
     [objectOrder, objectsById],
   );
@@ -289,10 +291,12 @@ function MiniWorkshopPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Go back"
-          onClick={() => navigate(-1)}
+          asChild
+          aria-label="Back to workshop"
         >
-          <ArrowLeft className="size-5" />
+          <Link to={`/projects/${id}`}>
+            <ArrowLeft />
+          </Link>
         </Button>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -438,25 +442,8 @@ function MiniWorkshopPage() {
         onConfirm={() => blocker.proceed?.()}
         onCancel={() => blocker.reset?.()}
       />
-      {/* <AlertDialog open={blocker.state === "blocked"}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your latest Mini Workshop content changes have not been saved.
-              Viewport movement alone does not trigger this warning.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Keep editing
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => blocker.proceed?.()}>
-              Leave anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog> */}
+
+      <ProjectChatWidget explicitProjectId={id} />
     </div>
   );
 }

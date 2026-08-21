@@ -81,6 +81,7 @@ export const QUERY_KEYS = {
   dashboard: {
     all: ["dashboard"] as const,
     summary: () => [...QUERY_KEYS.dashboard.all, "summary"] as const,
+    aiSummary: () => [...QUERY_KEYS.dashboard.all, "ai-summary"] as const,
     taskProgress: (range: string) =>
       [...QUERY_KEYS.dashboard.all, "task-progress", range] as const,
     todaysFocus: () => [...QUERY_KEYS.dashboard.all, "todays-focus"] as const,
@@ -97,5 +98,18 @@ export const QUERY_KEYS = {
     plans: () => [...QUERY_KEYS.subscriptions.all, "plans"] as const,
     me: () => [...QUERY_KEYS.subscriptions.all, "me"] as const,
     payments: () => [...QUERY_KEYS.subscriptions.all, "payments"] as const,
+  },
+  chat: {
+    all: ["chat"] as const,
+    messages: (projectId: string, params?: { search?: string; type?: string; pinned?: boolean }) =>
+      params
+        ? ([...QUERY_KEYS.chat.all, "messages", projectId, params] as const)
+        : ([...QUERY_KEYS.chat.all, "messages", projectId] as const),
+    pinned: (projectId: string) =>
+      [...QUERY_KEYS.chat.all, "pinned", projectId] as const,
+    unreadCount: (projectId: string) =>
+      [...QUERY_KEYS.chat.all, "unread-count", projectId] as const,
+    detail: (projectId: string, messageId: string) =>
+      [...QUERY_KEYS.chat.all, "detail", projectId, messageId] as const,
   },
 } as const;

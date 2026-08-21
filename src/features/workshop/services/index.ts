@@ -34,7 +34,15 @@ export function sanitizeWorkshopSavePayload(
         object.type === CanvasObjectType.SECTION_FRAME
           ? ["kind", "title", "description", "backgroundColor", "borderColor"]
           : object.type === CanvasObjectType.TASK_CARD
-            ? ["kind", "title", "description", "featureId"]
+            ? [
+                "kind",
+                "title",
+                "description",
+                "status",
+                "priority",
+                "dueDate",
+                "featureId",
+              ]
             : ["kind", "content", "color", "fontSize"];
 
       return {

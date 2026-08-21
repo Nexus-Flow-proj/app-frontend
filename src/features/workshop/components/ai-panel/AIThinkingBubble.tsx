@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, ChevronDown, Sparkles, Terminal } from "lucide-react";
+import { CheckCircle2, ChevronDown, Terminal, Sparkles } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -155,9 +155,8 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                   {isOpen ? "Hide" : `Thoughts (${steps.length || 1})`}
                 </span>
                 <ChevronDown
-                  className={`size-3.5 text-muted-foreground transition-transform duration-200 ${
-                    isOpen ? "rotate-180 text-primary" : ""
-                  }`}
+                  className={`size-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""
+                    }`}
                 />
               </div>
             </button>
@@ -188,11 +187,10 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                     return (
                       <div
                         key={`${step}-${idx}`}
-                        className={`flex items-start gap-2 rounded-lg px-2 py-1 transition-colors ${
-                          isLatest
-                            ? "border border-primary/20 bg-primary/10 font-medium text-foreground"
-                            : "text-muted-foreground/80 hover:text-foreground/90"
-                        }`}
+                        className={`flex items-start gap-2 rounded-lg px-2 py-1 transition-colors ${isLatest
+                          ? "border border-primary/20 bg-primary/10 font-medium text-foreground"
+                          : "text-muted-foreground/80 hover:text-foreground/90"
+                          }`}
                       >
                         <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center">
                           {isLatest ? (

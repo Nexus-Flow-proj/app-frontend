@@ -3,16 +3,23 @@ import type Konva from "konva";
 import { Group, Text } from "react-konva";
 import { useWorkshopStore } from "../../store/workshopStore";
 import type { CanvasObject, TextBoxData } from "../../types";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface TextBoxNodeProps { obj: CanvasObject }
 
 export const TextBoxNode = memo(function TextBoxNode({ obj }: TextBoxNodeProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const data = obj.data as TextBoxData;
   const activeTool = useWorkshopStore((state) => state.activeTool);
   const selected = useWorkshopStore((state) => state.selectedObjectId === obj.id);
   const selectObject = useWorkshopStore((state) => state.selectObject);
   const openObjectDetails = useWorkshopStore((state) => state.openObjectDetails);
   const moveObject = useWorkshopStore((state) => state.moveObject);
+
+  const textFill = data.color && data.color !== "#334155"
+    ? data.color
+    : isDark ? "#F1F5F9" : "#334155";
 
   return (
     <Group
@@ -28,7 +35,7 @@ export const TextBoxNode = memo(function TextBoxNode({ obj }: TextBoxNodeProps) 
         width={obj.width}
         height={obj.height}
         text={data.content}
-        fill={data.color ?? "#334155"}
+        fill={textFill}
         fontSize={data.fontSize ?? 18}
         fontFamily="'Geist Variable', sans-serif"
         lineHeight={1.35}

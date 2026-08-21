@@ -7,6 +7,7 @@ import { registerNotificationHandlers } from "./notification.handlers";
 import { registerPresenceHandlers } from "./presence.handlers";
 import { registerTaskHandlers } from "./task.handlers";
 import { registerSubtaskHandlers } from "./subtask.handler";
+import { registerChatHandlers } from "./chat.handlers";
 
 let handlersRegistered: boolean = false;
 
@@ -19,5 +20,6 @@ export function registerAllHandlers(socketManager: SocketManager, qc: QueryClien
     registerSubtaskHandlers(socketManager, qc);
     registerPresenceHandlers(socketManager, qc);
     registerNotificationHandlers(socketManager, qc);
+    registerChatHandlers(socketManager, qc);
     // registerActivityHandlers(socketManager);
 }

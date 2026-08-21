@@ -43,22 +43,14 @@ function TaskCard({
           : "var(--accent-foreground)";
 
   const highlighted = useHighlightStore(
-    state =>
-      state.highlighted
-        .get(HighlightEntity.task)
-        ?.has(task.id) ?? false,
+    (state) =>
+      state.highlighted.get(HighlightEntity.task)?.has(task.id) ?? false,
   );
   const removing = useHighlightStore(
-    state =>
-      state.removing
-        .get(HighlightEntity.task)
-        ?.has(task.id) ?? false,
+    (state) => state.removing.get(HighlightEntity.task)?.has(task.id) ?? false,
   );
   const moving = useHighlightStore(
-    state =>
-      state.moving
-        .get(HighlightEntity.task)
-        ?.has(task.id) ?? false,
+    (state) => state.moving.get(HighlightEntity.task)?.has(task.id) ?? false,
   );
 
   return (
@@ -69,12 +61,12 @@ function TaskCard({
       style={{ ...sortableStyle, ...style }}
       onClick={() => onClick?.(task)}
       className={cn(
-        "group relative w-full rounded-lg border bg-background/30 text-left transition-all duration-150 cursor-pointer select-none",
+        "group relative w-full rounded-lg border bg-muted/40 text-left transition-all duration-150 cursor-pointer select-none",
         isDragging || isSortableDragging
           ? "opacity-40 border-primary/30"
           : isOverlay
             ? "border-primary/50 shadow-xl rotate-1 scale-[1.02]"
-            : "border-border hover:border-dashed hover:bg-background/70",
+            : "border-border hover:border-dashed hover:bg-muted/70",
         highlighted && "animate-realtime-highlight",
         moving && "animate-realtime-move",
         removing && "animate-realtime-remove",
@@ -84,7 +76,7 @@ function TaskCard({
     >
       {/* Left accent */}
       <div
-        className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full"
+        className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full"
         style={{ background: accentColor }}
       />
 
@@ -108,7 +100,7 @@ function TaskCard({
           assignee={task.assignee ?? null}
         />
       </div>
-    </div >
+    </div>
   );
 }
 export default TaskCard;

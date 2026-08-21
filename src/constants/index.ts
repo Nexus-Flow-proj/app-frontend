@@ -3,4 +3,4 @@ export * from "./routing";
 export * from "./BackendApisConfig";
 export * from "./queryKeys";
 
-export const APP_NAME = "Nexus-Flow";
+export const APP_NAME = "Bridge";

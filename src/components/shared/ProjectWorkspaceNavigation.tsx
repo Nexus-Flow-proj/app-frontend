@@ -29,34 +29,34 @@ export function ProjectWorkspaceNavigation({
   projectId,
   draftId,
   current,
-  className
+  className,
 }: ProjectWorkspaceNavigationProps) {
   const links: WorkspaceLink[] = [
     ...(draftId
       ? [
-        {
-          id: "workshop" as const,
-          label: "Workshop",
-          to: ROUTES.DRAFT_WORKSHOP(draftId),
-          icon: Map,
-        },
-      ]
+          {
+            id: "workshop" as const,
+            label: "Workshop",
+            to: ROUTES.WORKSHOP(draftId),
+            icon: Map,
+          },
+        ]
       : []),
     ...(projectId
       ? [
-        {
-          id: "board" as const,
-          label: "Board",
-          to: ROUTES.BOARDS(projectId),
-          icon: KanbanSquare,
-        },
-        {
-          id: "mini-workshop" as const,
-          label: "Mini Workshop",
-          to: ROUTES.MY_WORKSPACE(projectId),
-          icon: Boxes,
-        },
-      ]
+          {
+            id: "board" as const,
+            label: "Board",
+            to: ROUTES.BOARDS(projectId),
+            icon: KanbanSquare,
+          },
+          {
+            id: "mini-workshop" as const,
+            label: "Mini Workshop",
+            to: ROUTES.MY_WORKSPACE(projectId),
+            icon: Boxes,
+          },
+        ]
       : []),
   ];
 
@@ -66,7 +66,7 @@ export function ProjectWorkspaceNavigation({
     <div className={cn(`z-50 fixed bottom-20 right-5`, className)}>
       <nav
         aria-label="Project workspaces"
-        className="flex flex-col items-center rounded-lg border bg-muted/80 p-1"
+        className="flex flex-col items-center rounded-lg border bg-muted/80 py-1 px-1.5"
       >
         {links.map((link) => {
           const Icon = link.icon;
@@ -76,8 +76,6 @@ export function ProjectWorkspaceNavigation({
             <Button
               key={link.id}
               type="button"
-              size="sm"
-              variant="secondary"
               className="pointer-events-none gap-1.5 shadow-sm"
               aria-current="page"
             >
@@ -85,7 +83,13 @@ export function ProjectWorkspaceNavigation({
               {/* <span className="hidden xl:inline">{link.label}</span> */}
             </Button>
           ) : (
-            <Button key={link.id} asChild type="button" size="sm" variant="ghost" className="gap-1.5">
+            <Button
+              key={link.id}
+              asChild
+              type="button"
+              variant="secondary"
+              className="gap-1.5"
+            >
               <Link to={link.to}>
                 <Icon className="size-3.5" />
                 {/* <span className="hidden xl:inline">{link.label}</span> */}

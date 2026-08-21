@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Bot,
   LoaderCircle,
-  MessageCircle,
   Minus,
   Send,
-  Sparkles,
+  Bot,
   UserRound,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -326,7 +325,7 @@ export function AIFloatingChat({
         {isGenerating ? (
           <LoaderCircle className="size-5 animate-spin" />
         ) : (
-          <MessageCircle className="size-5" />
+          <Bot className="size-5" />
         )}
         {status === "FAILED" ? (
           <span className="absolute right-0 top-0 size-3 rounded-full border-2 border-background bg-destructive" />

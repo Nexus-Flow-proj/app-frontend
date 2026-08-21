@@ -12,7 +12,6 @@ import type { CalendarColorScheme } from "../types";
 
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/pulse/theme.css";
-import "@fullcalendar/react/themes/pulse/palettes/purple.css";
 import "../styles/fullcalendar.css";
 
 interface ProjectTaskCalendarProps {

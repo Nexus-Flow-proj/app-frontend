@@ -328,3 +328,70 @@ export interface PresenceLeftPayload {
     projectId: string;
     userId: string;
 }
+
+/* ============================================================
+   CHAT
+============================================================ */
+
+import type { ChatMessage, ChatSender } from "@/features/chat/types";
+
+export interface ChatMessageCreatedPayload {
+    projectId: string;
+    message: ChatMessage;
+}
+
+export interface ChatMessageUpdatedPayload {
+    projectId: string;
+    message: ChatMessage;
+}
+
+export interface ChatMessageDeletedPayload {
+    projectId: string;
+    messageId: string;
+    type?: string;
+}
+
+export interface ChatMessagePinnedPayload {
+    projectId: string;
+    message: ChatMessage;
+}
+
+export interface ChatMessageUnpinnedPayload {
+    projectId: string;
+    message: ChatMessage;
+}
+
+export interface ChatReactionAddedPayload {
+    projectId: string;
+    messageId: string;
+    emoji: string;
+    userId: string;
+    user?: ChatSender;
+}
+
+export interface ChatReactionRemovedPayload {
+    projectId: string;
+    messageId: string;
+    emoji: string;
+    userId: string;
+}
+
+export interface ChatUserTypingPayload {
+    projectId: string;
+    userId: string;
+    userName: string;
+    avatarUrl: string | null;
+    isTyping: boolean;
+}
+
+export interface ChatReadPayload {
+    projectId: string;
+    userId: string;
+    lastReadAt: string;
+    lastReadMessageId: string | null;
+}
+
+export interface ChatTypingEmitPayload {
+    projectId: string;
+    isTyping: boolean;
+}

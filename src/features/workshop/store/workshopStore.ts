@@ -38,6 +38,10 @@ interface WorkshopActions {
   // Object CRUD.
   addObject: (obj: CanvasObject) => void;
   updateObject: (id: string, patch: Partial<CanvasObject>) => void;
+  resizeObject: (
+    id: string,
+    size: { width: number; height: number; x?: number; y?: number },
+  ) => void;
   moveObject: (id: string, { x, y }: Coordinates) => void;
   deleteObject: (id: string) => void;
 
@@ -123,6 +127,27 @@ export const useWorkshopStore = create<WorkshopState & WorkshopActions>()(
         return {
           objects: state.objects.map((obj) =>
             obj.id === id ? { ...obj, ...patch } : obj,
+          ),
+          undoStack: pushUndo(state),
+          redoStack: [],
+          isDirty: true,
+        };
+      }),
+
+    resizeObject: (id, size) =>
+      set((state) => {
+        if (!state.objects.some((obj) => obj.id === id)) return {};
+        return {
+          objects: state.objects.map((obj) =>
+            obj.id === id
+              ? {
+                  ...obj,
+                  width: Math.max(100, size.width),
+                  height: Math.max(80, size.height),
+                  ...(size.x !== undefined ? { x: size.x } : {}),
+                  ...(size.y !== undefined ? { y: size.y } : {}),
+                }
+              : obj,
           ),
           undoStack: pushUndo(state),
           redoStack: [],

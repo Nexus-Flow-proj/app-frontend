@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardUiStore } from "../../../store/dashboardUiStore";
+import { AiSummaryCard } from "./AiSummaryCard";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { RecentActivity } from "./RecentActivity";
 import { RecentProjects } from "./RecentProjects";
@@ -47,7 +48,13 @@ export function DashboardSections({ data, isLoading }: DashboardSectionsProps) {
 
       <section className="grid gap-5 lg:grid-cols-3">
         <TodaysFocus isDashboardLoading={isDashboardLoading} />
+        <AiSummaryCard
+          isDashboardLoading={isDashboardLoading}
+          className="lg:col-span-2"
+        />
+      </section>
 
+      <section className="grid gap-5 lg:grid-cols-2">
         {isDashboardLoading ? (
           <>
             <Skeleton className="h-72 rounded-lg" />

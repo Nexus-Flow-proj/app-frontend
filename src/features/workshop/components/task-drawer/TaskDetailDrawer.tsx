@@ -5,7 +5,6 @@ import {
   StickyNote,
   Trash2,
   Type,
-  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,8 +50,6 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
     isText,
     isSection,
     kindOptions,
-    statusCfg,
-    priorityCfg,
     setValue,
     handleSave,
     handleDelete,
@@ -90,31 +87,31 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
         </SheetHeader>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 py-5">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Type
-              </label>
-              <Select
-                value={form.kind}
-                onValueChange={(value) =>
-                  setValue("kind", value as WorkshopObjectKind)
-                }
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {kindOptions.map((kind) => (
-                    <SelectItem key={kind} value={kind}>
-                      {kind}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {(isSticky || isText) && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Type
+                </label>
+                <Select
+                  value={form.kind}
+                  onValueChange={(value) =>
+                    setValue("kind", value as WorkshopObjectKind)
+                  }
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {kindOptions.map((kind) => (
+                      <SelectItem key={kind} value={kind}>
+                        {kind}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {isSticky || isText ? (
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
                   Color
@@ -135,8 +132,8 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
                   ))}
                 </div>
               </div>
-            ) : null}
-          </div>
+            </div>
+          )}
 
           {!isSticky && !isText && (
             <div className="flex flex-col gap-1.5">
@@ -224,86 +221,19 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <User className="h-3 w-3" /> Assignee
-                  </label>
-                  <Input
-                    value={form.assigneeName}
-                    onChange={(e) => setValue("assigneeName", e.target.value)}
-                    className="h-8 text-xs"
-                    placeholder="Name"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <Calendar className="h-3 w-3" /> Due date
-                  </label>
-                  <input
-                    type="date"
-                    value={form.dueDate}
-                    onChange={(e) => setValue("dueDate", e.target.value)}
-                    className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium"
-                  style={{ background: statusCfg.bg, color: statusCfg.text }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: statusCfg.dot }}
-                  />
-                  {statusCfg.label}
-                </span>
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium"
-                  style={{
-                    background: priorityCfg.bg,
-                    color: priorityCfg.text,
-                  }}
-                >
-                  <Flag className="h-3 w-3" />
-                  {priorityCfg.label}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Complexity</label>
-                  <Select value={form.estimatedComplexity} onValueChange={(value) => setValue("estimatedComplexity", value as typeof form.estimatedComplexity)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{["S", "M", "L", "XL"].map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">Task type</label>
-                  <Select value={form.taskType} onValueChange={(value) => setValue("taskType", value as typeof form.taskType)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{["FEATURE", "BUG", "CHORE"].map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Acceptance criteria <span className="font-normal">(one per line)</span></label>
-                <Textarea value={form.acceptanceCriteria} onChange={(event) => setValue("acceptanceCriteria", event.target.value)} className="min-h-28" placeholder="A user can…" />
+                <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <Calendar className="h-3 w-3" /> Due date
+                </label>
+                <input
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(e) => setValue("dueDate", e.target.value)}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
               </div>
             </>
           )}
-
-          {isSection ? (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Priority</label>
-              <Select value={form.sectionPriority} onValueChange={(value) => setValue("sectionPriority", value as typeof form.sectionPriority)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["LOW", "MEDIUM", "HIGH"].map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-          ) : null}
 
           {isText ? (
             <div className="flex flex-col gap-1.5">

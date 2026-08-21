@@ -24,6 +24,7 @@ export default function ProjectOverviewPage() {
   const {
     project,
     role,
+    isProjectMember,
     isLoading: isProjectLoading,
     isError: isProjectError,
   } = useProjectAccess(id);
@@ -55,6 +56,7 @@ export default function ProjectOverviewPage() {
   const canManageSettings = role ? canManageProjectSettings(role) : false;
   const canOpenWorkshop = role ? canReadWorkshop(role) : false;
   const canOpenBoard = role ? canReadBoard(role) : false;
+  const canOpenMiniWorkshop = isProjectMember;
   const adminName = projectAdmin
     ? `${projectAdmin.firstName} ${projectAdmin.lastName}`.trim() ||
       projectAdmin.email
@@ -87,6 +89,7 @@ export default function ProjectOverviewPage() {
           createdAt={createdAt}
           canOpenWorkshop={canOpenWorkshop}
           canOpenBoard={canOpenBoard}
+          canOpenMiniWorkshop={canOpenMiniWorkshop}
           canManageSettings={canManageSettings}
           onNavigate={navigate}
         />

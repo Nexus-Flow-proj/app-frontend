@@ -52,24 +52,19 @@ function KanbanBoardColumn({
   const tasks = boardState.tasks[columnId] ?? [];
   const filters = useUrlFilters();
   const filteredTasks = useFilteredTasks(tasks, currentUserId);
-  const { attributes, listeners, setNodeRef, style } = useSortableColumn(column);
+  const { attributes, listeners, setNodeRef, style } =
+    useSortableColumn(column);
   const highlighted = useHighlightStore(
-    state =>
-      state.highlighted
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.highlighted.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
   const removing = useHighlightStore(
-    state =>
-      state.removing
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.removing.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
   const moving = useHighlightStore(
-    state =>
-      state.moving
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.moving.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
 
   const accentColor =
@@ -85,16 +80,13 @@ function KanbanBoardColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "w-68 shrink-0",
-        removing && "animate-column-remove",
-      )}
+      className={cn("w-68 shrink-0", removing && "animate-column-remove")}
     >
       <Card
         data-realtime-entity={HighlightEntity.column}
         data-realtime-id={column.id}
         className={cn(
-          "h-full",
+          "max-h-[calc(100vh-8rem)]",
           highlighted && "animate-column-add",
           moving && "animate-realtime-move",
         )}
@@ -109,15 +101,15 @@ function KanbanBoardColumn({
               className="h-0.5 w-7 rounded-full mb-3 opacity-90"
               style={{ background: accentColor }}
             />
-            <div className="flex items-center gap-2 min-w-0">
-              <CardTitle className="text-[14px] font-semibold truncate">
+            <div className="flex min-w-0 items-start gap-2">
+              <CardTitle className="min-w-0 flex-1 whitespace-normal break-words text-[14px] font-semibold leading-snug">
                 {column.name}
               </CardTitle>
               <Badge
                 variant="outline"
                 size="sm"
                 shape="rounded"
-                className="font-semibold tabular-nums"
+                className="shrink-0 font-semibold tabular-nums"
               >
                 {isFiltered
                   ? `${filteredTasks.length}/${tasks.length}`

@@ -71,4 +71,16 @@ export const SOCKET_EVENTS = {
         GENERATION_COMPLETED: 'ai.generation.completed',
         GENERATION_FAILED: 'ai.generation.failed',
     },
+    CHAT: {
+        MESSAGE_CREATED: 'chat:message:created',
+        MESSAGE_UPDATED: 'chat:message:updated',
+        MESSAGE_DELETED: 'chat:message:deleted',
+        MESSAGE_PINNED: 'chat:message:pinned',
+        MESSAGE_UNPINNED: 'chat:message:unpinned',
+        REACTION_ADDED: 'chat:reaction:added',
+        REACTION_REMOVED: 'chat:reaction:removed',
+        USER_TYPING: 'chat:user:typing',
+        READ: 'chat:read',
+        TYPING: 'chat:typing',
+    },
 } as const;

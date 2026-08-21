@@ -40,6 +40,13 @@ const rolePermissionsSchema = z.object({
     update: z.boolean(),
     delete: z.boolean(),
   }),
+  chat: z.object({
+    read: z.boolean(),
+    send: z.boolean(),
+    pin: z.boolean(),
+    deleteAny: z.boolean(),
+    sendAnnouncement: z.boolean(),
+  }),
 });
 
 export const createProjectRoleSchema = z.object({

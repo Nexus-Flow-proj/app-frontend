@@ -25,8 +25,8 @@ function GridPattern({ width, height, viewport, dark }: GridPatternProps) {
     <Shape
       listening={false}
       perfectDrawEnabled={false}
-      fill={dark ? "#4c3c70" : "#cbd5e1"}
-      opacity={dark ? 0.55 : 0.7}
+      fill={dark ? "#6b7280" : "#cbd5e1"}
+      opacity={dark ? 0.32 : 0.7}
       sceneFunc={(context, shape) => {
         const radius = 1 / viewport.scale;
         context.beginPath();

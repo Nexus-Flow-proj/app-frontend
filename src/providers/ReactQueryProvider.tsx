@@ -13,9 +13,8 @@ export default function ReactQueryProvider({
     initialIsOpen?: boolean;
   }>>(null);
 
-
   useEffect(() => {
-    if (Boolean(import.meta.env.VITE_IS_DEV_MODE)) return;
+    if (import.meta.env.VITE_IS_DEV_MODE !== "true") return;
     void import("@tanstack/react-query-devtools").then((m) =>
       setDevtools(() => m.ReactQueryDevtools),
     );

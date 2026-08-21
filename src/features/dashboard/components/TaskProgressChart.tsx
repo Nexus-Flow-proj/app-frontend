@@ -84,25 +84,86 @@ function TaskProgressBars({
 }: {
   points: { day: string; completed: number }[];
 }) {
-  const max = Math.max(...points.map((p) => p.completed), 1);
+  const chartWidth = 640;
+  const chartHeight = 224;
+  const margin = { top: 10, right: 8, bottom: 30, left: 38 };
+  const plotWidth = chartWidth - margin.left - margin.right;
+  const plotHeight = chartHeight - margin.top - margin.bottom;
+  const maxCompleted = Math.max(...points.map((p) => p.completed), 1);
+  const tickCount = Math.min(maxCompleted, 4) + 1;
+  const ticks = Array.from({ length: tickCount }, (_, index) =>
+    Math.round((maxCompleted / (tickCount - 1)) * index),
+  );
+  const bandWidth = plotWidth / points.length;
+  const barWidth = Math.min(44, bandWidth * 0.58);
+
+  const getY = (value: number) =>
+    margin.top + plotHeight - (value / maxCompleted) * plotHeight;
 
   return (
-    <div className="flex h-56 items-end gap-4">
-      {points.map((point) => (
-        <div
-          key={point.day}
-          className="flex flex-1 flex-col items-center gap-2"
-        >
-          <div className="flex h-48 w-full items-end">
-            <div
-              className="w-full rounded-t-md bg-primary/85 transition-all"
-              style={{ height: `${(point.completed / max) * 100}%` }}
-              title={`${point.completed} tasks`}
-            />
-          </div>
-          <span className="text-sm text-muted-foreground">{point.day}</span>
-        </div>
-      ))}
+    <div className="h-56 w-full">
+      <svg
+        className="h-full w-full overflow-visible"
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        role="img"
+        aria-label="Task progress bar chart"
+      >
+        {ticks.map((tick) => {
+          const y = getY(tick);
+
+          return (
+            <g key={tick}>
+              {tick === 0 && (
+                <line
+                  x1={margin.left}
+                  x2={chartWidth - margin.right}
+                  y1={y}
+                  y2={y}
+                  className="stroke-border"
+                  strokeDasharray="3 3"
+                />
+              )}
+              <text
+                x={margin.left - 10}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-muted-foreground text-[12px]"
+              >
+                {tick}
+              </text>
+            </g>
+          );
+        })}
+
+        {points.map((point, index) => {
+          const barHeight = (point.completed / maxCompleted) * plotHeight;
+          const x = margin.left + index * bandWidth + (bandWidth - barWidth) / 2;
+          const y = margin.top + plotHeight - barHeight;
+
+          return (
+            <g key={point.day}>
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx={6}
+                className="fill-primary/85"
+              >
+                <title>{`${point.completed} completed tasks`}</title>
+              </rect>
+              <text
+                x={margin.left + index * bandWidth + bandWidth / 2}
+                y={chartHeight - 8}
+                textAnchor="middle"
+                className="fill-muted-foreground text-[12px]"
+              >
+                {point.day}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }

@@ -208,11 +208,10 @@ export function ChatComposerBar({ projectId }: ChatComposerBarProps) {
                     type="button"
                     variant={isAnnouncement ? "secondary" : "ghost"}
                     size="icon"
-                    className={`size-7 rounded-lg transition-colors ${
-                      isAnnouncement
+                    className={`size-7 rounded-lg transition-colors ${isAnnouncement
                         ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                     onClick={() => setIsAnnouncement(!isAnnouncement)}
                     aria-label="Toggle announcement mode"
                   >

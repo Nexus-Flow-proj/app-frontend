@@ -45,11 +45,10 @@ export function MessageAttachments({
             target="_blank"
             rel="noopener noreferrer"
             download={att.fileName}
-            className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors max-w-[260px] ${
-              isOwn
+            className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors max-w-[260px] ${isOwn
                 ? "border-primary-foreground/20 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground"
                 : "border-border/60 bg-background/60 hover:bg-background text-foreground"
-            }`}
+              }`}
           >
             <span className="flex size-7 shrink-0 items-center justify-center rounded bg-background/50 text-foreground">
               <FileText className="size-4" />

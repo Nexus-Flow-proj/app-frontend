@@ -8,24 +8,34 @@ import { ChatMessageList } from "./ChatMessageList";
 import { ChatComposerBar } from "./ChatComposerBar";
 import { ChatPinnedDrawer } from "./ChatPinnedDrawer";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants/queryKeys";
+
 interface ChatPanelProps {
   projectId: string;
 }
 
 export function ChatPanel({ projectId }: ChatPanelProps) {
+  const queryClient = useQueryClient();
   const isOpen = useChatStore((state) => state.isOpen);
   const setIsOpen = useChatStore((state) => state.setIsOpen);
   const projectName = useProjectStore((state) => state.activeProject?.name);
   const markAsReadMutation = useMarkAsRead(projectId);
   const prevOpenRef = useRef(false);
 
-  // When chat transitions from closed to open, mark messages as read
+  // When chat transitions (opened or closed), sync read state with backend
   useEffect(() => {
-    if (isOpen && !prevOpenRef.current && projectId) {
-      markAsReadMutation.mutate(undefined);
+    if (projectId) {
+      if (isOpen || prevOpenRef.current) {
+        // Optimistically set unreadCount to 0 synchronously to prevent badge flashing
+        queryClient.setQueryData(QUERY_KEYS.chat.unreadCount(projectId), {
+          unreadCount: 0,
+        });
+        markAsReadMutation.mutate(undefined);
+      }
     }
     prevOpenRef.current = isOpen;
-  }, [isOpen, projectId]);
+  }, [isOpen, projectId, queryClient]);
 
   return (
     <ChatShell

@@ -11,32 +11,77 @@ interface GridPatternProps {
 
 function GridPattern({ width, height, viewport, dark }: GridPatternProps) {
   const step = CANVAS_GRID_SIZE;
+  const majorStep = step * 4;
   const left = -viewport.x / viewport.scale;
   const top = -viewport.y / viewport.scale;
-  const right = left + width / viewport.scale;
-  const bottom = top + height / viewport.scale;
-
-  const startX = Math.floor(left / step) * step;
-  const startY = Math.floor(top / step) * step;
-  const endX = Math.ceil(right / step) * step;
-  const endY = Math.ceil(bottom / step) * step;
+  const canvasWidth = width / viewport.scale;
+  const canvasHeight = height / viewport.scale;
 
   return (
     <Shape
       listening={false}
       perfectDrawEnabled={false}
-      fill={dark ? "#6b7280" : "#cbd5e1"}
-      opacity={dark ? 0.32 : 0.7}
-      sceneFunc={(context, shape) => {
-        const radius = 1 / viewport.scale;
+      sceneFunc={(context) => {
+        const padding = majorStep;
+        const x = Math.floor((left - padding) / step) * step;
+        const y = Math.floor((top - padding) / step) * step;
+        const backgroundWidth = canvasWidth + padding * 2;
+        const backgroundHeight = canvasHeight + padding * 2;
+
+        context.fillStyle = dark ? "#0b0b0d" : "#f8f7fc";
+        context.fillRect(x, y, backgroundWidth, backgroundHeight);
+
+        const glow = context.createRadialGradient(
+          left + canvasWidth * 0.18,
+          top + canvasHeight * 0.12,
+          0,
+          left + canvasWidth * 0.18,
+          top + canvasHeight * 0.12,
+          Math.max(canvasWidth, canvasHeight) * 0.72,
+        );
+        glow.addColorStop(
+          0,
+          dark ? "rgba(139, 92, 246, 0.045)" : "rgba(139, 92, 246, 0.075)",
+        );
+        glow.addColorStop(1, "rgba(139, 92, 246, 0)");
+        context.fillStyle = glow;
+        context.fillRect(x, y, backgroundWidth, backgroundHeight);
+
         context.beginPath();
-        for (let x = startX - step; x <= endX + step; x += step) {
-          for (let y = startY - step; y <= endY + step; y += step) {
-            context.moveTo(x + radius, y);
-            context.arc(x, y, radius, 0, Math.PI * 2, false);
+        for (
+          let majorX = Math.floor(x / majorStep) * majorStep;
+          majorX <= x + backgroundWidth;
+          majorX += majorStep
+        ) {
+          context.moveTo(majorX, y);
+          context.lineTo(majorX, y + backgroundHeight);
+        }
+        for (
+          let majorY = Math.floor(y / majorStep) * majorStep;
+          majorY <= y + backgroundHeight;
+          majorY += majorStep
+        ) {
+          context.moveTo(x, majorY);
+          context.lineTo(x + backgroundWidth, majorY);
+        }
+        context.strokeStyle = dark
+          ? "rgba(148, 163, 184, 0.08)"
+          : "rgba(124, 58, 237, 0.07)";
+        context.lineWidth = 0.75 / viewport.scale;
+        context.stroke();
+
+        const dotRadius = 1.05 / viewport.scale;
+        context.beginPath();
+        for (let dotX = x; dotX <= x + backgroundWidth; dotX += step) {
+          for (let dotY = y; dotY <= y + backgroundHeight; dotY += step) {
+            context.moveTo(dotX + dotRadius, dotY);
+            context.arc(dotX, dotY, dotRadius, 0, Math.PI * 2);
           }
         }
-        context.fillStrokeShape(shape);
+        context.fillStyle = dark
+          ? "rgba(148, 163, 184, 0.22)"
+          : "rgba(124, 58, 237, 0.20)";
+        context.fill();
       }}
     />
   );

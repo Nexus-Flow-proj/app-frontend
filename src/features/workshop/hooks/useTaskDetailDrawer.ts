@@ -20,13 +20,8 @@ export type TaskDetailFormState = {
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assigneeName: string;
   dueDate: string;
   color: string;
-  acceptanceCriteria: string;
-  estimatedComplexity: "S" | "M" | "L" | "XL";
-  taskType: "FEATURE" | "BUG" | "CHORE";
-  sectionPriority: "LOW" | "MEDIUM" | "HIGH";
   fontSize: number;
 };
 
@@ -36,13 +31,8 @@ const defaultForm: TaskDetailFormState = {
   description: "",
   status: TaskStatus.BACKLOG,
   priority: TaskPriority.MEDIUM,
-  assigneeName: "",
   dueDate: "",
   color: "#FEF08A",
-  acceptanceCriteria: "",
-  estimatedComplexity: "M",
-  taskType: "FEATURE",
-  sectionPriority: "MEDIUM",
   fontSize: 18,
 };
 
@@ -66,13 +56,8 @@ function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
       description: data.description ?? "",
       status: data.status,
       priority: data.priority,
-      assigneeName: data.assigneeName ?? "",
       dueDate: data.dueDate ?? "",
       color: defaultForm.color,
-      acceptanceCriteria: data.acceptanceCriteria?.join("\n") ?? "",
-      estimatedComplexity: data.estimatedComplexity ?? "M",
-      taskType: data.type ?? "FEATURE",
-      sectionPriority: defaultForm.sectionPriority,
       fontSize: defaultForm.fontSize,
     };
   }
@@ -108,7 +93,6 @@ function formFromObject(obj: CanvasObject | null): TaskDetailFormState {
       title: data.title,
       description: data.description ?? "",
       color: data.backgroundColor,
-      sectionPriority: data.priority ?? "MEDIUM",
     };
   }
 
@@ -147,13 +131,7 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
           description: form.description.trim() || undefined,
           status: form.status,
           priority: form.priority,
-          assigneeName: form.assigneeName.trim() || undefined,
           dueDate: form.dueDate || undefined,
-          taskName: form.title.trim(),
-          taskDescription: form.description.trim() || undefined,
-          acceptanceCriteria: form.acceptanceCriteria.split("\n").map((item) => item.trim()).filter(Boolean),
-          estimatedComplexity: form.estimatedComplexity,
-          type: form.taskType,
         },
       });
     }
@@ -185,12 +163,9 @@ export function useTaskDetailDrawer(objectId: Nullable<string>) {
       updateObject(obj.id, {
         data: {
           ...(obj.data as SectionFrameData),
-          kind: form.kind as SectionFrameKind,
           title: form.title.trim(),
           description: form.description.trim() || undefined,
-          backgroundColor: form.color,
           featureName: form.title.trim(),
-          priority: form.sectionPriority,
         },
       });
     }

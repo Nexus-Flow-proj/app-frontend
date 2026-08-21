@@ -45,7 +45,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         y={5}
         width={W}
         height={H}
-        fill="rgba(15, 23, 42, 0.08)"
+        fill="rgba(0, 0, 0, 0.25)"
         cornerRadius={8}
         listening={false}
       />
@@ -53,8 +53,8 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
       <Rect
         width={W}
         height={H}
-        fill="white"
-        stroke={isSelected ? "#9063EB" : isHovered ? "#0F766E" : "#E2E8F0"}
+        fill="#1E1B2E"
+        stroke={isSelected ? "#9063EB" : isHovered ? "#6366F1" : "#2E2A45"}
         strokeWidth={isSelected ? 2.5 : 1.25}
         cornerRadius={8}
       />
@@ -75,7 +75,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         text={data.kind ?? "Task"}
         fontSize={10}
         fontStyle="700"
-        fill={priorityCfg.text}
+        fill={priorityCfg.dot}
         fontFamily="'Geist Variable', sans-serif"
         listening={false}
       />
@@ -88,7 +88,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         text={data.title}
         fontSize={14}
         fontStyle="600"
-        fill="#1E293B"
+        fill="#F1F5F9"
         wrap="word" // Wrap text to next line if it exceeds the width.
         lineHeight={1.25}
         fontFamily="'Geist Variable', sans-serif"
@@ -103,7 +103,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
           height={20}
           text={data.description}
           fontSize={10.5}
-          fill="#64748B"
+          fill="#94A3B8"
           wrap="word"
           lineHeight={1.3}
           fontFamily="'Geist Variable', sans-serif"
@@ -150,7 +150,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
           text={data.dueDate.slice(5)} // It removes the year.
           fontSize={10}
           align="right"
-          fill="#64748B"
+          fill="#94A3B8"
           fontFamily="'Geist Variable', sans-serif"
           listening={false}
         />

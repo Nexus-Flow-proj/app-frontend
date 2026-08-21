@@ -25,14 +25,17 @@ export function ChatScrollArea({
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const prevCountRef = useRef<number>(messagesCount);
 
-  // Auto-scroll to bottom on initial load and when message count increases (if already near bottom)
+  // Scroll to bottom on initial mount
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "auto" });
+  }, []);
+
+  // Auto-scroll to bottom when a new message arrives (if already near bottom)
   useEffect(() => {
     if (messagesCount > prevCountRef.current) {
       if (!showScrollBottom) {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }
-    } else if (prevCountRef.current === 0 && messagesCount > 0) {
-      bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
     prevCountRef.current = messagesCount;
   }, [messagesCount, showScrollBottom]);

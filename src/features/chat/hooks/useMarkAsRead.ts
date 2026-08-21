@@ -13,6 +13,9 @@ export function useMarkAsRead(projectId: string) {
       showSuccessToast: false,
       showErrorToast: false,
       onSuccess: () => {
+        queryClient.setQueryData(QUERY_KEYS.chat.unreadCount(projectId), {
+          unreadCount: 0,
+        });
         queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.chat.unreadCount(projectId),
         });
@@ -20,3 +23,4 @@ export function useMarkAsRead(projectId: string) {
     },
   );
 }
+

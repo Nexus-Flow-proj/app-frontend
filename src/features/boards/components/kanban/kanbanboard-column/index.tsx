@@ -52,24 +52,19 @@ function KanbanBoardColumn({
   const tasks = boardState.tasks[columnId] ?? [];
   const filters = useUrlFilters();
   const filteredTasks = useFilteredTasks(tasks, currentUserId);
-  const { attributes, listeners, setNodeRef, style } = useSortableColumn(column);
+  const { attributes, listeners, setNodeRef, style } =
+    useSortableColumn(column);
   const highlighted = useHighlightStore(
-    state =>
-      state.highlighted
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.highlighted.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
   const removing = useHighlightStore(
-    state =>
-      state.removing
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.removing.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
   const moving = useHighlightStore(
-    state =>
-      state.moving
-        .get(HighlightEntity.column)
-        ?.has(column.id) ?? false,
+    (state) =>
+      state.moving.get(HighlightEntity.column)?.has(column.id) ?? false,
   );
 
   const accentColor =
@@ -85,16 +80,13 @@ function KanbanBoardColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "w-68 shrink-0",
-        removing && "animate-column-remove",
-      )}
+      className={cn("w-68 shrink-0", removing && "animate-column-remove")}
     >
       <Card
         data-realtime-entity={HighlightEntity.column}
         data-realtime-id={column.id}
         className={cn(
-          "h-full",
+          "max-h-[calc(100vh-8rem)]",
           highlighted && "animate-column-add",
           moving && "animate-realtime-move",
         )}

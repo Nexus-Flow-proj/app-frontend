@@ -2,6 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Save, Trash2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { SubtaskChecklist } from "./SubtaskChecklist";
 import { CommentThread } from "./CommentThread";
 import { TimeLogSection } from "./TimeLogSection";
@@ -525,17 +536,40 @@ export function TaskDetailDrawer({
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="w-full py-4   justify-center gap-1.5"
-                      isLoading={isDeletingTask}
-                      onClick={() => onDeleteTask(task.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                      Delete task
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="w-full justify-center gap-1.5 py-4"
+                          isLoading={isDeletingTask}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete task
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove "{task.title}" from the board. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={isDeletingTask}>
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            variant="destructive"
+                            disabled={isDeletingTask}
+                            onClick={() => onDeleteTask(task.id)}
+                          >
+                            Delete task
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </>
               )}

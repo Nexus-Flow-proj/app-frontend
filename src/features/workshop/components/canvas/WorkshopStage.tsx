@@ -42,7 +42,7 @@ export function WorkshopStage({ width, height }: WorkshopStageProps) {
 
   return (
     <div
-      className={`relative h-full w-full overflow-hidden bg-[#f8f7fc] dark:bg-[#0b0912] ${cursorClass}`}
+      className={`relative h-full w-full overflow-hidden bg-[#f8f7fc] dark:bg-[#0b0b0d] ${cursorClass}`}
     >
       <Stage
         ref={stageRef}

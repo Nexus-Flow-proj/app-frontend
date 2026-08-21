@@ -69,6 +69,7 @@ import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
 import { getTaskStatusFromColumnName } from "../utils/task-status";
 import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import DarkModeToggle from "@/components/shared/ModeToggle";
+import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -447,7 +448,7 @@ function BoardsPage() {
             projectId={resolvedProjectId}
             draftId={projectQuery.data?.draftId}
             current="board"
-            className="bottom-8"
+            className="bottom-20"
           />
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
@@ -468,6 +469,7 @@ function BoardsPage() {
               onReset={resetFilters}
               activeCount={activeCount}
             />
+            <NotificationCenter />
             <DarkModeToggle />
 
             <div className="w-px h-5 bg-border" />
@@ -528,9 +530,9 @@ function BoardsPage() {
           initialData={
             editingColumn
               ? {
-                  name: editingColumn.name,
-                  color: editingColumn.color ?? "var(--primary)",
-                }
+                name: editingColumn.name,
+                color: editingColumn.color ?? "var(--primary)",
+              }
               : null
           }
           title={editingColumn ? "Rename column" : "New column"}

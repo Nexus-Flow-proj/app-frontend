@@ -50,8 +50,6 @@ export function TaskDetailDrawer({ objectId }: TaskDetailDrawerProps) {
     isText,
     isSection,
     kindOptions,
-    statusCfg,
-    priorityCfg,
     setValue,
     handleSave,
     handleDelete,

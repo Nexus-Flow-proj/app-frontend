@@ -613,7 +613,7 @@ export const MiniWorkshopEditor = forwardRef<MiniWorkshopEditorHandle, MiniWorks
     ? inlineEditorPaddingTop(inlineObject, inlineEditor.value, inlineFrame, inlineFontSize, inlineLineHeight)
     : 0;
 
-  return <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[#f8f7fc] dark:bg-[#0b0912]">
+  return <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[#f8f7fc] dark:bg-[#0b0b0d]">
     <Stage ref={stageRef} width={size.width} height={size.height} x={viewport.x} y={viewport.y} scaleX={viewport.scale} scaleY={viewport.scale} draggable={tool === "pan"} onDragEnd={handleStageDragEnd} onWheel={handleWheel} onMouseDown={handleStagePointerDown} onTouchStart={handleStagePointerDown} onMouseMove={handleStagePointerMove} onTouchMove={handleStagePointerMove} onMouseUp={handleStagePointerUp} onTouchEnd={handleStagePointerUp}>
       <Layer listening={false}><CanvasBackground bounds={backgroundBounds} dark={darkCanvas} scale={viewport.scale} /></Layer>
       <Layer id="mini-connection-layer" listening={false}><ConnectionLayer connections={connections} objectsById={objectsById} /></Layer>

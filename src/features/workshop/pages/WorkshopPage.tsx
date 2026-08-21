@@ -109,6 +109,8 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
   const { pathname } = useLocation();
 
   const isCompleted = !pathname.startsWith("/drafts/");
+  console.log(pathname.startsWith("/drafts/"));
+
   const isMissing =
     (controller.canvasQuery.error as { statusCode?: number } | null)
       ?.statusCode === 404;
@@ -248,7 +250,7 @@ function DraftWorkshop({ draftId }: { draftId: string }) {
           <WorkshopSidebar
             collapsed={false}
             onCollapse={() => setExplorerOpen(false)}
-            onExpand={() => { }}
+            onExpand={() => {}}
           />
         </SheetContent>
       </Sheet>

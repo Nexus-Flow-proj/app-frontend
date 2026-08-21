@@ -31,9 +31,7 @@ const DashboardPages = {
 // ** Profile Pages
 const ProfilePages = {
   Profile: lazy(() => import("@/features/profile/pages/ProfilePage")),
-  UserProfile: lazy(
-    () => import("@/features/profile/pages/UserProfilePage"),
-  ),
+  UserProfile: lazy(() => import("@/features/profile/pages/UserProfilePage")),
 };
 
 // ** Subscription Pages

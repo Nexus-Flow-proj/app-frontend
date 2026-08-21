@@ -4,9 +4,7 @@ export interface BreadcrumbSegment {
 }
 
 export function buildBreadcrumbs(pathname: string): BreadcrumbSegment[] {
-  const crumbs: BreadcrumbSegment[] = [
-    { label: "Nexus-Flow", href: "/dashboard" },
-  ];
+  const crumbs: BreadcrumbSegment[] = [{ label: "Bridge", href: "/dashboard" }];
 
   const segments = pathname.split("/").filter(Boolean);
 

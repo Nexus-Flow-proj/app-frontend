@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useBlocker, useNavigate, useParams } from "react-router";
+import { Link, useBlocker, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   CloudOff,
@@ -69,11 +69,12 @@ function memberName(member: {
 }
 
 function fileName(name: string, extension: string) {
-  return `${name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || "mini-workshop"
-    }.${extension}`;
+  return `${
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "mini-workshop"
+  }.${extension}`;
 }
 
 function MiniWorkshopPage() {
@@ -155,10 +156,10 @@ function MiniWorkshopPage() {
     () =>
       objectOrder.length
         ? Math.max(
-          ...objectOrder.map(
-            (objectId) => objectsById[objectId]?.zIndex ?? 0,
-          ),
-        ) + 1
+            ...objectOrder.map(
+              (objectId) => objectsById[objectId]?.zIndex ?? 0,
+            ),
+          ) + 1
         : 1,
     [objectOrder, objectsById],
   );
@@ -290,10 +291,12 @@ function MiniWorkshopPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Go back"
-          onClick={() => navigate(-1)}
+          asChild
+          aria-label="Back to workshop"
         >
-          <ArrowLeft className="size-5" />
+          <Link to={`/projects/${id}`}>
+            <ArrowLeft />
+          </Link>
         </Button>
         <div className="min-w-0">
           <div className="flex items-center gap-2">

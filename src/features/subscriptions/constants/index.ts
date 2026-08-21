@@ -23,7 +23,7 @@ export const PLAN_BADGE_VARIANTS: Record<
   PRO: {
     label: "Pro",
     className:
-      "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-transparent shadow-sm",
+      "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-transparent shadow-sm",
   },
   BUSINESS: {
     label: "Business",

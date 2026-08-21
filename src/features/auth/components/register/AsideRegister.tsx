@@ -6,7 +6,7 @@ import AuthLogo from "../AuthLogo";
 function AsideRegister() {
   return (
     <aside className="relative hidden overflow-hidden border-r border-border bg-sidebar/70 px-6 py-20 lg:block">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,--theme(--color-primary-950/0.28)_1px,transparent_1px),linear-gradient(180deg,--theme(--color-primary-950/0.28)_1px,transparent_1px)] bg-size-[28px_28px] opacity-25" />
+      {/* <div className="absolute inset-0 bg-[linear-gradient(90deg,--theme(--color-border/0.75)_1px,transparent_1px),linear-gradient(180deg,--theme(--color-border/0.75)_1px,transparent_1px)] bg-size-[28px_28px] opacity-35" /> */}
 
       <div className="mx-auto max-w-70">
         <AuthLogo />

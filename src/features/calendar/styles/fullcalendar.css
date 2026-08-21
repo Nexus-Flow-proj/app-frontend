@@ -1,4 +1,12 @@
 .project-calendar {
+  --fc-pulse-primary: var(--primary);
+  --fc-pulse-primary-over: color-mix(in oklab, var(--primary) 88%, white);
+  --fc-pulse-primary-down: color-mix(in oklab, var(--primary) 76%, black);
+  --fc-pulse-primary-foreground: var(--primary-foreground);
+  --fc-pulse-tertiary: var(--primary);
+  --fc-pulse-tertiary-over: color-mix(in oklab, var(--primary) 88%, white);
+  --fc-pulse-tertiary-down: color-mix(in oklab, var(--primary) 76%, black);
+  --fc-pulse-tertiary-foreground: var(--primary-foreground);
   --fc-border-color: color-mix(in oklab, var(--border) 76%, transparent);
   --fc-neutral-bg-color: color-mix(in oklab, var(--muted) 72%, var(--card));
   --fc-page-bg-color: var(--card);
@@ -212,6 +220,22 @@
   color: currentColor;
 }
 
+.dark .project-calendar .calendar-event-title {
+  color: currentColor;
+}
+
+.project-calendar .fc-daygrid-event .fc-event-main,
+.project-calendar .fc-daygrid-event .fc-event-title,
+.project-calendar .fc-daygrid-event .fc-event-time {
+  color: inherit;
+}
+
+.dark .project-calendar .fc-daygrid-event .fc-event-main,
+.dark .project-calendar .fc-daygrid-event .fc-event-title,
+.dark .project-calendar .fc-daygrid-event .fc-event-time {
+  color: inherit;
+}
+
 .project-calendar .calendar-event-low {
   background:
     linear-gradient(90deg, rgb(16 185 129 / 0.2), transparent 44%),
@@ -242,38 +266,6 @@
     rgb(255 241 242);
   border-color: rgb(244 63 94);
   color: rgb(136 19 55);
-}
-
-.dark .project-calendar .calendar-event-low {
-  background:
-    linear-gradient(90deg, rgb(16 185 129 / 0.34), transparent 48%),
-    rgb(6 78 59 / 0.5);
-  border-color: rgb(52 211 153 / 0.75);
-  color: rgb(220 252 231);
-}
-
-.dark .project-calendar .calendar-event-medium {
-  background:
-    linear-gradient(90deg, rgb(129 140 248 / 0.34), transparent 48%),
-    rgb(49 46 129 / 0.58);
-  border-color: rgb(129 140 248 / 0.78);
-  color: rgb(238 242 255);
-}
-
-.dark .project-calendar .calendar-event-high {
-  background:
-    linear-gradient(90deg, rgb(245 158 11 / 0.36), transparent 48%),
-    rgb(120 53 15 / 0.58);
-  border-color: rgb(251 191 36 / 0.78);
-  color: rgb(254 243 199);
-}
-
-.dark .project-calendar .calendar-event-urgent {
-  background:
-    linear-gradient(90deg, rgb(244 63 94 / 0.38), transparent 48%),
-    rgb(136 19 55 / 0.62);
-  border-color: rgb(251 113 133 / 0.78);
-  color: rgb(255 228 230);
 }
 
 @media (max-width: 640px) {

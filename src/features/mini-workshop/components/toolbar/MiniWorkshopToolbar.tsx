@@ -44,13 +44,13 @@ const shapeIcons: Record<MiniShapeKind, typeof Square> = {
 };
 
 function ToolButton({ active, disabled, label, shortcut, icon: Icon, onClick }: { active?: boolean; disabled?: boolean; label: string; shortcut?: string; icon: typeof MousePointer2; onClick: () => void }) {
-  return <Tooltip><TooltipTrigger asChild><Button type="button" size="icon" disabled={disabled} variant={active ? "default" : "ghost"} className={active ? "bg-violet-600 text-white hover:bg-violet-600" : "text-muted-foreground"} aria-label={label} onClick={onClick}><Icon className="size-4" /></Button></TooltipTrigger><TooltipContent>{label}{shortcut ? ` · ${shortcut}` : ""}</TooltipContent></Tooltip>;
+  return <Tooltip><TooltipTrigger asChild><Button type="button" size="icon" disabled={disabled} variant={active ? "default" : "ghost"} className={active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-muted-foreground"} aria-label={label} onClick={onClick}><Icon className="size-4" /></Button></TooltipTrigger><TooltipContent>{label}{shortcut ? ` · ${shortcut}` : ""}</TooltipContent></Tooltip>;
 }
 
 export function MiniWorkshopToolbar(props: MiniWorkshopToolbarProps) {
   const ActiveShapeIcon = shapeIcons[props.activeShape];
 
-  return <div className="absolute bottom-5 left-1/2 z-20 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-2xl border border-violet-500/20 bg-background/95 p-1.5 shadow-2xl shadow-violet-950/10 [scrollbar-width:none] backdrop-blur [&::-webkit-scrollbar]:hidden">
+  return <div className="absolute bottom-5 left-1/2 z-20 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-2xl border border-border bg-background/95 p-1.5 shadow-2xl shadow-black/20 [scrollbar-width:none] backdrop-blur [&::-webkit-scrollbar]:hidden">
     {tools.slice(0, 4).map(({ tool, label, shortcut, icon }) => <ToolButton key={tool} active={props.tool === tool} label={label} shortcut={shortcut} icon={icon} onClick={() => props.onTool(tool)} />)}
     <DropdownMenu><Tooltip><TooltipTrigger asChild><DropdownMenuTrigger asChild><Button type="button" size="icon" variant={props.tool === "shape" ? "default" : "ghost"} aria-label="Shapes"><ActiveShapeIcon className="size-4" /></Button></DropdownMenuTrigger></TooltipTrigger><TooltipContent>Shapes · S</TooltipContent></Tooltip><DropdownMenuContent align="center">
       <DropdownMenuItem onSelect={() => props.onShape("rectangle")}><Square />Rectangle</DropdownMenuItem>

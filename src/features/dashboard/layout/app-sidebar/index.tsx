@@ -38,8 +38,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             >
               <Link to="/dashboard">
                 <Logo
-                  textClassName="text-center group-data-[collapsible=icon]:hidden"
-                  markClassName="flex-none !size-22 group-data-[collapsible=icon]:!size-9"
+                  textClassName="text-center text-primary group-data-[collapsible=icon]:hidden"
+                  markClassName="flex-none  !size-22 group-data-[collapsible=icon]:!size-9"
                 />
               </Link>
             </SidebarMenuButton>

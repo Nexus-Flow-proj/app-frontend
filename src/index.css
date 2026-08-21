@@ -157,37 +157,37 @@
 }
 
 .dark {
-  /* ── Neutrals — deep violet-gray ── */
-  --background: oklch(0.14 0.022 293);
-  --foreground: oklch(0.96 0.008 293);
-  --card: oklch(0.19 0.025 293);
-  --card-foreground: oklch(0.96 0.008 293);
-  --popover: oklch(0.19 0.025 293);
-  --popover-foreground: oklch(0.96 0.008 293);
+  /* ── Neutrals — graphite black, no violet wash ── */
+  --background: oklch(0.13 0.004 255);
+  --foreground: oklch(0.96 0.006 255);
+  --card: oklch(0.18 0.006 255);
+  --card-foreground: oklch(0.96 0.006 255);
+  --popover: oklch(0.2 0.006 255);
+  --popover-foreground: oklch(0.96 0.006 255);
 
-  /* ── Primary — slightly brighter violet in dark mode ── */
-  --primary: oklch(0.68 0.2 293);
-  --primary-foreground: oklch(0.14 0.022 293);
+  /* ── Primary — violet stays as the accent, not the surface color ── */
+  --primary: oklch(0.7 0.19 293);
+  --primary-foreground: oklch(0.12 0.004 255);
 
-  /* ── Secondary — elevated dark surface ── */
-  --secondary: oklch(0.24 0.03 293);
-  --secondary-foreground: oklch(0.9 0.015 293);
+  /* ── Secondary — elevated graphite surface ── */
+  --secondary: oklch(0.25 0.006 255);
+  --secondary-foreground: oklch(0.91 0.006 255);
 
   /* ── Muted ── */
-  --muted: oklch(0.24 0.025 293);
-  --muted-foreground: oklch(0.65 0.04 293);
+  --muted: oklch(0.24 0.006 255);
+  --muted-foreground: oklch(0.68 0.008 255);
 
-  /* ── Accent — indigo tinted dark ── */
-  --accent: oklch(0.26 0.05 260);
-  --accent-foreground: oklch(0.82 0.14 260);
+  /* ── Accent — neutral hover/selection surface ── */
+  --accent: oklch(0.29 0.006 255);
+  --accent-foreground: oklch(0.92 0.006 255);
 
   /* ── Semantic ── */
   --destructive: oklch(0.7 0.19 22);
 
   /* ── Borders & inputs ── */
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.68 0.2 293);
+  --border: oklch(1 0 0 / 11%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.7 0.19 293);
 
   /* ── Charts — same hues, lightness tuned for dark bg ── */
   --chart-1: oklch(0.72 0.2 293);
@@ -202,18 +202,18 @@
   /* rose-red  */
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.19 0.025 293);
-  --sidebar-foreground: oklch(0.9 0.01 293);
-  --sidebar-primary: oklch(0.68 0.2 293);
-  --sidebar-primary-foreground: oklch(0.14 0.022 293);
-  --sidebar-accent: oklch(0.26 0.04 293);
-  --sidebar-accent-foreground: oklch(0.85 0.015 293);
+  --sidebar: oklch(0.16 0.005 255);
+  --sidebar-foreground: oklch(0.9 0.006 255);
+  --sidebar-primary: oklch(0.7 0.19 293);
+  --sidebar-primary-foreground: oklch(0.12 0.004 255);
+  --sidebar-accent: oklch(0.24 0.006 255);
+  --sidebar-accent-foreground: oklch(0.88 0.006 255);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.2 293);
+  --sidebar-ring: oklch(0.7 0.19 293);
 
   /* ── Toasts ── */
-  --toast-panel: color-mix(in oklab, var(--background) 82%, black 18%);
-  --toast-panel-deep: color-mix(in oklab, var(--primary-950) 58%, black 42%);
+  --toast-panel: color-mix(in oklab, var(--card) 88%, black 12%);
+  --toast-panel-deep: color-mix(in oklab, var(--background) 78%, white 4%);
   --toast-border: color-mix(in oklab, var(--toast-accent) 55%, rgb(255 255 255 / 0.1));
   --toast-shadow:
     0 22px 56px -18px rgb(0 0 0 / 0.86),

@@ -170,7 +170,7 @@ export function NotificationCenter() {
     <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           className="relative text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
           aria-label="Open notifications"

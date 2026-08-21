@@ -49,7 +49,7 @@ export default function WorkshopHeader({
   return (
     <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-sidebar px-3 py-2 backdrop-blur md:px-5">
       <Button variant="ghost" size="icon" asChild aria-label="Back to draft">
-        <Link to={`/projects/${projectId}`}>
+        <Link to={isCompleted ? `/projects/${projectId}` : `/drafts/${draft?.id}`}>
           <ArrowLeft />
         </Link>
       </Button>

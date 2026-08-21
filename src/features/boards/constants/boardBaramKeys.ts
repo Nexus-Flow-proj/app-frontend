@@ -5,4 +5,5 @@ export const BOARD_FILTER_PARAM_KEYS = [
   "assignee",
   "due",
   "myTasks",
+  "task",
 ] as const;

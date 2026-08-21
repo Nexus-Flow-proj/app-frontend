@@ -6,15 +6,35 @@ import { toast } from "sonner";
 
 export function registerNotificationHandlers(socketManager: SocketManager, qc: QueryClient): void {
     socketManager.on(SOCKET_EVENTS.NOTIFICATION.NEW, payload => {
-        addNotificationToCache(qc, payload.notification)
+        addNotificationToCache(qc, payload.notification);
+
+        const { projectId, taskId } = payload.notification.metadata || {};
+        const type = payload.notification.type;
+
         toast(payload.notification.title, {
             description: payload.notification.message,
             position: "bottom-right",
+            ...(projectId
+                ? {
+                    action: {
+                        label: "View",
+                        onClick: async () => {
+                            const { default: router } = await import("@/router");
+                            if (type.startsWith("INVITATION_")) {
+                                router.navigate(`/projects/${projectId}`);
+                            } else {
+                                const search = taskId ? `?task=${taskId}` : "";
+                                router.navigate(`/projects/${projectId}/boards${search}`);
+                            }
+                        },
+                    },
+                }
+                : {}),
         });
         console.log("NOTIFICATION Event With Payload : ", payload);
     });
     socketManager.on(SOCKET_EVENTS.NOTIFICATION.READ_ALL, payload => {
-        markAllNotificationsAsRead(qc)
+        markAllNotificationsAsRead(qc);
         console.log("NOTIFICATION Event With Payload : ", payload);
     });
 }

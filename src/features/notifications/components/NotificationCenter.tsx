@@ -145,13 +145,15 @@ export function NotificationCenter() {
 
   const handleNotificationClick = (notification: Notification) => {
     const projectId = notification.metadata?.projectId;
+    const taskId = notification.metadata?.taskId;
     const type = notification.type;
 
     if (projectId) {
       if (type.startsWith("INVITATION_")) {
         navigate(`/projects/${projectId}`);
       } else {
-        navigate(`/projects/${projectId}/boards`);
+        const search = taskId ? `?task=${taskId}` : "";
+        navigate(`/projects/${projectId}/boards${search}`);
       }
     } else {
       navigate("/dashboard");

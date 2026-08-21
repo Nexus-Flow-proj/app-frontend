@@ -25,7 +25,7 @@ export function useRegister() {
         setCsrfToken(csrfToken);
         setAuth(user);
         queryClient.setQueryData(QUERY_KEYS.auth.me, res);
-        toast.success("Account created! Welcome to Nexus-Flow.");
+        toast.success("Account created! Welcome to Bridge!");
         navigate("/dashboard", { replace: true });
       },
     },

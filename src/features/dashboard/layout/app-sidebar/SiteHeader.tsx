@@ -22,7 +22,7 @@ export function SiteHeader() {
         className={`flex h-(--header-height) w-full items-center px-4 ${isSidebarOpen ? "gap-2" : "gap-1"}`}
       >
         <Button
-          variant={isSidebarOpen ? "ghost" : "link"}
+          variant={isSidebarOpen ? "link" : "link"}
           size="icon-sm"
           onClick={toggleSidebar}
           aria-label="Toggle sidebar"

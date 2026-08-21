@@ -1,14 +1,10 @@
-import { Layers } from "lucide-react";
+import { BridgeLogo } from "@/components/bridge";
 
 function AuthLogo() {
   return (
     <div className="mb-8 flex items-center justify-center gap-2 font-bold">
-      <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/30">
-        <Layers className="size-5 animate-pulse font-bold" />
-      </div>
-      <span>
-        Nexus<span className="text-primary">-Flow</span>
-      </span>
+      <span className="text-primary text-4xl">Bridge</span>
+      <BridgeLogo size={108} />
     </div>
   );
 }

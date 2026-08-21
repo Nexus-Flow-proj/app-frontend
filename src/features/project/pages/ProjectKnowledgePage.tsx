@@ -197,8 +197,8 @@ export default function ProjectKnowledgePage() {
               Knowledge & AI Rules
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Maintain project policies, decisions, and standards that NexusFlow
-              AI can retrieve during planning and task recommendations.
+              Maintain project policies, decisions, and standards that Bridge AI
+              can retrieve during planning and task recommendations.
             </p>
           </div>
         </div>

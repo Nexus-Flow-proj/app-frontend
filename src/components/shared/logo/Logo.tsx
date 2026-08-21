@@ -1,14 +1,28 @@
 import { BridgeLogo } from "@/components/bridge";
+import { cn } from "@/lib/utils";
 
-function Logo() {
+interface LogoProps {
+  textClassName?: string;
+  markClassName?: string;
+}
+
+function Logo({ textClassName, markClassName }: LogoProps) {
   return (
     <>
-      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-        <BridgeLogo size={15} className="w-24 h-auto text-black dark:text-white" />
-      </div>
-      <div className="grid flex-1 text-left text-sm leading-tight">
+      {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-primary-foreground shadow-sm"> */}
+      {/* </div> */}
+      <div
+        className={cn(
+          "grid text-left text-2xl leading-tight text-primary dark:text-white",
+          textClassName,
+        )}
+      >
         <span className="truncate font-bold tracking-tight">Bridge</span>
       </div>
+      <BridgeLogo
+        size={72}
+        className={cn("flex-1 text-black dark:text-white", markClassName)}
+      />
     </>
   );
 }

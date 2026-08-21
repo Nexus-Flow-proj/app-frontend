@@ -21,7 +21,7 @@ const Loading = ({ fullPage = false, text, className }: LoadingProps) => {
       )}
     >
       <div className="flex flex-col items-center gap-5">
-        <BridgeLoader className="w-20 h-auto text-violet-500" />
+        <BridgeLoader size={120} className=" text-violet-500" />
         {text && (
           <p className="animate-pulse text-xs font-medium tracking-wide text-muted-foreground">
             {text}

@@ -1,6 +1,7 @@
-import { Sparkles, GitBranch } from "lucide-react";
+import { GitBranch } from "lucide-react";
 import { flowSteps } from "../../constants/flowSteps";
 import { registerBenefits } from "../../constants/registerBenefits";
+import AuthLogo from "../AuthLogo";
 
 function AsideRegister() {
   return (
@@ -8,19 +9,7 @@ function AsideRegister() {
       <div className="absolute inset-0 bg-[linear-gradient(90deg,--theme(--color-primary-950/0.28)_1px,transparent_1px),linear-gradient(180deg,--theme(--color-primary-950/0.28)_1px,transparent_1px)] bg-size-[28px_28px] opacity-25" />
 
       <div className="mx-auto max-w-70">
-        <div className="mb-12 flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary shadow-sm shadow-primary/20">
-            <Sparkles className="size-6" />
-          </div>
-          <div>
-            <p className="text-2xl font-black tracking-wide">
-              Nexus<span className="text-primary">-Flow</span>
-            </p>
-            <p className="text-[10px] font-semibold text-muted-foreground">
-              Intelligent team workspaces
-            </p>
-          </div>
-        </div>
+        <AuthLogo />
 
         <h1 className="text-3xl font-black leading-tight tracking-tight">
           Plan projects visually, then{" "}

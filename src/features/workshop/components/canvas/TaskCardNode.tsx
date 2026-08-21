@@ -31,13 +31,13 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
   const W = obj.width;
   const H = obj.height;
 
-  const cardFill = isDark ? "#181622" : "#FFFFFF";
+  const cardFill = isDark ? "#221F33" : "#FFFFFF";
   const cardStroke = isSelected
     ? "#9063EB"
     : isHovered
       ? isDark ? "#6366F1" : "#0F766E"
-      : isDark ? "#2E2A45" : "#E2E8F0";
-  const shadowFill = isDark ? "rgba(0, 0, 0, 0.4)" : "rgba(15, 23, 42, 0.08)";
+      : isDark ? "#383352" : "#E2E8F0";
+  const shadowFill = isDark ? "rgba(0, 0, 0, 0.55)" : "rgba(15, 23, 42, 0.09)";
   const titleFill = isDark ? "#F1F5F9" : "#1E293B";
   const descFill = isDark ? "#94A3B8" : "#64748B";
   const kindFill = isDark ? priorityCfg.dot : priorityCfg.text;
@@ -64,7 +64,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
   }, [isDark, data.status, statusCfg]);
 
   const avatarBg = isDark ? "#2E2845" : "#F0EAFF";
-  const avatarStroke = isDark ? "#181622" : "white";
+  const avatarStroke = isDark ? "#221F33" : "white";
   const avatarText = isDark ? "#C4B5FD" : "#7A4FD4";
 
   return (
@@ -175,7 +175,7 @@ export const TaskCardNode = memo(function TaskCardNode({ obj }: Props) {
         x={36}
         y={H - 24}
         width={70}
-        text={badgeStyle.label ?? statusCfg.label}
+        text={statusCfg.label}
         fontSize={10}
         fontStyle="600"
         fill={badgeStyle.text}

@@ -28,6 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ROUTES } from "@/constants";
 import { useInfiniteNotifications } from "../hooks/useInfiniteNotifications";
 import { useReadAllNotifications } from "../hooks/useReadAllNotifications";
 import type { Notification } from "@/types";
@@ -145,16 +146,27 @@ export function NotificationCenter() {
 
   const handleNotificationClick = (notification: Notification) => {
     const projectId = notification.metadata?.projectId;
+    const inviteToken = notification.metadata?.inviteToken;
     const type = notification.type;
+    console.log("notification type", notification);
+    console.log("inviteToken", inviteToken);
+
+    if (
+      inviteToken &&
+      (type === "INVITATION_RECEIVED" || type === "INVITE_EXPIRED")
+    ) {
+      navigate(ROUTES.PROJECT_INVITATION(inviteToken));
+      return;
+    }
 
     if (projectId) {
       if (type.startsWith("INVITATION_")) {
-        navigate(`/projects/${projectId}`);
+        navigate(ROUTES.PROJECT_OVERVIEW(projectId));
       } else {
-        navigate(`/projects/${projectId}/boards`);
+        navigate(ROUTES.BOARDS(projectId));
       }
     } else {
-      navigate("/dashboard");
+      navigate(ROUTES.DASHBOARD);
     }
   };
 

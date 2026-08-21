@@ -32,7 +32,7 @@ interface UseBoardDndParams {
 
 function getOrderBetween(previous?: number, next?: number) {
   if (previous === undefined && next === undefined) return 1;
-  if (previous === undefined) return next! - 1;
+  if (previous === undefined) return next! > 1 ? next! - 1 : next! / 2;
   if (next === undefined) return previous + 1;
   return (previous + next) / 2;
 }

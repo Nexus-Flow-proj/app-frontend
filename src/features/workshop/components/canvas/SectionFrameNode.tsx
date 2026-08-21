@@ -3,6 +3,7 @@ import { Group, Rect, Text, Transformer } from "react-konva";
 import type Konva from "konva";
 import type { CanvasObject } from "../../types";
 import { useSectionFrameNode } from "../../hooks/useSectionFrameNode";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface Props {
   obj: CanvasObject;
@@ -11,6 +12,8 @@ interface Props {
 export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
   const groupRef = useRef<Konva.Group>(null);
   const trRef = useRef<Konva.Transformer>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const {
     data,
@@ -28,6 +31,15 @@ export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
       trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected]);
+
+  const frameFill = isDark ? "rgba(22, 20, 32, 0.75)" : (data.backgroundColor || "#EFF6FF");
+  const frameBorder = isSelected
+    ? "#9063EB"
+    : isDark
+      ? "rgba(167, 139, 250, 0.25)"
+      : (data.borderColor || "#BFDBFE");
+  const titleFill = isDark ? "#F1F5F9" : "#334155";
+  const descFill = isDark ? "#94A3B8" : "#64748B";
 
   return (
     <>
@@ -51,8 +63,8 @@ export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
         <Rect
           width={obj.width}
           height={obj.height}
-          fill={data.backgroundColor}
-          stroke={isSelected ? "#9063EB" : data.borderColor}
+          fill={frameFill}
+          stroke={frameBorder}
           strokeWidth={isSelected ? 2.5 : 1.5}
           cornerRadius={8}
           dash={[8, 4]}
@@ -63,7 +75,7 @@ export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
           text={`${data.kind ?? "Section"} / ${data.title}`}
           fontSize={13}
           fontStyle="700"
-          fill="#334155"
+          fill={titleFill}
           fontFamily="'Geist Variable', sans-serif"
         />
         {data.description && (
@@ -73,7 +85,7 @@ export const SectionFrameNode = memo(function SectionFrameNode({ obj }: Props) {
             width={Math.max(20, Math.min(obj.width - 32, 440))}
             text={data.description}
             fontSize={11}
-            fill="#64748B"
+            fill={descFill}
             fontFamily="'Geist Variable', sans-serif"
             listening={false}
           />

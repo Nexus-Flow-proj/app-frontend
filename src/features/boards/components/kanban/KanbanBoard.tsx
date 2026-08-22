@@ -42,15 +42,17 @@ export function KanbanBoard({
             >
               {children}
             </SortableContext>
-            <Button
-              variant="dashed"
-              size="lg"
-              onClick={onAddColumn}
-              className="w-62 shrink-0"
-            >
-              <Plus />
-              Add column
-            </Button>
+            {onAddColumn && (
+              <Button
+                variant="dashed"
+                size="lg"
+                onClick={onAddColumn}
+                className="w-62 shrink-0"
+              >
+                <Plus />
+                Add column
+              </Button>
+            )}
           </>
         )}
       </div>

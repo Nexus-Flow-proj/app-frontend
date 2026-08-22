@@ -12,6 +12,8 @@ import {
 interface ColumnActionsMenuProps {
   columnId: string;
   isProtected: boolean;
+  canCreateTask?: boolean;
+  canManageColumn?: boolean;
   onAddTask?: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
   onDeleteColumn?: (columnId: string) => void;
@@ -20,10 +22,19 @@ interface ColumnActionsMenuProps {
 function ColumnActionsMenu({
   columnId,
   isProtected,
+  canCreateTask = true,
+  canManageColumn = true,
   onAddTask,
   onRenameColumn,
   onDeleteColumn,
 }: ColumnActionsMenuProps) {
+  const showProtectedMessage = isProtected && !canCreateTask;
+  const hasColumnActions = canCreateTask || (!isProtected && canManageColumn);
+
+  if (!showProtectedMessage && !hasColumnActions) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,24 +43,30 @@ function ColumnActionsMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-max min-w-max">
-        {!isProtected ? (
+        {!showProtectedMessage ? (
           <>
-            <DropdownMenuItem onClick={() => onAddTask?.(columnId)}>
-              <Plus />
-              Add task
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRenameColumn?.(columnId)}>
-              <PencilIcon />
-              Rename column
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => onDeleteColumn?.(columnId)}
-            >
-              <TrashIcon />
-              Delete column
-            </DropdownMenuItem>
+            {canCreateTask && (
+              <DropdownMenuItem onClick={() => onAddTask?.(columnId)}>
+                <Plus />
+                Add task
+              </DropdownMenuItem>
+            )}
+            {!isProtected && canManageColumn && (
+              <>
+                <DropdownMenuItem onClick={() => onRenameColumn?.(columnId)}>
+                  <PencilIcon />
+                  Rename column
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDeleteColumn?.(columnId)}
+                >
+                  <TrashIcon />
+                  Delete column
+                </DropdownMenuItem>
+              </>
+            )}
           </>
         ) : (
           <DropdownMenuItem disabled className="text-muted-foreground">

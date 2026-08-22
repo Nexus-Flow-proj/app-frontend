@@ -14,6 +14,7 @@ import type { Subtask } from "../../types";
 interface SubtaskChecklistProps {
   subtasks: Subtask[];
   disabled?: boolean;
+  canDelete?: boolean;
   isGeneratingBreakdown?: boolean;
   onToggle: (subtaskId: string, completed: boolean) => void;
   onTitleChange: (subtaskId: string, title: string) => void;
@@ -49,6 +50,7 @@ function Progress({ completed, total }: { completed: number; total: number }) {
 export function SubtaskChecklist({
   subtasks,
   disabled,
+  canDelete = true,
   isGeneratingBreakdown,
   onToggle,
   onTitleChange,
@@ -162,7 +164,7 @@ export function SubtaskChecklist({
                 variant="ghost"
                 size="icon"
                 className="mt-1.5 size-5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive rounded shrink-0"
-                disabled={disabled}
+                disabled={disabled || !canDelete}
                 onClick={() => onDelete(subtask.id)}
               >
                 <Trash2 className="size-3" />

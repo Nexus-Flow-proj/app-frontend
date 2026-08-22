@@ -23,16 +23,10 @@ const rolePermissionsSchema = z.object({
     delete: z.boolean(),
     assign: z.boolean(),
   }),
-  workshop: z.object({
-    read: z.boolean(),
-    createNodes: z.boolean(),
-    updateNodes: z.boolean(),
-    deleteNodes: z.boolean(),
-    generateWithAi: z.boolean(),
-  }),
   board: z.object({
     read: z.boolean(),
     moveTasks: z.boolean(),
+    moveColumns: z.boolean().optional(),
     manageColumns: z.boolean(),
   }),
   roles: z.object({

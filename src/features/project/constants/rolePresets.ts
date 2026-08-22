@@ -37,16 +37,10 @@ export const EMPTY_ROLE_PERMISSIONS: RolePermissions = {
     delete: false,
     assign: false,
   },
-  workshop: {
-    read: true,
-    createNodes: false,
-    updateNodes: false,
-    deleteNodes: false,
-    generateWithAi: false,
-  },
   board: {
     read: true,
     moveTasks: false,
+    moveColumns: false,
     manageColumns: false,
   },
   roles: {
@@ -81,16 +75,10 @@ const FULL_PERMISSIONS: RolePermissions = {
     delete: true,
     assign: true,
   },
-  workshop: {
-    read: true,
-    createNodes: true,
-    updateNodes: true,
-    deleteNodes: true,
-    generateWithAi: true,
-  },
   board: {
     read: true,
     moveTasks: true,
+    moveColumns: true,
     manageColumns: true,
   },
   roles: {
@@ -198,57 +186,29 @@ export const ROLE_PERMISSION_GROUPS: Array<{
     ],
   },
   {
-    key: "workshop",
-    label: "Workshop",
-    description: "Main workshop node and AI planning controls.",
-    permissions: [
-      {
-        key: "read",
-        label: "Read workshop",
-        description: "View shared workshop content.",
-      },
-      {
-        key: "createNodes",
-        label: "Create nodes",
-        description: "Add notes, task cards, images, and sections.",
-      },
-      {
-        key: "updateNodes",
-        label: "Update nodes",
-        description: "Edit workshop content within hierarchy scope.",
-      },
-      {
-        key: "deleteNodes",
-        label: "Delete nodes",
-        description: "Delete workshop content within hierarchy scope.",
-        dangerous: true,
-      },
-      {
-        key: "generateWithAi",
-        label: "Generate with AI",
-        description: "Use AI planning tools in the workshop.",
-      },
-    ],
-  },
-  {
     key: "board",
     label: "Board",
     description: "Kanban board movement and column controls.",
     permissions: [
       {
         key: "read",
-        label: "Read board",
+        label: "View Board",
         description: "View the team board.",
       },
       {
         key: "moveTasks",
-        label: "Move tasks",
-        description: "Move cards between board columns.",
+        label: "Move & Reorder Tasks",
+        description: "Move cards between board columns and reorder them.",
+      },
+      {
+        key: "moveColumns",
+        label: "Reorder Board Columns",
+        description: "Move board columns without changing their details.",
       },
       {
         key: "manageColumns",
-        label: "Manage columns",
-        description: "Create, rename, reorder, or remove columns.",
+        label: "Create, Edit & Delete Columns",
+        description: "Create, rename, recolor, or remove columns.",
       },
     ],
   },
@@ -343,14 +303,12 @@ export const ROLE_PRESETS: RolePreset[] = [
         delete: true,
         assign: true,
       },
-      workshop: {
+      board: {
         read: true,
-        createNodes: true,
-        updateNodes: true,
-        deleteNodes: true,
-        generateWithAi: false,
+        moveTasks: true,
+        moveColumns: true,
+        manageColumns: false,
       },
-      board: { read: true, moveTasks: true, manageColumns: false },
       roles: { create: false, update: false, delete: false },
       chat: {
         read: true,
@@ -376,14 +334,12 @@ export const ROLE_PRESETS: RolePreset[] = [
         delete: false,
         assign: false,
       },
-      workshop: {
+      board: {
         read: true,
-        createNodes: true,
-        updateNodes: true,
-        deleteNodes: false,
-        generateWithAi: false,
+        moveTasks: true,
+        moveColumns: true,
+        manageColumns: false,
       },
-      board: { read: true, moveTasks: true, manageColumns: false },
       roles: { create: false, update: false, delete: false },
       chat: {
         read: true,

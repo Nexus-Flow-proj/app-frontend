@@ -46,8 +46,8 @@ import { useTask } from "../hooks/useTask";
 import { useTimeLogs } from "../hooks/useTimeLogs";
 import {
   useUpdateBoardColumn,
-  useUpdateBoardColumnById,
 } from "../hooks/useUpdateBoardColumn";
+import { useReorderBoardColumns } from "../hooks/useReorderBoardColumns";
 import { useUpdateSubtask } from "../hooks/useUpdateSubtask";
 import { useUpdateComment } from "../hooks/useUpdateComment";
 import { useUpdateTask, useUpdateTaskById } from "../hooks/useUpdateTask";
@@ -71,6 +71,14 @@ import { getTaskStatusFromColumnName } from "../utils/task-status";
 import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import DarkModeToggle from "@/components/shared/ModeToggle";
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
+import {
+  canCreateTasks,
+  canDeleteTasks,
+  canManageColumns,
+  canMoveTasks,
+  canReorderColumns,
+  canUpdateTasks,
+} from "@/features/project/utils/rolePermissions";
 
 const boardCollisionStrategy: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -188,7 +196,7 @@ function BoardsPage() {
     resolvedProjectId,
     editingColumnId ?? "",
   );
-  const updateColumnByIdMutation = useUpdateBoardColumnById(resolvedProjectId);
+  const reorderColumnsMutation = useReorderBoardColumns(resolvedProjectId);
   const deleteColumnMutation = useDeleteBoardColumn(resolvedProjectId);
   const createTaskMutation = useCreateTask(resolvedProjectId);
   const updateTaskMutation = useUpdateTask(resolvedProjectId, activeTaskId);
@@ -199,6 +207,22 @@ function BoardsPage() {
   const deleteSubtaskMutation = useDeleteSubtask(activeTaskId);
 
   const columns = boardState.columnOrder.map((id) => boardState.columns[id]);
+  const currentRole = projectQuery.data?.currentMember?.role ?? null;
+  const isAdminRole =
+    projectQuery.data?.currentMember?.isAdmin === true ||
+    (currentRole?.level ?? 0) >= 100;
+  const canCreateTask =
+    isAdminRole || (currentRole ? canCreateTasks(currentRole) : false);
+  const canEditTask =
+    isAdminRole || (currentRole ? canUpdateTasks(currentRole) : false);
+  const canDeleteTask =
+    isAdminRole || (currentRole ? canDeleteTasks(currentRole) : false);
+  const canMoveTask =
+    isAdminRole || (currentRole ? canMoveTasks(currentRole) : false);
+  const canManageColumn =
+    isAdminRole || (currentRole ? canManageColumns(currentRole) : false);
+  const canMoveColumn =
+    isAdminRole || (currentRole ? canReorderColumns(currentRole) : false);
   const tasks = useMemo(
     () => boardState.columnOrder.flatMap((id) => boardState.tasks[id] ?? []),
     [boardState],
@@ -249,7 +273,11 @@ function BoardsPage() {
   const boardDnd = useBoardDnd({
     boardState,
     setBoardState,
+    canMoveTasks: canMoveTask,
+    canMoveColumns: canMoveColumn,
     onMoveTask: (taskId, sourceColId, targetColId, newPositionFloat) => {
+      if (!canMoveTask) return;
+
       const movingTask = boardState.tasks[sourceColId]?.find(
         (task) => task.id === taskId,
       );
@@ -278,14 +306,21 @@ function BoardsPage() {
     },
     onMoveColumn: (columnId, newPositionFloat) => {
       const column = boardState.columns[columnId];
-      if (!column) return;
+      if (!column || !canMoveColumn) return;
 
-      updateColumnByIdMutation.mutate({
-        columnId,
-        dto: {
-          name: column.name,
-          sortOrder: newPositionFloat,
-        },
+      reorderColumnsMutation.mutate({
+        columns: boardState.columnOrder
+          .flatMap((id) => {
+            const boardColumn = boardState.columns[id];
+            return boardColumn ? [boardColumn] : [];
+          })
+          .map((boardColumn) => ({
+            id: boardColumn.id,
+            sortOrder:
+              boardColumn.id === columnId
+                ? newPositionFloat
+                : boardColumn.sortOrder,
+          })),
       });
     },
   });
@@ -375,6 +410,8 @@ function BoardsPage() {
 
   const handleColumnSubmit = useCallback(
     (data: { name: string; color: string }) => {
+      if (!canManageColumn) return;
+
       if (editingColumnId) {
         updateColumnMutation.mutate(
           {
@@ -396,11 +433,13 @@ function BoardsPage() {
       });
       setIsAddColumnOpen(false);
     },
-    [createColumnMutation, editingColumnId, updateColumnMutation],
+    [canManageColumn, createColumnMutation, editingColumnId, updateColumnMutation],
   );
 
   const handleAddTask = useCallback(
     (data: NewTaskFormData) => {
+      if (!canCreateTask) return;
+
       const label = data.tags[0]?.trim() || undefined;
 
       createTaskMutation.mutate({
@@ -418,22 +457,26 @@ function BoardsPage() {
         },
       });
     },
-    [boardState, createTaskMutation],
+    [boardState, canCreateTask, createTaskMutation],
   );
 
   const handleDeleteTask = useCallback(
     (taskId: string) => {
+      if (!canDeleteTask) return;
+
       deleteTaskMutation.mutate(taskId, {
         onSuccess: () => {
           closeTaskDrawer();
         },
       });
     },
-    [closeTaskDrawer, deleteTaskMutation],
+    [canDeleteTask, closeTaskDrawer, deleteTaskMutation],
   );
 
   const handleMoveTaskToColumn = useCallback(
     (taskId: string, targetColumnId: string) => {
+      if (!canMoveTask) return;
+
       const sourceColumnId = Object.entries(boardState.tasks).find(
         ([, tasks]) => tasks.some((task) => task.id === taskId),
       )?.[0];
@@ -470,7 +513,7 @@ function BoardsPage() {
         },
       });
     },
-    [boardState, moveTaskToColumn, recordLocalTaskMove, updateTaskByIdMutation],
+    [boardState, canMoveTask, moveTaskToColumn, recordLocalTaskMove, updateTaskByIdMutation],
   );
 
   return (
@@ -519,14 +562,16 @@ function BoardsPage() {
 
             <div className="w-px h-5 bg-border" />
 
-            <Button
-              size="sm"
-              className="gap-1.5"
-              onClick={() => setIsAddColumnOpen(true)}
-            >
-              <Plus className="size-3.5" />
-              Add column
-            </Button>
+            {canManageColumn && (
+              <Button
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setIsAddColumnOpen(true)}
+              >
+                <Plus className="size-3.5" />
+                Add column
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -538,8 +583,10 @@ function BoardsPage() {
         onDragEnd={boardDnd.handleDragEnd}
       >
         <KanbanBoard
-          boardState={boardState}
-          onAddColumn={() => setIsAddColumnOpen(true)}
+              boardState={boardState}
+              onAddColumn={
+                canManageColumn ? () => setIsAddColumnOpen(true) : undefined
+              }
           isLoading={remoteBoard.isLoading}
         >
           {boardState.columnOrder.map((columnId) => (
@@ -548,10 +595,20 @@ function BoardsPage() {
               columnId={columnId}
               boardState={boardState}
               currentUserId={currentBoardUser.id}
+              canCreateTask={canCreateTask}
+              canManageColumn={canManageColumn}
+              canMoveColumn={canMoveColumn}
+              canMoveTask={canMoveTask}
               onCardClick={openDrawerWithBackendDetail}
               onAddTask={setAddTaskColumnId}
-              onRenameColumn={setEditingColumnId}
-              onDeleteColumn={(id) => deleteColumnMutation.mutate(id)}
+              onRenameColumn={
+                canManageColumn ? setEditingColumnId : undefined
+              }
+              onDeleteColumn={
+                canManageColumn
+                  ? (id) => deleteColumnMutation.mutate(id)
+                  : undefined
+              }
             />
           ))}
         </KanbanBoard>
@@ -588,14 +645,16 @@ function BoardsPage() {
         />
       )}
 
-      <AddTaskDialog
-        isOpen={isAddTaskOpen}
-        columnId={addTaskColumnId}
-        columns={columns}
-        members={members}
-        onClose={() => setAddTaskColumnId(null)}
-        onSubmit={handleAddTask}
-      />
+      {canCreateTask && (
+        <AddTaskDialog
+          isOpen={isAddTaskOpen}
+          columnId={addTaskColumnId}
+          columns={columns}
+          members={members}
+          onClose={() => setAddTaskColumnId(null)}
+          onSubmit={handleAddTask}
+        />
+      )}
 
       <TaskDetailDrawer
         task={drawer.activeTask}
@@ -604,6 +663,9 @@ function BoardsPage() {
         members={members}
         timeLogs={timeLogsQuery.data?.timeLogs ?? []}
         currentUser={currentBoardUser}
+        canEditTask={canEditTask}
+        canMoveTask={canMoveTask}
+        canDeleteTask={canDeleteTask}
         isOpen={drawer.isOpen}
         isLoading={drawer.isLoading}
         isLoadingTimeLogs={timeLogsQuery.isLoading}

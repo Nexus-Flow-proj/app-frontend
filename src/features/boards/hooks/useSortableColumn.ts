@@ -2,10 +2,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { BoardColumn } from "../types";
 
-export function useSortableColumn(column: BoardColumn) {
+export function useSortableColumn(column: BoardColumn, disabled = false) {
   const sortable = useSortable({
     id: column.id,
     data: { type: "Column", column },
+    disabled,
   });
 
   return {

@@ -50,7 +50,6 @@ import {
   canManageRoles,
   canReadBoard,
   canReadProject,
-  canReadWorkshop,
   canRemoveMembers,
 } from "@/features/project/utils/rolePermissions";
 
@@ -103,9 +102,7 @@ export function NavProjects({ projects, isLoading = false }: NavProjectsProps) {
           const projectColor = project.color ?? "#2563eb";
           const currentRole = project.currentMember?.role ?? null;
           const canOpenBoard = currentRole ? canReadBoard(currentRole) : false;
-          const canOpenWorkshop = currentRole
-            ? canReadWorkshop(currentRole)
-            : false;
+          const canOpenWorkshop = !!project.currentMember;
           const canOpenKnowledge = currentRole
             ? canReadProject(currentRole)
             : false;

@@ -48,6 +48,9 @@ interface TaskDetailDrawerProps {
   members: BoardMember[];
   timeLogs: TimeLog[];
   currentUser: BoardMember;
+  canEditTask?: boolean;
+  canMoveTask?: boolean;
+  canDeleteTask?: boolean;
   isOpen: boolean;
   isLoading?: boolean;
   isLoadingTimeLogs?: boolean;
@@ -234,6 +237,9 @@ export function TaskDetailDrawer({
   members,
   timeLogs,
   currentUser,
+  canEditTask = true,
+  canMoveTask = true,
+  canDeleteTask = true,
   isOpen,
   isLoading = false,
   isLoadingTimeLogs,
@@ -306,6 +312,7 @@ export function TaskDetailDrawer({
   const hasInvalidSubtasks = draft?.subtasks.some(
     (subtask) => !subtask.title.trim(),
   ) ?? false;
+  const isTaskEditingDisabled = isUpdatingTask || !canEditTask;
 
   const setDraftValue = <K extends keyof TaskDetailsDraft>(
     key: K,
@@ -316,7 +323,7 @@ export function TaskDetailDrawer({
   };
 
   const handleSave = () => {
-    if (!task || !draft || isUpdatingTask || !hasUnsavedChanges) return;
+    if (!task || !draft || isTaskEditingDisabled || !hasUnsavedChanges) return;
     if (!draft.title.trim()) return;
     if (hasInvalidSubtasks) return;
 
@@ -399,7 +406,7 @@ export function TaskDetailDrawer({
               task={task}
               columns={columns}
               title={draft?.title ?? ""}
-              disabled={isUpdatingTask}
+              disabled={isTaskEditingDisabled}
               onTitleChange={(title) => setDraftValue("title", title)}
             />
 
@@ -407,7 +414,7 @@ export function TaskDetailDrawer({
               <TaskDescriptionEditor
                 taskId={task.id}
                 value={draft?.description ?? ""}
-                disabled={isUpdatingTask}
+                disabled={isTaskEditingDisabled}
                 isGenerating={isGeneratingTaskDescription}
                 onChange={(description) =>
                   setDraftValue("description", description)
@@ -424,6 +431,8 @@ export function TaskDetailDrawer({
                 columns={columns}
                 members={members}
                 isUpdatingTask={isUpdatingTask}
+                canEditTask={canEditTask}
+                canMoveTask={canMoveTask}
                 priority={draft?.priority ?? task.priority}
                 status={draft?.status ?? task.status}
                 assigneeId={draft?.assigneeId ?? null}
@@ -469,7 +478,8 @@ export function TaskDetailDrawer({
                   createdAt: "",
                   updatedAt: "",
                 }))}
-                disabled={isUpdatingTask}
+                disabled={isTaskEditingDisabled}
+                canDelete={canDeleteTask}
                 isGeneratingBreakdown={isGeneratingTaskBreakdown}
                 onGenerateAiBreakdown={() =>
                   onGenerateTaskBreakdown?.(handleAddTaskBreakdown)
@@ -532,7 +542,7 @@ export function TaskDetailDrawer({
                 onDeleteTimeLog={onDeleteTimeLog}
               />
               <ActivityLog events={task.activityLog} />
-              {onDeleteTask && (
+              {onDeleteTask && canDeleteTask && (
                 <>
                   <Separator />
                   <div className="space-y-2">
@@ -578,7 +588,7 @@ export function TaskDetailDrawer({
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={!hasUnsavedChanges || isUpdatingTask}
+                  disabled={!hasUnsavedChanges || isTaskEditingDisabled}
                   onClick={handleDiscard}
                 >
                   <RotateCcw className="size-3.5" />
@@ -590,6 +600,7 @@ export function TaskDetailDrawer({
                   isLoading={isUpdatingTask}
                   disabled={
                     !hasUnsavedChanges ||
+                    isTaskEditingDisabled ||
                     !draft?.title.trim() ||
                     hasInvalidSubtasks
                   }

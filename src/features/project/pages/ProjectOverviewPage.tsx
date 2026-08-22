@@ -14,7 +14,6 @@ import { useProjectAccess, useProjectSummary } from "../hooks";
 import {
   canManageProjectSettings,
   canReadBoard,
-  canReadWorkshop,
 } from "../utils/rolePermissions";
 import { isProjectAdmin } from "../utils/roles";
 
@@ -54,7 +53,7 @@ export default function ProjectOverviewPage() {
       ? currentMember
       : null;
   const canManageSettings = role ? canManageProjectSettings(role) : false;
-  const canOpenWorkshop = role ? canReadWorkshop(role) : false;
+  const canOpenWorkshop = isProjectMember;
   const canOpenBoard = role ? canReadBoard(role) : false;
   const canOpenMiniWorkshop = isProjectMember;
   const adminName = projectAdmin

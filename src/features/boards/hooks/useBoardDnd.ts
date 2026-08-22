@@ -28,6 +28,8 @@ interface UseBoardDndParams {
     newPositionFloat: number,
   ) => void;
   onMoveColumn?: (columnId: string, newPositionFloat: number) => void;
+  canMoveTasks?: boolean;
+  canMoveColumns?: boolean;
 }
 
 function getOrderBetween(previous?: number, next?: number) {
@@ -56,6 +58,8 @@ export function useBoardDnd({
   setBoardState,
   onMoveTask,
   onMoveColumn,
+  canMoveTasks = true,
+  canMoveColumns = true,
 }: UseBoardDndParams) {
   const [activeEntity, setActiveEntity] = useState<DragEntity | null>(null);
 
@@ -94,6 +98,8 @@ export function useBoardDnd({
       if (!activeData || !overData) return;
 
       if (activeData.type === "Column" && overData.type === "Column") {
+        if (!canMoveColumns) return;
+
         const oldIndex = boardState.columnOrder.indexOf(activeData.column.id);
         const newIndex = boardState.columnOrder.indexOf(overData.column.id);
         if (oldIndex === -1 || newIndex === -1) return;
@@ -127,6 +133,7 @@ export function useBoardDnd({
       }
 
       if (activeData.type !== "Task") return;
+      if (!canMoveTasks) return;
 
       const sourceColumnId = findTaskColumnId(boardState, activeData.task.id);
       const targetColumnId =
@@ -223,7 +230,7 @@ export function useBoardDnd({
         newColumnOrder,
       );
     },
-    [boardState, onMoveColumn, onMoveTask, setBoardState],
+    [boardState, canMoveColumns, canMoveTasks, onMoveColumn, onMoveTask, setBoardState],
   );
 
   return {

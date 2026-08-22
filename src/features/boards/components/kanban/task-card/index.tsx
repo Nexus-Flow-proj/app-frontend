@@ -14,6 +14,7 @@ interface TaskCardProps {
   isOverlay?: boolean;
   style?: CSSProperties;
   dragHandleProps?: Record<string, unknown>;
+  isDragDisabled?: boolean;
   onClick?: (task: Task) => void;
 }
 
@@ -24,6 +25,7 @@ function TaskCard({
   isDragging = false,
   isOverlay = false,
   style,
+  isDragDisabled = false,
   onClick,
 }: TaskCardProps) {
   const {
@@ -32,7 +34,7 @@ function TaskCard({
     listeners,
     setNodeRef,
     style: sortableStyle,
-  } = useSortableTask(task);
+  } = useSortableTask(task, isDragDisabled || isOverlay);
   const accentColor =
     task.priority === TaskPriority.URGENT
       ? "var(--destructive)"
@@ -61,7 +63,8 @@ function TaskCard({
       style={{ ...sortableStyle, ...style }}
       onClick={() => onClick?.(task)}
       className={cn(
-        "group relative w-full rounded-lg border bg-muted/40 text-left transition-all duration-150 cursor-pointer select-none",
+        "group relative w-full rounded-lg border bg-muted/40 text-left transition-all duration-150 select-none",
+        isDragDisabled ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
         isDragging || isSortableDragging
           ? "opacity-40 border-primary/30"
           : isOverlay

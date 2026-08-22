@@ -29,17 +29,11 @@ export interface RolePermissions {
     delete: boolean;
     assign: boolean;
   };
-  workshop: {
-    read: boolean;
-    createNodes: boolean;
-    updateNodes: boolean;
-    deleteNodes: boolean;
-    generateWithAi: boolean;
-  };
   board: {
     read: boolean;
     moveTasks: boolean;
     manageColumns: boolean;
+    moveColumns?: boolean;
   };
   roles: {
     create: boolean;

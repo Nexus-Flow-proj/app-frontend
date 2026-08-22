@@ -31,6 +31,10 @@ interface KanbanBoardColumnProps {
   boardState: BoardState;
   onCardClick: (task: Task) => void;
   currentUserId: string;
+  canCreateTask?: boolean;
+  canManageColumn?: boolean;
+  canMoveColumn?: boolean;
+  canMoveTask?: boolean;
 
   onAddTask: (columnId: string) => void;
   onRenameColumn?: (columnId: string) => void;
@@ -43,6 +47,10 @@ function KanbanBoardColumn({
   boardState,
   onCardClick,
   currentUserId,
+  canCreateTask = true,
+  canManageColumn = true,
+  canMoveColumn = true,
+  canMoveTask = true,
   onAddTask,
   onRenameColumn = () => {},
   onDeleteColumn = () => {},
@@ -53,7 +61,7 @@ function KanbanBoardColumn({
   const filters = useUrlFilters();
   const filteredTasks = useFilteredTasks(tasks, currentUserId);
   const { attributes, listeners, setNodeRef, style } =
-    useSortableColumn(column);
+    useSortableColumn(column, !canMoveColumn);
   const highlighted = useHighlightStore(
     (state) =>
       state.highlighted.get(HighlightEntity.column)?.has(column.id) ?? false,
@@ -92,9 +100,12 @@ function KanbanBoardColumn({
         )}
       >
         <CardHeader
-          className="gap-0 pt-3 pb-2 px-3 cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
+          className={cn(
+            "gap-0 pt-3 pb-2 px-3",
+            canMoveColumn && "cursor-grab active:cursor-grabbing",
+          )}
+          {...(canMoveColumn ? attributes : {})}
+          {...(canMoveColumn ? listeners : {})}
         >
           <div className="min-w-0">
             <div
@@ -122,6 +133,8 @@ function KanbanBoardColumn({
             <KanbanColumnActionsMenu
               columnId={column.id}
               isProtected={isProtected}
+              canCreateTask={canCreateTask}
+              canManageColumn={canManageColumn}
               onAddTask={() => onAddTask(columnId)}
               onRenameColumn={onRenameColumn}
               onDeleteColumn={onDeleteColumn}
@@ -156,7 +169,12 @@ function KanbanBoardColumn({
               strategy={verticalListSortingStrategy}
             >
               {filteredTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onClick={onCardClick} />
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isDragDisabled={!canMoveTask}
+                  onClick={onCardClick}
+                />
               ))}
             </SortableContext>
           )}
@@ -169,15 +187,17 @@ function KanbanBoardColumn({
         </CardContent>
 
         <CardFooter className="border-t-0 bg-transparent px-3 pt-2 pb-3">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            size="sm"
-            onClick={() => onAddTask(columnId)}
-          >
-            <Plus />
-            Add task
-          </Button>
+          {canCreateTask && (
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              size="sm"
+              onClick={() => onAddTask(columnId)}
+            >
+              <Plus />
+              Add task
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

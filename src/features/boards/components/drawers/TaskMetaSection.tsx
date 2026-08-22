@@ -54,6 +54,8 @@ interface TaskMetaSectionProps {
   columns: BoardColumn[];
   members: BoardMember[];
   isUpdatingTask?: boolean;
+  canEditTask?: boolean;
+  canMoveTask?: boolean;
   priority: Priority;
   status: TaskStatus;
   assigneeId: string | null;
@@ -97,6 +99,8 @@ export function TaskMetaSection({
   columns,
   members,
   isUpdatingTask,
+  canEditTask = true,
+  canMoveTask = true,
   priority,
   status,
   assigneeId,
@@ -120,6 +124,8 @@ export function TaskMetaSection({
   const [assigneePopover, setAssigneePopover] =
     useState<AssigneePopoverState | null>(null);
   const [labelDraft, setLabelDraft] = useState<LabelDraft | null>(null);
+  const isEditingDisabled = isUpdatingTask || !canEditTask;
+  const isMovingDisabled = isUpdatingTask || !canMoveTask;
   const label =
     labelDraft?.taskId === task.id && labelDraft.sourceLabel === currentLabel
       ? labelDraft.value
@@ -176,7 +182,7 @@ export function TaskMetaSection({
       <MetaRow icon={ChartNoAxesColumnDecreasing} label="Priority">
         <Select
           value={priority}
-          disabled={isUpdatingTask}
+          disabled={isEditingDisabled}
           onValueChange={(value) => onChangePriority(value as Priority)}
         >
           <SelectTrigger className="h-8 text-xs w-full">
@@ -210,7 +216,7 @@ export function TaskMetaSection({
       <MetaRow icon={CircleDot} label="Status">
         <Select
           value={status}
-          disabled={isUpdatingTask}
+          disabled={isEditingDisabled}
           onValueChange={(value) => onChangeStatus(value as TaskStatus)}
         >
           <SelectTrigger className="h-8 text-xs w-full">
@@ -241,7 +247,7 @@ export function TaskMetaSection({
         <div className="flex min-w-0 items-center gap-1.5">
           <Select
             value={assigneeId ?? "unassigned"}
-            disabled={isUpdatingTask}
+            disabled={isEditingDisabled}
             onValueChange={(value) =>
               onChangeAssignee(value === "unassigned" ? null : value)
             }
@@ -280,7 +286,7 @@ export function TaskMetaSection({
                 variant="soft"
                 size="icon-sm"
                 className="shrink-0 text-primary"
-                disabled={isUpdatingTask || !onRecommendAssignee}
+                disabled={isEditingDisabled || !onRecommendAssignee}
                 isLoading={isRecommendingAssignee}
                 onClick={handleRecommendAssignee}
                 aria-label="Recommend assignee with AI"
@@ -355,7 +361,7 @@ export function TaskMetaSection({
         <Input
           type="date"
           value={dueDate}
-          disabled={isUpdatingTask}
+          disabled={isEditingDisabled}
           onChange={(event) => onChangeDueDate(event.target.value)}
           className="h-8 text-xs scheme-dark"
         />
@@ -364,6 +370,7 @@ export function TaskMetaSection({
       <MetaRow icon={ArrowRight} label="Move to">
         <Select
           value={task.boardColumnId}
+          disabled={isMovingDisabled}
           onValueChange={(value) => onMoveToColumn(task.id, value)}
         >
           <SelectTrigger className="h-8 text-xs">
@@ -384,7 +391,7 @@ export function TaskMetaSection({
           task={{ ...task, dependencyIds }}
           tasks={tasks}
           columns={columns}
-          isUpdating={isUpdatingTask}
+          isUpdating={isEditingDisabled}
           onChangeDependencies={(_, nextDependencyIds) =>
             onChangeDependencies(nextDependencyIds)
           }
@@ -396,6 +403,7 @@ export function TaskMetaSection({
           <div className="flex items-center gap-1.5">
             <Input
               value={label}
+              disabled={isEditingDisabled}
               onChange={(event) =>
                 setLabelDraft({
                   taskId: task.id,
@@ -421,6 +429,7 @@ export function TaskMetaSection({
               type="button"
               size="icon"
               className="size-8 shrink-0"
+              disabled={isEditingDisabled}
               onClick={submitLabel}
             >
               <Check className="size-3.5" />
@@ -430,6 +439,7 @@ export function TaskMetaSection({
               variant="ghost"
               size="icon"
               className="size-8 shrink-0"
+              disabled={isEditingDisabled}
               onClick={cancelEditingLabel}
             >
               <X className="size-3.5" />
@@ -454,6 +464,7 @@ export function TaskMetaSection({
               variant="ghost"
               size="icon"
               className="ml-auto size-7 shrink-0 text-muted-foreground"
+              disabled={isEditingDisabled}
               onClick={startEditingLabel}
             >
               <Pencil className="size-3.5" />
@@ -464,6 +475,7 @@ export function TaskMetaSection({
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+                disabled={isEditingDisabled}
                 onClick={() => onChangeLabel("")}
               >
                 <X className="size-3.5" />

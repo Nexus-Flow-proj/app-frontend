@@ -82,23 +82,47 @@ export function canReadProject(role: Pick<ProjectRoleDefinition, "permissions">)
   return hasPermission(role, "project.read");
 }
 
-export function canReadWorkshop(role: Pick<ProjectRoleDefinition, "permissions">) {
-  return hasPermission(role, "workshop.read");
-}
-
 export function canReadBoard(role: Pick<ProjectRoleDefinition, "permissions">) {
   return hasPermission(role, "board.read");
-}
-
-export function canUseAiPlanning(role: Pick<ProjectRoleDefinition, "permissions">) {
-  return hasPermission(role, "workshop.generateWithAi");
 }
 
 export function canManageBoard(role: Pick<ProjectRoleDefinition, "permissions">) {
   return (
     hasPermission(role, "board.moveTasks") ||
+    hasPermission(role, "board.moveColumns") ||
     hasPermission(role, "board.manageColumns")
   );
+}
+
+export function canCreateTasks(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "tasks.create");
+}
+
+export function canUpdateTasks(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "tasks.update");
+}
+
+export function canDeleteTasks(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "tasks.delete");
+}
+
+export function canMoveTasks(role: Pick<ProjectRoleDefinition, "permissions">) {
+  return hasPermission(role, "board.moveTasks");
+}
+
+export function canReorderColumns(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+) {
+  return (
+    hasPermission(role, "board.moveColumns") ||
+    hasPermission(role, "board.manageColumns")
+  );
+}
+
+export function canManageColumns(
+  role: Pick<ProjectRoleDefinition, "permissions">,
+) {
+  return hasPermission(role, "board.manageColumns");
 }
 
 export function canReadChat(role: Pick<ProjectRoleDefinition, "permissions">) {

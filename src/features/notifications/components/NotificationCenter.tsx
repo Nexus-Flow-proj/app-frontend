@@ -147,9 +147,8 @@ export function NotificationCenter() {
   const handleNotificationClick = (notification: Notification) => {
     const projectId = notification.metadata?.projectId;
     const inviteToken = notification.metadata?.inviteToken;
+    const taskId = notification.metadata?.taskId;
     const type = notification.type;
-    console.log("notification type", notification);
-    console.log("inviteToken", inviteToken);
 
     if (
       inviteToken &&
@@ -163,7 +162,8 @@ export function NotificationCenter() {
       if (type.startsWith("INVITATION_")) {
         navigate(ROUTES.PROJECT_OVERVIEW(projectId));
       } else {
-        navigate(ROUTES.BOARDS(projectId));
+        const search = taskId ? `?task=${encodeURIComponent(taskId)}` : "";
+        navigate(`${ROUTES.BOARDS(projectId)}${search}`);
       }
     } else {
       navigate(ROUTES.DASHBOARD);

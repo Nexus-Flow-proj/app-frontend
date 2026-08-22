@@ -10,17 +10,41 @@ export function registerNotificationHandlers(socketManager: SocketManager, qc: Q
         addNotificationToCache(qc, payload.notification);
 
         const notif = payload.notification;
-        const inviteToken = notif?.metadata?.inviteToken;
-        const isInvitation = notif?.type === "INVITATION_RECEIVED";
+        const { projectId, taskId, inviteToken } = notif.metadata || {};
+        const type = notif.type;
+        const canOpenInvite =
+            inviteToken && (type === "INVITATION_RECEIVED" || type === "INVITE_EXPIRED");
+        const canOpenNotificationTarget = canOpenInvite || projectId;
+
+        const action =
+            canOpenNotificationTarget
+                ? {
+                    label: "View",
+                    onClick: async () => {
+                        const { default: router } = await import("@/router");
+
+                        if (canOpenInvite) {
+                            router.navigate(ROUTES.PROJECT_INVITATION(inviteToken));
+                            return;
+                        }
+
+                        if (!projectId) return;
+
+                        if (type.startsWith("INVITATION_")) {
+                            router.navigate(ROUTES.PROJECT_OVERVIEW(projectId));
+                            return;
+                        }
+
+                        const search = taskId ? `?task=${encodeURIComponent(taskId)}` : "";
+                        router.navigate(`${ROUTES.BOARDS(projectId)}${search}`);
+                    },
+                }
+                : undefined;
+
         toast(notif.title, {
             description: notif.message,
             position: "bottom-right",
-            action: isInvitation && inviteToken ? {
-                label: "View",
-                onClick: () => {
-                    window.location.href = ROUTES.PROJECT_INVITATION(inviteToken);
-                },
-            } : undefined,
+            action,
         });
         console.log("NOTIFICATION Event With Payload : ", payload);
     });

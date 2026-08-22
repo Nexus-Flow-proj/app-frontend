@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
 import { ArrowLeft, Plus } from "lucide-react";
 import {
   DndContext,
@@ -293,6 +294,50 @@ function BoardsPage() {
     if (!remoteBoard.boardState || !projectId) return;
     initializeBoard(remoteBoard.boardState, projectId);
   }, [initializeBoard, projectId, remoteBoard.boardState]);
+
+  // ── Auto-open task drawer from URL search param (e.g. ?task=<id>) ────────
+  const [searchParams, setSearchParams] = useSearchParams();
+  const taskParamConsumed = useRef(false);
+
+  useEffect(() => {
+    const targetTaskId = searchParams.get("task");
+    if (!targetTaskId || taskParamConsumed.current) return;
+
+    // Wait until the board is fully loaded
+    if (remoteBoard.isLoading || boardState.columnOrder.length === 0) return;
+
+    // Find the task in the board state
+    const task = Object.values(boardState.tasks)
+      .flat()
+      .find((t) => t.id === targetTaskId);
+
+    if (task) {
+      openTaskDrawer(task);
+    } else {
+      toast.error("Task not found on this board", {
+        description:
+          "The task may have been deleted or moved to another project.",
+      });
+    }
+
+    // Mark as consumed and clear the param
+    taskParamConsumed.current = true;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("task");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [
+    searchParams,
+    boardState.columnOrder.length,
+    boardState.tasks,
+    remoteBoard.isLoading,
+    openTaskDrawer,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     if (!drawer.isOpen || !drawer.activeTaskId) return;

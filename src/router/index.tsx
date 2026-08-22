@@ -149,10 +149,7 @@ const router = createBrowserRouter([
             path: "/profile",
             element: <WithSuspense Component={ProfilePages.Profile} />,
           },
-          {
-            path: "/settings/billing",
-            element: <WithSuspense Component={SubscriptionPages.Billing} />,
-          },
+
           {
             path: "/pricing",
             element: <WithSuspense Component={SubscriptionPages.Pricing} />,
@@ -256,6 +253,12 @@ const router = createBrowserRouter([
         ],
       },
       // Member routes render without the dashboard shell.
+
+
+      {
+        path: "/settings/billing",
+        element: <WithSuspense Component={SubscriptionPages.Billing} />,
+      },
 
       {
         path: "/projects/:id/boards",

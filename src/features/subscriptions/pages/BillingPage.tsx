@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { CreditCard, RefreshCw } from "lucide-react";
 import Loading from "@/components/shared/loading/Loading";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,35 @@ import {
   AiQuotaCard,
   BillingOverviewCard,
   PaymentHistoryTable,
+  PaymentSuccessView,
+  PaymentErrorView,
 } from "../components";
 
 export default function BillingPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paymentResult = searchParams.get("success");
   const { data: subscription, isLoading, error, refetch, isRefetching } =
     useMySubscription();
 
+  // ── Payment result screens (static, no backend calls) ──
+  if (paymentResult === "true") {
+    return (
+      <PaymentSuccessView
+        onDismiss={() => {
+          searchParams.delete("success");
+          setSearchParams(searchParams, { replace: true });
+        }}
+      />
+    );
+  }
+
+  if (paymentResult === "false") {
+    return <PaymentErrorView />;
+  }
+
   if (isLoading) {
+
     return <Loading text="Loading billing details..." />;
   }
 

@@ -766,3 +766,129 @@
     transform: none !important;
   }
 }
+
+/* ── Payment Result Animations ─────────────────────────────────── */
+
+/* Confetti dots */
+.payment-confetti-dot {
+  opacity: 0;
+  animation: payment-confetti-fall linear forwards;
+}
+
+@keyframes payment-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg) scale(0);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(85vh) rotate(720deg) scale(0.3);
+  }
+}
+
+/* Success icon scale-in */
+.payment-success-icon {
+  animation: payment-scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes payment-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Checkmark stroke draw */
+.payment-checkmark-path {
+  stroke-dasharray: 28;
+  stroke-dashoffset: 28;
+  animation: payment-checkmark-draw 0.6s 0.4s ease-out forwards;
+}
+
+@keyframes payment-checkmark-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Error icon shake */
+.payment-error-icon {
+  animation: payment-scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    payment-shake 0.5s 0.6s ease-out;
+}
+
+@keyframes payment-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-6px);
+  }
+  30% {
+    transform: translateX(5px);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* Error circle draw */
+.payment-error-circle {
+  stroke-dasharray: 63;
+  stroke-dashoffset: 63;
+  animation: payment-circle-draw 0.6s 0.3s ease-out forwards;
+}
+
+@keyframes payment-circle-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Error X lines draw */
+.payment-error-line-1 {
+  stroke-dasharray: 9;
+  stroke-dashoffset: 9;
+  animation: payment-line-draw 0.3s 0.7s ease-out forwards;
+}
+
+.payment-error-line-2 {
+  stroke-dasharray: 9;
+  stroke-dashoffset: 9;
+  animation: payment-line-draw 0.3s 0.85s ease-out forwards;
+}
+
+@keyframes payment-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payment-confetti-dot,
+  .payment-success-icon,
+  .payment-checkmark-path,
+  .payment-error-icon,
+  .payment-error-circle,
+  .payment-error-line-1,
+  .payment-error-line-2 {
+    animation: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

@@ -6,3 +6,5 @@ export { PricingComparisonModal } from "./PricingComparisonModal";
 export { UpgradePromptModal } from "./UpgradePromptModal";
 export { BillingOverviewCard } from "./BillingOverviewCard";
 export { CancelSubscriptionDialog } from "./CancelSubscriptionDialog";
+export { PaymentSuccessView } from "./PaymentSuccessView";
+export { PaymentErrorView } from "./PaymentErrorView";

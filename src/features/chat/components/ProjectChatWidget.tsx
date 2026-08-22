@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import { useProjectStore } from "@/store/projectStore";
 import { useProjectRealTime } from "@/hooks/realtime/useProjectRealtime";
+import { useProjectAccess } from "@/features/project/hooks";
 import { ChatFab } from "./ChatFab";
 import { ChatPanel } from "./ChatPanel";
 
@@ -15,8 +16,16 @@ export function ProjectChatWidget({
   const activeProjectId = useProjectStore((state) => state.activeProject?.id);
   const projectId = explicitProjectId || id || activeProjectId;
 
-  const isMember = useProjectStore((state) => state.isMember());
-  const canRead = useProjectStore((state) => state.hasPermission("chat.read"));
+  // Ensures project access (member & role details) is loaded into useProjectStore
+  const { isProjectMember, can } = useProjectAccess(projectId);
+
+  const isMemberStore = useProjectStore((state) => state.isMember());
+  const canReadStore = useProjectStore(
+    (state) => state.hasPermission("chat.read"),
+  );
+
+  const isMember = isProjectMember || isMemberStore;
+  const canRead = can("chat.read") || canReadStore;
 
   // Ensures socket is in project room to receive real-time messages
   useProjectRealTime(projectId);
@@ -32,3 +41,4 @@ export function ProjectChatWidget({
     </>
   );
 }
+

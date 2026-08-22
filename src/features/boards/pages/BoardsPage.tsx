@@ -62,7 +62,7 @@ import KanbanBoardColumn from "../components/kanban/kanbanboard-column";
 import TaskCard from "../components/kanban/task-card";
 import { useKanbanStore } from "@/store";
 import { useAuthStore } from "@/store/authStore";
-import { useProject, useProjectMembers } from "@/features/project/hooks";
+import { useProjectAccess, useProjectMembers } from "@/features/project/hooks";
 import type { ProjectMemberSummary } from "@/features/project/types";
 import BoardInfo from "../components/Topbar/BoardInfo";
 import { BoardSyncIndicator } from "../components/Topbar/BoardSyncIndicator";
@@ -152,7 +152,7 @@ function BoardsPage() {
   const activeCount = useActiveFilterCount();
   const remoteBoard = useRemoteBoardState(resolvedProjectId);
   const projectMembersQuery = useProjectMembers(resolvedProjectId);
-  const projectQuery = useProject(resolvedProjectId);
+  const projectQuery = useProjectAccess(resolvedProjectId);
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
@@ -583,10 +583,10 @@ function BoardsPage() {
         onDragEnd={boardDnd.handleDragEnd}
       >
         <KanbanBoard
-              boardState={boardState}
-              onAddColumn={
-                canManageColumn ? () => setIsAddColumnOpen(true) : undefined
-              }
+          boardState={boardState}
+          onAddColumn={
+            canManageColumn ? () => setIsAddColumnOpen(true) : undefined
+          }
           isLoading={remoteBoard.isLoading}
         >
           {boardState.columnOrder.map((columnId) => (

@@ -25,7 +25,7 @@ import ModeToggle from "@/components/shared/ModeToggle";
 import { ProjectWorkspaceNavigation } from "@/components/shared/ProjectWorkspaceNavigation";
 import { useProjectTasks } from "@/features/boards/hooks/useProjectTasks";
 import type { BoardMember, Task } from "@/features/boards/types";
-import { useProject } from "@/features/project/hooks";
+import { useProjectAccess } from "@/features/project/hooks";
 import { useProjectMembers } from "@/features/project/hooks/useProjectMembers";
 import { useAuthStore } from "@/store/authStore";
 import { CanvasSearchDialog } from "../components/canvas/CanvasSearchDialog";
@@ -65,16 +65,16 @@ function memberName(member: {
   lastName: string;
   email: string;
 }) {
-  return `${member.firstName} ${member.lastName}`.trim() || member.email;
+  const full = `${member.firstName} ${member.lastName}`.trim();
+  return full || member.email;
 }
 
 function fileName(name: string, extension: string) {
-  return `${
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "") || "mini-workshop"
-  }.${extension}`;
+  return `${name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "mini-workshop"
+    }.${extension}`;
 }
 
 function MiniWorkshopPage() {
@@ -82,7 +82,7 @@ function MiniWorkshopPage() {
   const navigate = useNavigate();
   const currentUserId = useAuthStore((state) => state.user?.id ?? "");
   const workshopQuery = useMiniWorkshop(id);
-  const projectQuery = useProject(id);
+  const projectQuery = useProjectAccess(id);
   const tasksQuery = useProjectTasks(id);
   const membersQuery = useProjectMembers(id);
   const saveMutation = useSaveMiniWorkshop(id);
@@ -156,10 +156,10 @@ function MiniWorkshopPage() {
     () =>
       objectOrder.length
         ? Math.max(
-            ...objectOrder.map(
-              (objectId) => objectsById[objectId]?.zIndex ?? 0,
-            ),
-          ) + 1
+          ...objectOrder.map(
+            (objectId) => objectsById[objectId]?.zIndex ?? 0,
+          ),
+        ) + 1
         : 1,
     [objectOrder, objectsById],
   );
@@ -434,7 +434,7 @@ function MiniWorkshopPage() {
         projectId={id}
         draftId={projectQuery.data?.draftId}
         current="mini-workshop"
-        className="bottom-8"
+        className="bottom-19"
       />
 
       <UnsavedChangesDialog

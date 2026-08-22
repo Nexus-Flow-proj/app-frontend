@@ -1,11 +1,5 @@
 import { CalendarDaysIcon } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface ProjectActivityItem {
   title: string;
@@ -24,9 +18,6 @@ export function ProjectActivityFeedCard({
     <Card className="rounded-lg">
       <CardHeader>
         <CardTitle>Activity feed</CardTitle>
-        <CardDescription>
-          Static for now, ready for live updates later.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

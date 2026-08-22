@@ -12,11 +12,11 @@ interface AIThinkingBubbleProps {
 }
 
 const DEFAULT_STAGES = [
-  "Thinking...",
-  "Analyzing project requirements...",
-  "Structuring delivery phases...",
-  "Drafting agile task cards...",
-  "Arranging visual canvas board...",
+  "Thinking",
+  "Analyzing",
+  "Structuring",
+  "Drafting",
+  "Arranging",
 ];
 
 /**
@@ -53,7 +53,9 @@ function parseThoughtSteps(raw: string): string[] {
 function formatHeadline(step: string): string {
   if (!step) return "Thinking...";
 
-  const featureMatch = step.match(/planning feature:\s*(.+?)(?:\.\.|\.\.\.|$)/i);
+  const featureMatch = step.match(
+    /planning feature:\s*(.+?)(?:\.\.|\.\.\.|$)/i,
+  );
   if (featureMatch?.[1]) {
     return `Planning: ${featureMatch[1].trim()}`;
   }
@@ -124,7 +126,9 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
             <button
               type="button"
               className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left transition-colors hover:bg-muted/60"
-              aria-label={isOpen ? "Hide reasoning details" : "Show reasoning details"}
+              aria-label={
+                isOpen ? "Hide reasoning details" : "Show reasoning details"
+              }
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span className="relative flex size-7 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary shadow-sm ring-1 ring-primary/20">
@@ -145,7 +149,9 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                     </Badge>
                   </div>
                   <p className="truncate text-[11px] text-muted-foreground">
-                    {isOpen ? "Collapse thought process" : "Click to view live thought process"}
+                    {isOpen
+                      ? "Collapse thought process"
+                      : "Click to view live thought process"}
                   </p>
                 </div>
               </div>
@@ -155,8 +161,9 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                   {isOpen ? "Hide" : `Thoughts (${steps.length || 1})`}
                 </span>
                 <ChevronDown
-                  className={`size-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""
-                    }`}
+                  className={`size-3.5 text-muted-foreground transition-transform duration-200 ${
+                    isOpen ? "rotate-180 text-primary" : ""
+                  }`}
                 />
               </div>
             </button>
@@ -169,7 +176,9 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                   <Terminal className="size-3" />
                   Reasoning Stream
                 </span>
-                <span>{steps.length} {steps.length === 1 ? "step" : "steps"}</span>
+                <span>
+                  {steps.length} {steps.length === 1 ? "step" : "steps"}
+                </span>
               </div>
 
               <div
@@ -187,10 +196,11 @@ export function AIThinkingBubble({ streamedText }: AIThinkingBubbleProps) {
                     return (
                       <div
                         key={`${step}-${idx}`}
-                        className={`flex items-start gap-2 rounded-lg px-2 py-1 transition-colors ${isLatest
-                          ? "border border-primary/20 bg-primary/10 font-medium text-foreground"
-                          : "text-muted-foreground/80 hover:text-foreground/90"
-                          }`}
+                        className={`flex items-start gap-2 rounded-lg px-2 py-1 transition-colors ${
+                          isLatest
+                            ? "border border-primary/20 bg-primary/10 font-medium text-foreground"
+                            : "text-muted-foreground/80 hover:text-foreground/90"
+                        }`}
                       >
                         <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center">
                           {isLatest ? (
